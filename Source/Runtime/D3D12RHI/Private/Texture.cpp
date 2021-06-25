@@ -3,7 +3,7 @@
 #include <Texture.h>
 
 #include <Device.h>
-#include <Helpers.h>
+#include <Misc/Helpers.h>
 #include <ResourceStateTracker.h>
 
 using namespace dx12lib;

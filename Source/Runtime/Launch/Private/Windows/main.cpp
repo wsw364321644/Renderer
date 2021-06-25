@@ -1,6 +1,6 @@
 #include <Editor.h>
 
-#include <GameFramework.h>
+#include <Windows/GameFramework.h>
 #include <Device.h>
 
 #define WIN32_LEAN_AND_MEAN
@@ -39,7 +39,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
 
     GameFramework::Create(hInstance);
     {
-        std::unique_ptr<Tutorial4> demo = std::make_unique<Tutorial4>(L"HDR", 1920, 1080, true);
+        std::unique_ptr<Editor> demo = std::make_unique<Editor>(L"Editor", 1920, 1080, true);
         retCode = demo->Run();
     }
     GameFramework::Destroy();

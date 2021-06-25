@@ -1,8 +1,8 @@
-#include "GameFrameworkPCH.h"
+#include "Windows/GameFrameworkPCH.h"
 
-#include <GameFramework.h>
+#include <Windows/GameFramework.h>
 
-#include <Window.h>
+#include <Windows/Window.h>
 
 static GameFramework* gs_pSingelton       = nullptr;
 constexpr wchar_t     WINDOW_CLASS_NAME[] = L"RenderWindowClass";

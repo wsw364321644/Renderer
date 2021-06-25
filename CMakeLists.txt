@@ -11,41 +11,61 @@ if( MSVC )
     add_compile_options(/MP)
 endif()
 
-file(GLOB_RECURSE Engine_INC LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/Engine/Public/*.h" "${PROJECT_SOURCE_DIR}/Source/Runtime/Engine/Public/*.hpp")
-source_group( TREE ${PROJECT_SOURCE_DIR}  FILES ${Engine_INC} )
-file(GLOB_RECURSE Engine_SRC LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/Engine/Private/*.cpp")
-source_group(  TREE ${PROJECT_SOURCE_DIR} FILES ${Engine_SRC} )
+file(GLOB_RECURSE CORE_INC LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/Core/Public/*.h" "${PROJECT_SOURCE_DIR}/Source/Runtime/Core/Public/*.hpp")
+file(GLOB_RECURSE CORE_SRC LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/Core/Private/*.cpp")
+source_group(TREE ${PROJECT_SOURCE_DIR} FILES ${CORE_INC} ${CORE_SRC} )
 
+
+file(GLOB_RECURSE Engine_INC LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/Engine/Public/*.h" "${PROJECT_SOURCE_DIR}/Source/Runtime/Engine/Public/*.hpp")
+file(GLOB_RECURSE Engine_SRC LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/Engine/Private/*.cpp")
+source_group(  TREE ${PROJECT_SOURCE_DIR} FILES ${Engine_INC}  ${Engine_SRC} )
+
+
+file(GLOB Launch_INC LIST_DIRECTORIES false CONFIGURE_DEPENDS  "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Public/*.h" "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Public/*.hpp")
+file(GLOB Launch_SRC LIST_DIRECTORIES false CONFIGURE_DEPENDS  "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Private/*.cpp")
 
 if(WIN32)
-	file(GLOB_RECURSE Launch_INC LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Public/Windows/*.h" "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Public/Windows/*.hpp")
-    source_group( TREE ${PROJECT_SOURCE_DIR} FILES ${Launch_INC} )
-	file(GLOB_RECURSE Launch_SRC LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Private/Windows/*.cpp")
-    source_group( TREE ${PROJECT_SOURCE_DIR}  FILES ${Launch_SRC} )
-    file(GLOB_RECURSE Launch_RES LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Resources/Windows/*.rc" "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Resources/Windows/*.ico" "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Resources/Windows/*.h")
-    source_group( TREE ${PROJECT_SOURCE_DIR}  FILES ${Launch_RES} )
-else()
-	file(GLOB_RECURSE Launch_INC LIST_DIRECTORIES false CONFIGURE_DEPENDS  "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Public/*.h" "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Public/*.hpp")
-	file(GLOB_RECURSE Launch_SRC LIST_DIRECTORIES false CONFIGURE_DEPENDS  "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Private/*.cpp")
+	file(GLOB_RECURSE Launch_INC_PLAT LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Public/Windows/*.h" "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Public/Windows/*.hpp")  
+    set(Launch_INC "${Launch_INC};${Launch_INC_PLAT}")
+	file(GLOB_RECURSE Launch_SRC_PLAT LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Private/Windows/*.cpp")
+    set(Launch_SRC "${Launch_SRC};${Launch_SRC_PLAT}")
+    file(GLOB_RECURSE Launch_RES_PLAT LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Resources/Windows/*.rc" "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Resources/Windows/*.ico" "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Resources/Windows/*.h")
+    source_group( TREE ${PROJECT_SOURCE_DIR}  FILES ${Launch_RES_PLAT} )
 endif()
+source_group( TREE ${PROJECT_SOURCE_DIR} FILES ${Launch_INC} ${Launch_SRC}  )
+
+
+
+
+file(GLOB_RECURSE ApplicationCore_INC LIST_DIRECTORIES false CONFIGURE_DEPENDS  "${PROJECT_SOURCE_DIR}/Source/Runtime/ApplicationCore/Public/GenericPlatform/*.h" "${PROJECT_SOURCE_DIR}/Source/Runtime/ApplicationCore/Public/GenericPlatform/*.hpp")
+file(GLOB_RECURSE ApplicationCore_SRC LIST_DIRECTORIES false CONFIGURE_DEPENDS  "${PROJECT_SOURCE_DIR}/Source/Runtime/ApplicationCore/Private/GenericPlatform/*.cpp")
+if(WIN32)
+	file(GLOB_RECURSE ApplicationCore_INC_PLAT LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/ApplicationCore/Public/Windows/*.h" "${PROJECT_SOURCE_DIR}/Source/Runtime/ApplicationCore/Public/Windows/*.hpp")  
+    set(ApplicationCore_INC "${ApplicationCore_INC};${ApplicationCore_INC_PLAT}")
+	file(GLOB_RECURSE ApplicationCore_SRC_PLAT LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/ApplicationCore/Private/Windows/*.cpp")
+    set(ApplicationCore_SRC "${ApplicationCore_SRC};${ApplicationCore_SRC_PLAT}")
+endif()
+source_group( TREE ${PROJECT_SOURCE_DIR} FILES ${ApplicationCore_INC} ${ApplicationCore_SRC}  )
 
 
 file(GLOB_RECURSE D3D12RHI_INC LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/D3D12RHI/Public/*.h" "${PROJECT_SOURCE_DIR}/Source/Runtime/D3D12RHI/Public/*.hpp")
-source_group(TREE ${PROJECT_SOURCE_DIR} FILES ${D3D12RHI_INC} )
 file(GLOB_RECURSE D3D12RHI_SRC LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/D3D12RHI/Private/*.cpp")
-source_group(TREE ${PROJECT_SOURCE_DIR} FILES ${D3D12RHI_SRC} )
+source_group(TREE ${PROJECT_SOURCE_DIR} FILES ${D3D12RHI_INC} ${D3D12RHI_SRC} )
+
 
 file(GLOB_RECURSE Editor_INC LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Editor/Public/*.h" "${PROJECT_SOURCE_DIR}/Source/Editor/Public/*.hpp")
-source_group(TREE ${PROJECT_SOURCE_DIR} FILES ${Editor_INC} )
 file(GLOB_RECURSE Editor_SRC LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Editor/Private/*.cpp")
-source_group(TREE ${PROJECT_SOURCE_DIR} FILES ${Editor_SRC} )
+source_group(TREE ${PROJECT_SOURCE_DIR} FILES ${Editor_INC} ${Editor_SRC} )
 
 
 file(GLOB  Imgui_INC LIST_DIRECTORIES false    CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/ThirdParty/imgui/*.h" "${PROJECT_SOURCE_DIR}/ThirdParty/imgui/*.hpp" )
-set(Imgui_INC "${Imgui_INC};${PROJECT_SOURCE_DIR}/ThirdParty/imgui/backends/imgui_impl_win32.h")
 file(GLOB  Imgui_SRC LIST_DIRECTORIES false   CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/ThirdParty/imgui/*.cpp" )
-set(Imgui_INC "${Imgui_SRC};${PROJECT_SOURCE_DIR}/ThirdParty/imgui/backends/imgui_impl_win32.cpp")
-source_group(TREE ${PROJECT_SOURCE_DIR}  FILES ${Imgui_INC} ${Imgui_SRC} ${Editor_SRC}  )
+
+if(WIN32)
+	set(Imgui_INC "${Imgui_INC};${PROJECT_SOURCE_DIR}/ThirdParty/imgui/backends/imgui_impl_win32.h")
+    set(Imgui_SRC "${Imgui_SRC};${PROJECT_SOURCE_DIR}/ThirdParty/imgui/backends/imgui_impl_win32.cpp")
+endif()
+source_group(TREE ${PROJECT_SOURCE_DIR}  FILES ${Imgui_INC} ${Imgui_SRC} )
 
 
 
@@ -89,11 +109,18 @@ add_subdirectory( ThirdParty/spdlog )
 add_subdirectory( ThirdParty/assimp )
 #add_subdirectory( ThirdParty/rttr )
 add_subdirectory( ThirdParty/gainput )
+add_subdirectory( ThirdParty/glm)
+add_subdirectory( ThirdParty/stduuid)
 
 
 add_executable( ${TARGET_NAME} WIN32
+
+    ${CORE_INC} 
+    ${CORE_SRC} 
     ${Launch_INC} 
     ${Launch_SRC}
+    ${ApplicationCore_INC} 
+    ${ApplicationCore_SRC}
 	${Engine_INC} 
     ${Engine_SRC}
     ${D3D12RHI_INC}
@@ -104,6 +131,7 @@ add_executable( ${TARGET_NAME} WIN32
     ${Imgui_INC}
     ${Imgui_SRC}
 )
+
 
 # Enable C++17 compiler features.
 target_compile_features(  ${TARGET_NAME}
@@ -116,17 +144,21 @@ target_compile_definitions(  ${TARGET_NAME}
 )
 
 target_include_directories( ${TARGET_NAME}
+    PUBLIC ${PROJECT_SOURCE_DIR}/Source/Runtime/Core/Public
     PUBLIC ${PROJECT_SOURCE_DIR}/Source/Runtime/Engine/Public
     PUBLIC ${PROJECT_SOURCE_DIR}/Source/Runtime/D3D12RHI/Public
+    PUBLIC ${PROJECT_SOURCE_DIR}/Source/Runtime/ApplicationCore/Public
     PRIVATE ${PROJECT_SOURCE_DIR}/Source/Editor/Public
+    PUBLIC ${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Public
     PRIVATE ${PROJECT_SOURCE_DIR}/ThirdParty/imgui
+    PRIVATE ${PROJECT_SOURCE_DIR}/ThirdParty/imgui/backends
     PRIVATE ${PROJECT_SOURCE_DIR}/ThirdParty/gainput/lib/include
 )
 if(WIN32)
 target_include_directories( ${TARGET_NAME}
-    PRIVATE ${PROJECT_SOURCE_DIR}/ThirdParty/imgui/backends
+    PRIVATE ${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Resources/Windows
     PUBLIC ${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Public/Windows
-    PUBLIC ${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Resources/Windows/
+    PUBLIC ${PROJECT_SOURCE_DIR}/Source/Runtime/ApplicationCore/Public/Windows
 )
 endif()
 
@@ -136,6 +168,8 @@ target_link_libraries( ${TARGET_NAME}
 	spdlog
 	assimp
     gainput
+    glm
+    stduuid
     d3d12.lib
     dxgi.lib
     d3dcompiler.lib

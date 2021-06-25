@@ -3,7 +3,7 @@
 #include <GenerateMipsPSO.h>
 
 #include <Device.h>
-#include <Helpers.h>
+#include <Misc/Helpers.h>
 #include <RootSignature.h>
 
 #include <d3dx12.h>

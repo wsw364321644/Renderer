@@ -1,6 +1,6 @@
-#include "GameFrameworkPCH.h"
+#include "Windows/GameFrameworkPCH.h"
 
-#include <Window.h>
+#include <Windows/Window.h>
 
 Window::Window( HWND hWnd, const std::wstring& windowName, int clientWidth, int clientHeight )
 : m_hWnd( hWnd )

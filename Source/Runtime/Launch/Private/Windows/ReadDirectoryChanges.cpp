@@ -20,11 +20,11 @@
 // http://qualapps.blogspot.com/2010/05/understanding-readdirectorychangesw.html
 // See ReadMe.txt for overview information.
 
-#include "GameFrameworkPCH.h"
+#include "Windows/GameFrameworkPCH.h"
 
-#include "ReadDirectoryChangesPrivate.h"
+#include "Windows/ReadDirectoryChangesPrivate.h"
 
-#include <ReadDirectoryChanges.h>
+#include <Windows/ReadDirectoryChanges.h>
 
 using namespace ReadDirectoryChangesPrivate;
 

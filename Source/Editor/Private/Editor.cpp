@@ -1,4 +1,5 @@
 #include <Editor.h>
+#include "World.h"
 
 #include <Light.h>
 #include <SceneVisitor.h>
@@ -7,7 +8,7 @@
 #include <CommandQueue.h>
 #include <Device.h>
 #include <GUI.h>
-#include <Helpers.h>
+#include <PlatformHelper.h>
 #include <Material.h>
 #include <Mesh.h>
 #include <PipelineStateObject.h>
@@ -29,7 +30,8 @@ using namespace dx12lib;
 using namespace DirectX;
 
 #include <algorithm>  // For std::min, std::max, and std::clamp.
-
+#include "Component/ProcedureMeshComponent.h"
+#include "GameFramework.h"
 struct Mat
 {
     XMMATRIX ModelMatrix;
@@ -129,7 +131,7 @@ XMMATRIX XM_CALLCONV LookAtMatrix( FXMVECTOR Position, FXMVECTOR Direction, FXMV
     return M;
 }
 
-Tutorial4::Tutorial4( const std::wstring& name, int width, int height, bool vSync )
+Editor::Editor( const std::wstring& name, int width, int height, bool vSync )
 : m_ScissorRect( CD3DX12_RECT( 0, 0, LONG_MAX, LONG_MAX ) )
 , m_Forward( 0 )
 , m_Backward( 0 )
@@ -150,13 +152,13 @@ Tutorial4::Tutorial4( const std::wstring& name, int width, int height, bool vSyn
     m_Logger = GameFramework::Get().CreateLogger( "HDR" );
     m_Window = GameFramework::Get().CreateWindow( name, width, height );
 
-    m_Window->Update += UpdateEvent::slot( &Tutorial4::OnUpdate, this );
-    m_Window->KeyPressed += KeyboardEvent::slot( &Tutorial4::OnKeyPressed, this );
-    m_Window->KeyReleased += KeyboardEvent::slot( &Tutorial4::OnKeyReleased, this );
-    m_Window->MouseMoved += MouseMotionEvent::slot( &Tutorial4::OnMouseMoved, this );
-    m_Window->MouseWheel += MouseWheelEvent::slot( &Tutorial4::OnMouseWheel, this );
-    m_Window->Resize += ResizeEvent::slot( &Tutorial4::OnResize, this );
-    m_Window->DPIScaleChanged += DPIScaleEvent::slot( &Tutorial4::OnDPIScaleChanged, this );
+    m_Window->Update += UpdateEvent::slot( &Editor::OnUpdate, this );
+    m_Window->KeyPressed += KeyboardEvent::slot( &Editor::OnKeyPressed, this );
+    m_Window->KeyReleased += KeyboardEvent::slot( &Editor::OnKeyReleased, this );
+    m_Window->MouseMoved += MouseMotionEvent::slot( &Editor::OnMouseMoved, this );
+    m_Window->MouseWheel += MouseWheelEvent::slot( &Editor::OnMouseWheel, this );
+    m_Window->Resize += ResizeEvent::slot( &Editor::OnResize, this );
+    m_Window->DPIScaleChanged += DPIScaleEvent::slot( &Editor::OnDPIScaleChanged, this );
 
     XMVECTOR cameraPos    = XMVectorSet( 0, 5, -20, 1 );
     XMVECTOR cameraTarget = XMVectorSet( 0, 5, 0, 1 );
@@ -172,12 +174,12 @@ Tutorial4::Tutorial4( const std::wstring& name, int width, int height, bool vSyn
     m_pAlignedCameraData->m_InitialFov    = m_Camera.get_FoV();
 }
 
-Tutorial4::~Tutorial4()
+Editor::~Editor()
 {
     _aligned_free( m_pAlignedCameraData );
 }
 
-uint32_t Tutorial4::Run()
+uint32_t Editor::Run()
 {
     LoadContent();
 
@@ -190,7 +192,7 @@ uint32_t Tutorial4::Run()
     return retCode;
 }
 
-bool Tutorial4::LoadContent()
+bool Editor::LoadContent()
 {
     m_Device    = Device::Create();
     m_SwapChain = m_Device->CreateSwapChain( m_Window->GetWindowHandle(), DXGI_FORMAT_B8G8R8A8_UNORM );
@@ -204,16 +206,20 @@ bool Tutorial4::LoadContent()
     auto& commandQueue = m_Device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COPY );
     auto  commandList  = commandQueue.GetCommandList();
 
-    // Create some geometry to render.
-    m_Cube     = commandList->CreateCube();
-    m_Sphere   = commandList->CreateSphere();
-    m_Cone     = commandList->CreateCone();
-    m_Cylinder = commandList->CreateCylinder();
-    m_Torus    = commandList->CreateTorus();
-    m_Plane    = commandList->CreatePlane();
+    m_World = std::make_shared<World>();
+    auto cube=m_World->CreateActor();
+    cube->AddComponent<ProcedureMeshComponent>()->CreateCube();
+    commandList->LoadSceneFromFile(L"ghj");
+    //// Create some geometry to render.
+    //m_Cube     = commandList->CreateCube();
+    //m_Sphere   = commandList->CreateSphere();
+    //m_Cone     = commandList->CreateCone();
+    //m_Cylinder = commandList->CreateCylinder();
+    //m_Torus    = commandList->CreateTorus();
+    //m_Plane    = commandList->CreatePlane();
 
-    // Create an inverted (reverse winding order) cube so the insides are not clipped.
-    m_Skybox = commandList->CreateCube( 1.0f, true );
+    //// Create an inverted (reverse winding order) cube so the insides are not clipped.
+    //m_Skybox = commandList->CreateCube( 1.0f, true );
 
     // Load some textures
     m_DefaultTexture        = commandList->LoadTextureFromFile( L"Assets/Textures/DefaultWhite.bmp", true );
@@ -458,7 +464,7 @@ bool Tutorial4::LoadContent()
     return true;
 }
 
-void Tutorial4::RescaleHDRRenderTarget( float scale )
+void Editor::RescaleHDRRenderTarget( float scale )
 {
     uint32_t width  = static_cast<uint32_t>( m_Width * scale );
     uint32_t height = static_cast<uint32_t>( m_Height * scale );
@@ -469,7 +475,7 @@ void Tutorial4::RescaleHDRRenderTarget( float scale )
     m_HDRRenderTarget.Resize( width, height );
 }
 
-void Tutorial4::OnResize( ResizeEventArgs& e )
+void Editor::OnResize( ResizeEventArgs& e )
 {
     m_Width  = std::max( 1, e.Width );
     m_Height = std::max( 1, e.Height );
@@ -483,12 +489,12 @@ void Tutorial4::OnResize( ResizeEventArgs& e )
     m_SwapChain->Resize( m_Width, m_Height );
 }
 
-void Tutorial4::OnDPIScaleChanged( DPIScaleEventArgs& e )
+void Editor::OnDPIScaleChanged( DPIScaleEventArgs& e )
 {
     m_GUI->SetScaling( e.DPIScale );
 }
 
-void Tutorial4::UnloadContent()
+void Editor::UnloadContent()
 {
     m_Sphere.reset();
     m_Cone.reset();
@@ -520,7 +526,7 @@ void Tutorial4::UnloadContent()
 
 static double g_FPS = 0.0;
 
-void Tutorial4::OnUpdate( UpdateEventArgs& e )
+void Editor::OnUpdate( UpdateEventArgs& e )
 {
     static uint64_t frameCount = 0;
     static double   totalTime  = 0.0;
@@ -689,7 +695,7 @@ float ACESFilmicTonemappingPlot( void*, int index )
                                   g_TonemapParameters.F );
 }
 
-void Tutorial4::OnGUI( const std::shared_ptr<dx12lib::CommandList>& commandList,
+void Editor::OnGUI( const std::shared_ptr<dx12lib::CommandList>& commandList,
                        const dx12lib::RenderTarget&                 renderTarget )
 {
     static bool showDemoWindow = false;
@@ -851,7 +857,7 @@ void XM_CALLCONV ComputeMatrices( FXMMATRIX model, CXMMATRIX view, CXMMATRIX vie
     mat.ModelViewProjectionMatrix       = model * viewProjection;
 }
 
-void Tutorial4::OnRender()
+void Editor::OnRender()
 {
     auto& commandQueue = m_Device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_DIRECT );
     auto  commandList  = commandQueue.GetCommandList();
@@ -1100,7 +1106,7 @@ void Tutorial4::OnRender()
 
 static bool g_AllowFullscreenToggle = true;
 
-void Tutorial4::OnKeyPressed( KeyEventArgs& e )
+void Editor::OnKeyPressed( KeyEventArgs& e )
 {
     if ( !ImGui::GetIO().WantCaptureKeyboard )
     {
@@ -1164,7 +1170,7 @@ void Tutorial4::OnKeyPressed( KeyEventArgs& e )
     }
 }
 
-void Tutorial4::OnKeyReleased( KeyEventArgs& e )
+void Editor::OnKeyReleased( KeyEventArgs& e )
 {
     if ( !ImGui::GetIO().WantCaptureKeyboard )
     {
@@ -1206,7 +1212,7 @@ void Tutorial4::OnKeyReleased( KeyEventArgs& e )
     }
 }
 
-void Tutorial4::OnMouseMoved( MouseMotionEventArgs& e )
+void Editor::OnMouseMoved( MouseMotionEventArgs& e )
 {
     const float mouseSpeed = 0.1f;
     if ( !ImGui::GetIO().WantCaptureMouse )
@@ -1222,7 +1228,7 @@ void Tutorial4::OnMouseMoved( MouseMotionEventArgs& e )
     }
 }
 
-void Tutorial4::OnMouseWheel( MouseWheelEventArgs& e )
+void Editor::OnMouseWheel( MouseWheelEventArgs& e )
 {
     if ( !ImGui::GetIO().WantCaptureMouse )
     {

@@ -24,11 +24,11 @@
 //  This sample code is for my blog entry titled, "Understanding ReadDirectoryChangesW"
 //  http://qualapps.blogspot.com/2010/05/understanding-readdirectorychangesw.html
 
-#include "GameFrameworkPCH.h"
+#include "Windows/GameFrameworkPCH.h"
 
-#include "ReadDirectoryChangesPrivate.h"
+#include "Windows/ReadDirectoryChangesPrivate.h"
 
-#include <ReadDirectoryChanges.h>
+#include <Windows/ReadDirectoryChanges.h>
 
 // The namespace is a convenience to emphasize that these are internals
 // interfaces.  The namespace can be safely removed if you need to.

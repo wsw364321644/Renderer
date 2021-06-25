@@ -1,16 +1,8 @@
 #pragma once
 
-/**
- *  @file Tutorial4.h
- *  @date October 24, 2018
- *  @author Jeremiah van Oosten
- *
- *  @brief Tutorial 4.
- */
-
 #include "Camera.h"
 #include "Light.h"
-
+#include"World.h"
 #include <GameFramework.h>
 
 #include <RenderTarget.h>
@@ -31,15 +23,16 @@ class Scene;
 class ShaderResourceView;
 class SwapChain;
 class Texture;
+
 }  // namespace dx12lib
 
 class Window;  // From GameFramework.
 
-class Tutorial4
+class Editor
 {
 public:
-    Tutorial4( const std::wstring& name, int width, int height, bool vSync = false );
-    virtual ~Tutorial4();
+    Editor( const std::wstring& name, int width, int height, bool vSync = false );
+    virtual ~Editor();
 
     /**
      * Start the main game loop.
@@ -102,6 +95,8 @@ private:
 
     std::shared_ptr<Window> m_Window;
 
+
+    std::shared_ptr<World>       m_World;
     // Some geometry to render.
     std::shared_ptr<dx12lib::Scene> m_Cube;
     std::shared_ptr<dx12lib::Scene> m_Sphere;

@@ -65,4 +65,6 @@ namespace fs = std::experimental::filesystem;
 #include <assimp/scene.h>
 
 // Helper functions
-#include <Helpers.h>
+#include <Misc/Helpers.h>
+
+#include <PlatformHelper.h>

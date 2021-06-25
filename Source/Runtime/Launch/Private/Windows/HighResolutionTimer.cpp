@@ -1,6 +1,6 @@
-#include "GameFrameworkPCH.h"
+#include "Windows/GameFrameworkPCH.h"
 
-#include <HighResolutionTimer.h>
+#include <Windows/HighResolutionTimer.h>
 
 using namespace std::chrono;
 

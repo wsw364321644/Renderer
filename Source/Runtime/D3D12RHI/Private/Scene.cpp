@@ -8,7 +8,7 @@
 #include <Mesh.h>
 #include <SceneNode.h>
 #include <Texture.h>
-#include <VertexTypes.h>
+#include <Misc/MathHelper.h>
 #include <Visitor.h>
 
 using namespace dx12lib;

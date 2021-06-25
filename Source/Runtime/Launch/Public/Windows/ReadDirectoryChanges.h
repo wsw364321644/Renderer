@@ -29,7 +29,7 @@
 
 #pragma once
 
-#include "CThreadSafeQueue.h"
+#include "Templates/CThreadSafeQueue.h"
 
 #include <string> // For std::wstring
 #include <utility> // For std::pair
