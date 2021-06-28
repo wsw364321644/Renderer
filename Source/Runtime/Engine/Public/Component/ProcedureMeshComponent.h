@@ -74,8 +74,9 @@ public:
     void CreatePlane(float width = 1.0f, float height = 1.0f, bool reverseWinding = false);
 
 
-private:
+    virtual std::shared_ptr<dx12lib::Scene> UploadResource(std::shared_ptr<dx12lib::CommandList>) override;
 
+private:
 
     std::shared_ptr<MeshInfo> Mesh;
 };

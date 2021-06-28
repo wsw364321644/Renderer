@@ -207,9 +207,11 @@ bool Editor::LoadContent()
     auto  commandList  = commandQueue.GetCommandList();
 
     m_World = std::make_shared<World>();
-    auto cube=m_World->CreateActor();
-    cube->AddComponent<ProcedureMeshComponent>()->CreateCube();
-    commandList->LoadSceneFromFile(L"ghj");
+    auto Skybox =m_World->CreateActor();
+    auto c = Skybox->AddComponent<ProcedureMeshComponent>();
+    c->CreateCube(1.0, true);
+    c->UploadResource(commandList);
+
     //// Create some geometry to render.
     //m_Cube     = commandList->CreateCube();
     //m_Sphere   = commandList->CreateSphere();
@@ -880,6 +882,7 @@ void Editor::OnRender()
 
     // Render the skybox.
     {
+        auto PCs=m_World->GetComponent<PrimitiveComponent>();
         // The view matrix should only consider the camera's rotation, but not the translation.
         auto viewMatrix     = XMMatrixTranspose( XMMatrixRotationQuaternion( m_Camera.get_Rotation() ) );
         auto projMatrix     = m_Camera.get_ProjectionMatrix();
@@ -893,7 +896,8 @@ void Editor::OnRender()
         commandList->SetShaderResourceView( 1, 0, m_GraceCathedralCubemapSRV,
                                             D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
-        m_Skybox->Accept( visitor );
+        PCs[0]->GetScence()->Accept(visitor);
+
     }
 
     commandList->SetPipelineState( m_HDRPipelineState );
@@ -908,181 +912,181 @@ void Editor::OnRender()
     commandList->SetGraphicsDynamicStructuredBuffer( RootParameters::PointLights, m_PointLights );
     commandList->SetGraphicsDynamicStructuredBuffer( RootParameters::SpotLights, m_SpotLights );
 
-    // Draw the earth sphere
-    XMMATRIX translationMatrix    = XMMatrixTranslation( -4.0f, 2.0f, -4.0f );
-    XMMATRIX rotationMatrix       = XMMatrixIdentity();
-    XMMATRIX scaleMatrix          = XMMatrixScaling( 4.0f, 4.0f, 4.0f );
-    XMMATRIX worldMatrix          = scaleMatrix * rotationMatrix * translationMatrix;
-    XMMATRIX viewMatrix           = m_Camera.get_ViewMatrix();
-    XMMATRIX viewProjectionMatrix = viewMatrix * m_Camera.get_ProjectionMatrix();
+    //// Draw the earth sphere
+    //XMMATRIX translationMatrix    = XMMatrixTranslation( -4.0f, 2.0f, -4.0f );
+    //XMMATRIX rotationMatrix       = XMMatrixIdentity();
+    //XMMATRIX scaleMatrix          = XMMatrixScaling( 4.0f, 4.0f, 4.0f );
+    //XMMATRIX worldMatrix          = scaleMatrix * rotationMatrix * translationMatrix;
+    //XMMATRIX viewMatrix           = m_Camera.get_ViewMatrix();
+    //XMMATRIX viewProjectionMatrix = viewMatrix * m_Camera.get_ProjectionMatrix();
 
-    Mat matrices;
-    ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
+    //Mat matrices;
+    //ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
 
-    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
-    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::White );
-    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_EarthTexture,
-                                        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
+    //commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
+    //commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::White );
+    //commandList->SetShaderResourceView( RootParameters::Textures, 0, m_EarthTexture,
+    //                                    D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
-    m_Sphere->Accept( visitor );
+    //m_Sphere->Accept( visitor );
 
-    // Draw a cube
-    translationMatrix = XMMatrixTranslation( 4.0f, 4.0f, 4.0f );
-    rotationMatrix    = XMMatrixRotationY( XMConvertToRadians( 45.0f ) );
-    scaleMatrix       = XMMatrixScaling( 4.0f, 8.0f, 4.0f );
-    worldMatrix       = scaleMatrix * rotationMatrix * translationMatrix;
+    //// Draw a cube
+    //translationMatrix = XMMatrixTranslation( 4.0f, 4.0f, 4.0f );
+    //rotationMatrix    = XMMatrixRotationY( XMConvertToRadians( 45.0f ) );
+    //scaleMatrix       = XMMatrixScaling( 4.0f, 8.0f, 4.0f );
+    //worldMatrix       = scaleMatrix * rotationMatrix * translationMatrix;
 
-    ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
+    //ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
 
-    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
-    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::White );
-    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_MonaLisaTexture,
-                                        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
+    //commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
+    //commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::White );
+    //commandList->SetShaderResourceView( RootParameters::Textures, 0, m_MonaLisaTexture,
+    //                                    D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
-    m_Cube->Accept( visitor );
+    //m_Cube->Accept( visitor );
 
-    // Draw a torus
-    translationMatrix = XMMatrixTranslation( 4.0f, 0.6f, -4.0f );
-    rotationMatrix    = XMMatrixRotationY( XMConvertToRadians( 45.0f ) );
-    scaleMatrix       = XMMatrixScaling( 4.0f, 4.0f, 4.0f );
-    worldMatrix       = scaleMatrix * rotationMatrix * translationMatrix;
+    //// Draw a torus
+    //translationMatrix = XMMatrixTranslation( 4.0f, 0.6f, -4.0f );
+    //rotationMatrix    = XMMatrixRotationY( XMConvertToRadians( 45.0f ) );
+    //scaleMatrix       = XMMatrixScaling( 4.0f, 4.0f, 4.0f );
+    //worldMatrix       = scaleMatrix * rotationMatrix * translationMatrix;
 
-    ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
+    //ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
 
-    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
-    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::Ruby );
-    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DefaultTexture,
-                                        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
+    //commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
+    //commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::Ruby );
+    //commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DefaultTexture,
+    //                                    D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
-    m_Torus->Accept( visitor );
+    //m_Torus->Accept( visitor );
 
-    // Draw a cylinder
-    translationMatrix = XMMatrixTranslation( -4.0f, 4.0f, 4.0f );
-    rotationMatrix    = XMMatrixRotationY( XMConvertToRadians( 45.0f ) );
-    scaleMatrix       = XMMatrixScaling( 4.0f, 8.0f, 4.0f );
-    worldMatrix       = scaleMatrix * rotationMatrix * translationMatrix;
+    //// Draw a cylinder
+    //translationMatrix = XMMatrixTranslation( -4.0f, 4.0f, 4.0f );
+    //rotationMatrix    = XMMatrixRotationY( XMConvertToRadians( 45.0f ) );
+    //scaleMatrix       = XMMatrixScaling( 4.0f, 8.0f, 4.0f );
+    //worldMatrix       = scaleMatrix * rotationMatrix * translationMatrix;
 
-    ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
+    //ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
 
-    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
-    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::Gold );
-    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DefaultTexture,
-                                        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
+    //commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
+    //commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::Gold );
+    //commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DefaultTexture,
+    //                                    D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
-    m_Cylinder->Accept( visitor );
+    //m_Cylinder->Accept( visitor );
 
-    // Floor plane.
-    float scalePlane      = 20.0f;
-    float translateOffset = scalePlane / 2.0f;
+    //// Floor plane.
+    //float scalePlane      = 20.0f;
+    //float translateOffset = scalePlane / 2.0f;
 
-    translationMatrix = XMMatrixTranslation( 0.0f, 0.0f, 0.0f );
-    rotationMatrix    = XMMatrixIdentity();
-    scaleMatrix       = XMMatrixScaling( scalePlane, 1.0f, scalePlane );
-    worldMatrix       = scaleMatrix * rotationMatrix * translationMatrix;
+    //translationMatrix = XMMatrixTranslation( 0.0f, 0.0f, 0.0f );
+    //rotationMatrix    = XMMatrixIdentity();
+    //scaleMatrix       = XMMatrixScaling( scalePlane, 1.0f, scalePlane );
+    //worldMatrix       = scaleMatrix * rotationMatrix * translationMatrix;
 
-    ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
+    //ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
 
-    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
-    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::White );
-    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DirectXTexture,
-                                        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
+    //commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
+    //commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::White );
+    //commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DirectXTexture,
+    //                                    D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
-    m_Plane->Accept( visitor );
+    //m_Plane->Accept( visitor );
 
-    // Back wall
-    translationMatrix = XMMatrixTranslation( 0, translateOffset, translateOffset );
-    rotationMatrix    = XMMatrixRotationX( XMConvertToRadians( -90 ) );
-    worldMatrix       = scaleMatrix * rotationMatrix * translationMatrix;
+    //// Back wall
+    //translationMatrix = XMMatrixTranslation( 0, translateOffset, translateOffset );
+    //rotationMatrix    = XMMatrixRotationX( XMConvertToRadians( -90 ) );
+    //worldMatrix       = scaleMatrix * rotationMatrix * translationMatrix;
 
-    ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
+    //ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
 
-    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
+    //commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
 
-    m_Plane->Accept( visitor );
+    //m_Plane->Accept( visitor );
 
-    // Ceiling plane
-    translationMatrix = XMMatrixTranslation( 0, translateOffset * 2.0f, 0 );
-    rotationMatrix    = XMMatrixRotationX( XMConvertToRadians( 180 ) );
-    worldMatrix       = scaleMatrix * rotationMatrix * translationMatrix;
+    //// Ceiling plane
+    //translationMatrix = XMMatrixTranslation( 0, translateOffset * 2.0f, 0 );
+    //rotationMatrix    = XMMatrixRotationX( XMConvertToRadians( 180 ) );
+    //worldMatrix       = scaleMatrix * rotationMatrix * translationMatrix;
 
-    ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
+    //ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
 
-    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
+    //commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
 
-    m_Plane->Accept( visitor );
+    //m_Plane->Accept( visitor );
 
-    // Front wall
-    translationMatrix = XMMatrixTranslation( 0, translateOffset, -translateOffset );
-    rotationMatrix    = XMMatrixRotationX( XMConvertToRadians( 90 ) );
-    worldMatrix       = scaleMatrix * rotationMatrix * translationMatrix;
+    //// Front wall
+    //translationMatrix = XMMatrixTranslation( 0, translateOffset, -translateOffset );
+    //rotationMatrix    = XMMatrixRotationX( XMConvertToRadians( 90 ) );
+    //worldMatrix       = scaleMatrix * rotationMatrix * translationMatrix;
 
-    ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
+    //ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
 
-    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
+    //commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
 
-    m_Plane->Accept( visitor );
+    //m_Plane->Accept( visitor );
 
-    // Left wall
-    translationMatrix = XMMatrixTranslation( -translateOffset, translateOffset, 0 );
-    rotationMatrix    = XMMatrixRotationX( XMConvertToRadians( -90 ) ) * XMMatrixRotationY( XMConvertToRadians( -90 ) );
-    worldMatrix       = scaleMatrix * rotationMatrix * translationMatrix;
+    //// Left wall
+    //translationMatrix = XMMatrixTranslation( -translateOffset, translateOffset, 0 );
+    //rotationMatrix    = XMMatrixRotationX( XMConvertToRadians( -90 ) ) * XMMatrixRotationY( XMConvertToRadians( -90 ) );
+    //worldMatrix       = scaleMatrix * rotationMatrix * translationMatrix;
 
-    ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
+    //ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
 
-    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
-    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::Red );
-    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DefaultTexture,
-                                        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
+    //commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
+    //commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::Red );
+    //commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DefaultTexture,
+    //                                    D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
-    m_Plane->Accept( visitor );
+    //m_Plane->Accept( visitor );
 
-    // Right wall
-    translationMatrix = XMMatrixTranslation( translateOffset, translateOffset, 0 );
-    rotationMatrix    = XMMatrixRotationX( XMConvertToRadians( -90 ) ) * XMMatrixRotationY( XMConvertToRadians( 90 ) );
-    worldMatrix       = scaleMatrix * rotationMatrix * translationMatrix;
+    //// Right wall
+    //translationMatrix = XMMatrixTranslation( translateOffset, translateOffset, 0 );
+    //rotationMatrix    = XMMatrixRotationX( XMConvertToRadians( -90 ) ) * XMMatrixRotationY( XMConvertToRadians( 90 ) );
+    //worldMatrix       = scaleMatrix * rotationMatrix * translationMatrix;
 
-    ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
+    //ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
 
-    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
-    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::Blue );
+    //commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
+    //commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::Blue );
 
-    m_Plane->Accept( visitor );
+    //m_Plane->Accept( visitor );
 
-    // Draw shapes to visualize the position of the lights in the scene.
-    commandList->SetPipelineState( m_UnlitPipelineState );
+    //// Draw shapes to visualize the position of the lights in the scene.
+    //commandList->SetPipelineState( m_UnlitPipelineState );
 
-    MaterialProperties lightMaterial = Material::Zero;
-    for ( const auto& l: m_PointLights )
-    {
-        lightMaterial.Emissive = l.Color;
-        XMVECTOR lightPos      = XMLoadFloat4( &l.PositionWS );
-        worldMatrix            = XMMatrixTranslationFromVector( lightPos );
-        ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
+    //MaterialProperties lightMaterial = Material::Zero;
+    //for ( const auto& l: m_PointLights )
+    //{
+    //    lightMaterial.Emissive = l.Color;
+    //    XMVECTOR lightPos      = XMLoadFloat4( &l.PositionWS );
+    //    worldMatrix            = XMMatrixTranslationFromVector( lightPos );
+    //    ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
 
-        commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
-        commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, lightMaterial );
+    //    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
+    //    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, lightMaterial );
 
-        m_Sphere->Accept( visitor );
-    }
+    //    m_Sphere->Accept( visitor );
+    //}
 
-    for ( const auto& l: m_SpotLights )
-    {
-        lightMaterial.Emissive = l.Color;
-        XMVECTOR lightPos      = XMLoadFloat4( &l.PositionWS );
-        XMVECTOR lightDir      = XMLoadFloat4( &l.DirectionWS );
-        XMVECTOR up            = XMVectorSet( 0, 1, 0, 0 );
+    //for ( const auto& l: m_SpotLights )
+    //{
+    //    lightMaterial.Emissive = l.Color;
+    //    XMVECTOR lightPos      = XMLoadFloat4( &l.PositionWS );
+    //    XMVECTOR lightDir      = XMLoadFloat4( &l.DirectionWS );
+    //    XMVECTOR up            = XMVectorSet( 0, 1, 0, 0 );
 
-        // Rotate the cone so it is facing the Z axis.
-        rotationMatrix = XMMatrixRotationX( XMConvertToRadians( -90.0f ) );
-        worldMatrix    = rotationMatrix * LookAtMatrix( lightPos, lightDir, up );
+    //    // Rotate the cone so it is facing the Z axis.
+    //    rotationMatrix = XMMatrixRotationX( XMConvertToRadians( -90.0f ) );
+    //    worldMatrix    = rotationMatrix * LookAtMatrix( lightPos, lightDir, up );
 
-        ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
+    //    ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
 
-        commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
-        commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, lightMaterial );
+    //    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
+    //    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, lightMaterial );
 
-        m_Cone->Accept( visitor );
-    }
+    //    m_Cone->Accept( visitor );
+    //}
 
     // Perform HDR -> SDR tonemapping directly to the SwapChain's render target.
     commandList->SetRenderTarget( m_SwapChain->GetRenderTarget() );

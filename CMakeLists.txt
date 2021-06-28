@@ -107,7 +107,7 @@ add_subdirectory( ThirdParty/DirectXTex )
 add_subdirectory( ThirdParty/DirectXTK )
 add_subdirectory( ThirdParty/spdlog )
 add_subdirectory( ThirdParty/assimp )
-#add_subdirectory( ThirdParty/rttr )
+
 add_subdirectory( ThirdParty/gainput )
 add_subdirectory( ThirdParty/glm)
 add_subdirectory( ThirdParty/stduuid)

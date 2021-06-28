@@ -21,7 +21,13 @@ public:
     // Helper creates a triangle fan to close the end of a cylinder / cone
     void CreateCylinderCap(std::vector<VertexAttributes>& vertices, std::vector<uint16_t>& indices, size_t tessellation, float height,
         float radius, bool isTop);
-private:
+
+    virtual std::shared_ptr<dx12lib::Scene> UploadResource(std::shared_ptr<dx12lib::CommandList>) = 0;
+
+    std::shared_ptr<dx12lib::Scene> GetScence() {
+        return Scene;
+    };
+protected:
     std::shared_ptr<dx12lib::Scene> Scene;
 
 };

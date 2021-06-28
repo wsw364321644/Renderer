@@ -2,6 +2,11 @@
 #include "Component/ProcedureMeshComponent.h"
 #include <DirectXMath.h>
 #include "VertexTypes.h"
+#include "CommandList.h"
+#include "Scene.h"
+#include "SceneNode.h"
+#include "Material.h"
+#include "Mesh.h"
 #include "Misc/MathHelper.h"
 using namespace DirectX;
 ProcedureMeshComponent::ProcedureMeshComponent() {
@@ -321,4 +326,32 @@ void ProcedureMeshComponent::CreatePlane(float width, float height, bool reverse
         ReverseWinding(Indices, Vertices);
     }
     Mesh = ResourceManager::GetResourceManager()->MakeMesh(L"Plane", Vertices, Indices);
+}
+
+std::shared_ptr<dx12lib::Scene> ProcedureMeshComponent::UploadResource(std::shared_ptr<dx12lib::CommandList> commandlist)
+{
+    
+    if (Mesh->Vertices.empty())
+    {
+        return nullptr;
+    }
+
+    auto vertexBuffer = commandlist->CopyVertexBuffer(Mesh->Vertices);
+    auto indexBuffer = commandlist->CopyIndexBuffer(Mesh->Indices);
+
+    auto mesh = std::make_shared<dx12lib::Mesh>();
+    // Create a default white material for new meshes.
+    auto material = std::make_shared<dx12lib::Material>(dx12lib::Material::White);
+
+    mesh->SetVertexBuffer(0, vertexBuffer);
+    mesh->SetIndexBuffer(indexBuffer);
+    mesh->SetMaterial(material);
+
+    auto node = std::make_shared<dx12lib::SceneNode>();
+    node->AddMesh(mesh);
+
+    Scene = std::make_shared<dx12lib::Scene>();
+    Scene->SetRootNode(node);
+
+    return Scene;
 }

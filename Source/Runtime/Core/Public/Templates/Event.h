@@ -62,6 +62,17 @@ public:
         return m_Callbacks( std::forward<Args>( args )... );
     }
 
+
+    template<typename Func, typename Ptr>
+    connection Bind(Func&& f, Ptr&& p)
+    {
+        return m_Callbacks.connect(std::forward<Func>(f), std::forward<Ptr>(p));
+    }
+
+    void Reset()
+    {
+        return m_Callbacks.clear();
+    }
 private:
     signal m_Callbacks;
 };

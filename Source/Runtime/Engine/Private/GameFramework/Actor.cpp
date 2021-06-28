@@ -4,7 +4,7 @@
 Actor::Actor()  
 {
 	ID=IDGenerator::NewID();
-	assert(ID.is_nil());
+	assert(!ID.is_nil());
 }
 
 Actor::~Actor()
