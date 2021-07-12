@@ -9,6 +9,12 @@
 #include "Mesh.h"
 #include "Misc/MathHelper.h"
 using namespace DirectX;
+const std::wstring CubeName = L"Cube";
+const std::wstring SphereName = L"Sphere";
+const std::wstring CylinderName = L"Cylinder";
+const std::wstring ConeName = L"Cone";
+const std::wstring TorusName = L"Torus";
+const std::wstring PlaneName = L"Plane";
 ProcedureMeshComponent::ProcedureMeshComponent() {
 
 }
@@ -19,6 +25,11 @@ ProcedureMeshComponent::~ProcedureMeshComponent() {
 
 void ProcedureMeshComponent::CreateCube(float size, bool reverseWinding)
 {
+    auto cubeName = CubeName +( reverseWinding ? L"reverseWinding" : L"");
+    Mesh = ResourceManager::GetResourceManager()->GetMesh(cubeName);
+    if (Mesh.get()) {
+        return;
+    }
     // Cube is centered at 0,0,0.
     float s = size * 0.5f;
 
@@ -67,13 +78,17 @@ void ProcedureMeshComponent::CreateCube(float size, bool reverseWinding)
         ReverseWinding(Indices, Vertices);
     }
 
-    Mesh=ResourceManager::GetResourceManager()->MakeMesh(L"Cube",Vertices, Indices);
+    Mesh=ResourceManager::GetResourceManager()->MakeMesh(cubeName,Vertices, Indices);
 }
 
 
-void ProcedureMeshComponent::CreateSphere(float radius, uint32_t tessellation, bool reversWinding)
+void ProcedureMeshComponent::CreateSphere(float radius, uint32_t tessellation, bool reverseWinding)
 {
-
+    auto sphereName= SphereName+ std::to_wstring(tessellation)+ (reverseWinding ? L"reverseWinding" : L"");
+    Mesh = ResourceManager::GetResourceManager()->GetMesh(sphereName);
+    if (Mesh.get()) {
+        return;
+    }
     if (tessellation < 3)
         throw std::out_of_range("tessellation parameter out of range");
 
@@ -133,17 +148,24 @@ void ProcedureMeshComponent::CreateSphere(float radius, uint32_t tessellation, b
         }
     }
 
-    if (reversWinding)
+    if (reverseWinding)
     {
         ReverseWinding(Indices, Vertices);
     }
-    Mesh= ResourceManager::GetResourceManager()->MakeMesh(L"Sphere", Vertices, Indices);
+    Mesh= ResourceManager::GetResourceManager()->MakeMesh(sphereName, Vertices, Indices);
 }
 
 
 void ProcedureMeshComponent::CreateCylinder(float radius, float height, uint32_t tessellation,
     bool reverseWinding)
 {
+
+    auto cylinderName = CylinderName + std::to_wstring(height)+ std::to_wstring(tessellation) + (reverseWinding ? L"reverseWinding" : L"");
+    Mesh = ResourceManager::GetResourceManager()->GetMesh(cylinderName);
+    if (Mesh.get()) {
+        return;
+    }
+
     if (tessellation < 3)
         throw std::out_of_range("tessellation parameter out of range");
 
@@ -189,11 +211,18 @@ void ProcedureMeshComponent::CreateCylinder(float radius, float height, uint32_t
     {
         ReverseWinding(Indices, Vertices);
     }
-    Mesh=ResourceManager::GetResourceManager()->MakeMesh(L"Cylinder", Vertices, Indices);
+    Mesh=ResourceManager::GetResourceManager()->MakeMesh(cylinderName, Vertices, Indices);
 }
 
 void ProcedureMeshComponent::CreateCone(float radius, float height, uint32_t tessellation, bool reverseWinding)
 {
+    auto coneName = ConeName + std::to_wstring(height) + std::to_wstring(tessellation) + (reverseWinding ? L"reverseWinding" : L"");
+    Mesh = ResourceManager::GetResourceManager()->GetMesh(coneName);
+    if (Mesh.get()) {
+        return;
+    }
+
+
     if (tessellation < 3)
         throw std::out_of_range("tessellation parameter out of range");
 
@@ -239,7 +268,7 @@ void ProcedureMeshComponent::CreateCone(float radius, float height, uint32_t tes
     {
         ReverseWinding(Indices, Vertices);
     }
-    Mesh = ResourceManager::GetResourceManager()->MakeMesh(L"Cone", Vertices, Indices);
+    Mesh = ResourceManager::GetResourceManager()->MakeMesh(coneName, Vertices, Indices);
 }
 
 void ProcedureMeshComponent::CreateTorus(float radius, float thickness, uint32_t tessellation,
@@ -247,6 +276,12 @@ void ProcedureMeshComponent::CreateTorus(float radius, float thickness, uint32_t
 {
     assert(tessellation > 3);
 
+    auto torusName = TorusName + std::to_wstring(thickness) + std::to_wstring(tessellation) + (reverseWinding ? L"reverseWinding" : L"");
+    Mesh = ResourceManager::GetResourceManager()->GetMesh(torusName);
+    if (Mesh.get()) {
+        return;
+
+    }
     std::vector<VertexAttributes> Vertices;
     std::vector<uint16_t> Indices;
 
@@ -302,7 +337,7 @@ void ProcedureMeshComponent::CreateTorus(float radius, float thickness, uint32_t
         ReverseWinding(Indices, Vertices);
     }
 
-    Mesh = ResourceManager::GetResourceManager()->MakeMesh(L"Torus", Vertices, Indices);
+    Mesh = ResourceManager::GetResourceManager()->MakeMesh(torusName, Vertices, Indices);
 }
 
 void ProcedureMeshComponent::CreatePlane(float width, float height, bool reverseWinding)

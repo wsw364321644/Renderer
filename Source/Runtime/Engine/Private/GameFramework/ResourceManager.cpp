@@ -163,3 +163,11 @@ std::shared_ptr<MeshInfo> ResourceManager::MakeMesh(std::wstring name, std::vect
     pMeshInfo->Indices = Indices;
     return pMeshInfo;
 }
+
+std::shared_ptr<MeshInfo> ResourceManager::GetMesh(std::wstring name)
+{
+    if (CachedMesh.find(name) != CachedMesh.end()) {
+        return CachedMesh.find(name)->second;
+    }
+    return std::shared_ptr<MeshInfo>();
+}

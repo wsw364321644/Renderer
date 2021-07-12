@@ -41,6 +41,10 @@ public:
 
     std::shared_ptr<MeshInfo> MakeMesh(std::wstring name, std::vector<VertexAttributes> Vertices,std::vector<uint16_t> Indices);
     std::shared_ptr<TextureInfo> MakeTexture(std::wstring name, DirectX::TexMetadata, DirectX::ScratchImage);
+
+
+    std::shared_ptr<MeshInfo> GetMesh(std::wstring name);
+    std::shared_ptr<TextureInfo> GetTexture(std::wstring names);
 private:
 
     std::map<std::wstring, std::shared_ptr<ModelFileInfo>> LoadedModelFile;
