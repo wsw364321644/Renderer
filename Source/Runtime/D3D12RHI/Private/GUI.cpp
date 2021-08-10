@@ -46,6 +46,7 @@ GUI::GUI( Device& device, HWND hWnd, const RenderTarget& renderTarget )
     }
 
     ImGuiIO& io = ImGui::GetIO();
+    io.ConfigWindowsMoveFromTitleBarOnly = true;
 
     io.FontGlobalScale = ::GetDpiForWindow( m_hWnd ) / 96.0f;
     // Allow user UI scaling using CTRL+Mouse Wheel scrolling
@@ -269,8 +270,16 @@ void GUI::Render( const std::shared_ptr<CommandList>& commandList, const RenderT
 
                 if ( scissorRect.right - scissorRect.left > 0.0f && scissorRect.bottom - scissorRect.top > 0.0 )
                 {
+                    if (drawCmd.TextureId != nullptr) {
+                        commandList->SetShaderResourceView(RootParameters::FontTexture, 0,* (std::shared_ptr<Texture>*)drawCmd.TextureId,
+                            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+                    }
                     commandList->SetScissorRect( scissorRect );
                     commandList->DrawIndexed( drawCmd.ElemCount, 1, indexOffset );
+                    if (drawCmd.TextureId != nullptr) {
+                        commandList->SetShaderResourceView(RootParameters::FontTexture, 0, m_FontSRV,
+                            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+                    }
                 }
             }
             indexOffset += drawCmd.ElemCount;

@@ -273,6 +273,9 @@ bool Editor::LoadContent()
     m_HDRTexture = m_Device->CreateTexture( colorDesc, &colorClearValue );
     m_HDRTexture->SetName( L"HDR Texture" );
 
+    m_IntermediateTexture = m_Device->CreateTexture(colorDesc, &colorClearValue);
+    m_IntermediateTexture->SetName(L"Intermediate Texture");
+    m_IntermediateRenderTarget.AttachTexture(AttachmentPoint::Color0, m_IntermediateTexture);
     // Create a depth buffer for the HDR render target.
     auto depthDesc  = CD3DX12_RESOURCE_DESC::Tex2D( depthBufferFormat, m_Width, m_Height );
     depthDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
@@ -287,6 +290,7 @@ bool Editor::LoadContent()
     // Attach the HDR texture to the HDR render target.
     m_HDRRenderTarget.AttachTexture( AttachmentPoint::Color0, m_HDRTexture );
     m_HDRRenderTarget.AttachTexture( AttachmentPoint::DepthStencil, depthTexture );
+
 
     // Create a root signature and PSO for the skybox shaders.
     {
@@ -455,7 +459,7 @@ bool Editor::LoadContent()
         sdrPipelineStateStream.VS                    = CD3DX12_SHADER_BYTECODE( vs.Get() );
         sdrPipelineStateStream.PS                    = CD3DX12_SHADER_BYTECODE( ps.Get() );
         sdrPipelineStateStream.Rasterizer            = rasterizerDesc;
-        sdrPipelineStateStream.RTVFormats            = m_SwapChain->GetRenderTarget().GetRenderTargetFormats();
+        sdrPipelineStateStream.RTVFormats            = m_IntermediateRenderTarget.GetRenderTargetFormats();
 
         m_SDRPipelineState = m_Device->CreatePipelineStateObject( sdrPipelineStateStream );
     }
@@ -475,6 +479,7 @@ void Editor::RescaleHDRRenderTarget( float scale )
     height = std::clamp<uint32_t>( height, 1, D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION );
 
     m_HDRRenderTarget.Resize( width, height );
+    m_IntermediateRenderTarget.Resize(width, height);
 }
 
 void Editor::OnResize( ResizeEventArgs& e )
@@ -520,6 +525,7 @@ void Editor::UnloadContent()
     m_UnlitPipelineState.reset();
 
     m_HDRRenderTarget.Reset();
+    m_IntermediateRenderTarget.Reset();
 
     m_GUI.reset();
     m_SwapChain.reset();
@@ -698,7 +704,7 @@ float ACESFilmicTonemappingPlot( void*, int index )
 }
 
 void Editor::OnGUI( const std::shared_ptr<dx12lib::CommandList>& commandList,
-                       const dx12lib::RenderTarget&                 renderTarget )
+                       const dx12lib::RenderTarget&                 renderTarget, std::shared_ptr<dx12lib::Texture> tex)
 {
     static bool showDemoWindow = false;
     static bool showOptions    = true;
@@ -844,10 +850,56 @@ void Editor::OnGUI( const std::shared_ptr<dx12lib::CommandList>& commandList,
             g_TonemapParameters               = TonemapParameters();
             g_TonemapParameters.TonemapMethod = method;
         }
-
         ImGui::End();
     }
 
+    ImGui::Begin("View");
+
+
+
+    ImVec2 canvas_p0 = ImGui::GetCursorScreenPos();      // ImDrawList API uses screen coordinates!
+    ImVec2 canvas_sz = ImGui::GetContentRegionAvail();   // Resize canvas to what's available
+    //if (canvas_sz.x < 50.0f) canvas_sz.x = 50.0f;
+    //if (canvas_sz.y < 50.0f) canvas_sz.y = 50.0f;
+    ImVec2 canvas_p1 = ImVec2(canvas_p0.x + canvas_sz.x, canvas_p0.y + canvas_sz.y);
+
+    ImGui::GetWindowDrawList()->AddImage(&tex, canvas_p0, canvas_p1);
+    ImGui::InvisibleButton("canvas", canvas_sz, ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_MouseButtonRight);
+    const bool is_hovered = ImGui::IsItemHovered(); // Hovered
+    const bool is_active = ImGui::IsItemActive();   // Held
+
+    if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)){
+        if (is_hovered) {
+            m_SceneSelected = true;
+        }
+        else {
+            m_SceneSelected = false;
+        }
+    }
+
+
+    //ImVec2 vMin = ImGui::GetWindowContentRegionMin();
+    //ImVec2 vMax = ImGui::GetWindowContentRegionMax();
+
+    ////vMin.x += ImGui::GetWindowPos().x;
+    ////vMin.y += ImGui::GetWindowPos().y;
+    ////vMax.x += ImGui::GetWindowPos().x;
+    ////vMax.y += ImGui::GetWindowPos().y;
+ 
+    //ImGui::ImageButton(&tex, ImVec2( vMax.x - vMin.x, vMax.y - vMin.y));
+
+    //if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
+    //{
+    //    m_SceneSelected = true;
+    //    ImGui::EndDragDropSource();
+    //}
+    //else {
+    //    m_SceneSelected = false;
+    //}
+    //bool isHovered = ImGui::IsItemHovered();
+    ////m_SceneSelected = ImGui::IsItemFocused();
+   
+    ImGui::End();
     m_GUI->Render( commandList, renderTarget );
 }
 
@@ -1089,18 +1141,28 @@ void Editor::OnRender()
     //}
 
     // Perform HDR -> SDR tonemapping directly to the SwapChain's render target.
-    commandList->SetRenderTarget( m_SwapChain->GetRenderTarget() );
-    commandList->SetViewport( m_SwapChain->GetRenderTarget().GetViewport() );
+
+
+    commandList->SetRenderTarget(m_IntermediateRenderTarget );
+    commandList->SetViewport(m_IntermediateRenderTarget.GetViewport() );
     commandList->SetPipelineState( m_SDRPipelineState );
     commandList->SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
     commandList->SetGraphicsRootSignature( m_SDRRootSignature );
     commandList->SetGraphics32BitConstants( 0, g_TonemapParameters );
     commandList->SetShaderResourceView( 1, 0, m_HDRTexture, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
-
-    commandList->Draw( 3 );
+    commandList->Draw(3);
 
     // Render GUI.
-    OnGUI( commandList, m_SwapChain->GetRenderTarget() );
+
+    {
+        // Clear the render targets.
+        FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
+        commandList->ClearTexture(m_SwapChain->GetRenderTarget().GetTexture(AttachmentPoint::Color0), clearColor);
+    }
+    commandList->SetViewport(m_SwapChain->GetRenderTarget().GetViewport());
+    commandList->SetRenderTarget(m_SwapChain->GetRenderTarget());
+
+    OnGUI( commandList, m_SwapChain->GetRenderTarget(), m_IntermediateTexture);
 
     commandQueue.ExecuteCommandList( commandList );
 
@@ -1219,7 +1281,8 @@ void Editor::OnKeyReleased( KeyEventArgs& e )
 void Editor::OnMouseMoved( MouseMotionEventArgs& e )
 {
     const float mouseSpeed = 0.1f;
-    if ( !ImGui::GetIO().WantCaptureMouse )
+    //if ( !ImGui::GetIO().WantCaptureMouse|| m_SceneSelected)
+    if ( m_SceneSelected)
     {
         if ( e.LeftButton )
         {

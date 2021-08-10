@@ -86,7 +86,7 @@ protected:
 
     void OnDPIScaleChanged( DPIScaleEventArgs& e );
 
-    void OnGUI( const std::shared_ptr<dx12lib::CommandList>& commandList, const dx12lib::RenderTarget& renderTarget );
+    void OnGUI( const std::shared_ptr<dx12lib::CommandList>& commandList, const dx12lib::RenderTarget& renderTarget, std::shared_ptr<dx12lib::Texture> tex );
 
 private:
     std::shared_ptr<dx12lib::Device>    m_Device;
@@ -118,6 +118,9 @@ private:
     // HDR Render target
     dx12lib::RenderTarget m_HDRRenderTarget;
     std::shared_ptr<dx12lib::Texture> m_HDRTexture;
+
+    dx12lib::RenderTarget m_IntermediateRenderTarget;
+    std::shared_ptr<dx12lib::Texture> m_IntermediateTexture;
 
     // Root signatures
     std::shared_ptr<dx12lib::RootSignature> m_SkyboxSignature;
@@ -168,6 +171,7 @@ private:
     // Scale the HDR render target to a fraction of the window size.
     float m_RenderScale;
 
+    bool m_SceneSelected;
     // Define some lights.
     std::vector<PointLight> m_PointLights;
     std::vector<SpotLight>  m_SpotLights;
