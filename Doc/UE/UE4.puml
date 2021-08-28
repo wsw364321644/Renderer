@@ -1,0 +1,46 @@
+@startuml
+
+
+
+!include Platform.puml
+!include RHI.puml
+!include Slate.puml
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SWindow --o FGenericWindow
+
+
+
+FSlateApplication ..> FGenericWindow
+
+
+
+@enduml

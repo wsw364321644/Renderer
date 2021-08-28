@@ -1,0 +1,48 @@
+@startuml
+
+
+
+abstract FGenericWindow
+class FWindowsWindow{
+	- HWND HWnd
+	-FWindowsApplication* OwningApplication;
+	+ {static}  TSharedRef<FWindowsWindow> Make()
+	+ void Initialize ( class FWindowsApplication* const Application, const TSharedRef<FGenericWindowDefinition>& InDefinition, HINSTANCE InHInstance, const TSharedPtr<FWindowsWindow>& InParent, const bool bShowImmediately )
+}
+note right of FWindowsWindow::Initialize
+CreateWindowEx(
+		WindowExStyle,
+		AppWindowClass,
+		*Definition->Title,
+		WindowStyle,
+		WindowX, WindowY, 
+		WindowWidth, WindowHeight,
+		( InParent.IsValid() ) ? static_cast<HWND>( InParent->HWnd ) : NULL,
+		NULL, InHInstance, NULL);
+end note
+
+FGenericWindow <|-- FWindowsWindow
+
+class GenericApplication{
+	+virtual TSharedRef< FGenericWindow > MakeWindow()
+	+virtual void InitializeWindow( const TSharedRef< FGenericWindow >& Window, const TSharedRef< FGenericWindowDefinition >& InDefinition, const TSharedPtr< FGenericWindow >& InParent, const bool bShowImmediately ) 
+}
+class FWindowsApplication{
+	-TArray<TSharedRef<FWindowsWindow>> Windows
+	-TSharedRef<class XInputInterface> XInput
+
+	#{static} LRESULT CALLBACK AppWndProc(HWND hwnd, uint32 msg, WPARAM wParam, LPARAM lParam)
+	#int32 ProcessMessage( HWND hwnd, uint32 msg, WPARAM wParam, LPARAM lParam )
+	-{static} bool RegisterClass( const HINSTANCE HInstance, const HICON HIcon );
+}
+note top
+Windows-specific application implementation.
+end note
+
+GenericApplication <|-- FWindowsApplication
+
+FWindowsApplication<-->FWindowsWindow
+GenericApplication..>FGenericWindow
+
+
+@enduml

@@ -1,0 +1,22 @@
+@startuml
+
+
+abstract FRHIResource
+abstract FRHIViewport
+class  FD3D11Viewport{
+	- TRefCountPtr<IDXGISwapChain1> SwapChain1
+}
+
+FRHIResource <|-- FRHIViewport
+FRHIViewport <|-- FD3D11Viewport
+
+
+
+
+abstract FDynamicRHI
+class FD3D11DynamicRHI
+FDynamicRHI <|-- FD3D11DynamicRHI
+
+
+
+@enduml
