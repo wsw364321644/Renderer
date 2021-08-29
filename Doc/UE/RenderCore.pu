@@ -1,0 +1,45 @@
+@startuml
+
+
+class FShaderResource 
+note top
+Compiled shader bytecode and its corresponding RHI resource. 
+This can be shared by multiple FShaders with identical compiled output.
+end note 
+
+class  FShader{
+    -TRefCountPtr<FShaderResource> Resource
+}
+note top
+A compiled shader and its parameter bindings.
+end note 
+
+
+
+class FGlobalShader 
+note top
+Global shaders derive from this class to set their default recompile group as a global one
+end note 
+FShader<|--FGlobalShader
+
+
+class FMaterialShader 
+note top
+Base class of all shaders that need material parameters.
+end note 
+FShader<|--FMaterialShader
+
+
+class FMeshMaterialShader
+note top
+Base class of all shaders that need material and vertex factory parameters.
+end note 
+FMaterialShader<|--FMeshMaterialShader
+
+
+
+FShader--> FShaderResource
+
+
+
+@enduml
