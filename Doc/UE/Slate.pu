@@ -1,5 +1,5 @@
-@startuml
-!startsub Slate
+@startuml Slate
+
 
 
 
@@ -32,5 +32,5 @@ SCompoundWidget<|-- SWindow
 FSlateApplication ..> SWindow
 
 
-!endsub
+
 @enduml

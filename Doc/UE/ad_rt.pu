@@ -1,0 +1,21 @@
+@startuml
+
+
+|TEnqueueUniqueRenderCommandType|
+start
+:DoTask;
+|FScene|
+:UpdateAllPrimitiveSceneInfos;
+|FPrimitiveSceneInfo|
+:AddToScene;
+:AddStaticMeshes;
+:CacheMeshDrawCommands;
+:ParallelForImpl::ParallelForInternal;
+:[Scene, SceneInfos]<lambda>(int32 Index);
+|FMeshPassProcessor|
+-> FDepthPassMeshProcessor;
+:AddMeshBatch;
+:Process;
+:BuildMeshDrawCommands;
+stop
+@enduml

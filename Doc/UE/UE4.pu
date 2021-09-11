@@ -1,13 +1,17 @@
 @startuml
 
+!startsub Slate
+
+!include Engine.pu
+!include Platform.pu
+!include plugins.pu
+!include RenderCore.pu
+!include Renderer.pu
+!include RHI.pu
+!include Slate.pu
 
 
-!include Platform.puml
-!include RHI.puml
-!include Slate.puml
-
-
-
+!endsub
 
 
 

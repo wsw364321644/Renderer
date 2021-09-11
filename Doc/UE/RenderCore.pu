@@ -1,4 +1,4 @@
-@startuml
+@startuml RenderCore
 
 
 class FShaderResource 
@@ -6,6 +6,19 @@ note top
 Compiled shader bytecode and its corresponding RHI resource. 
 This can be shared by multiple FShaders with identical compiled output.
 end note 
+
+
+
+class FVertexFactory{
+    +static void ModifyCompilationEnvironment(const FVertexFactoryShaderPermutationParameters& Parameters, FShaderCompilerEnvironment& OutEnvironment )
+}
+FShaderResource<|--FVertexFactory
+
+note top
+Encapsulates a vertex data source which can be linked into a vertex shader.
+end note 
+
+
 
 class  FShader{
     -TRefCountPtr<FShaderResource> Resource
@@ -17,24 +30,12 @@ end note
 
 
 class FGlobalShader 
+FShader<|--FGlobalShader
+
 note top
 Global shaders derive from this class to set their default recompile group as a global one
 end note 
-FShader<|--FGlobalShader
 
-
-class FMaterialShader 
-note top
-Base class of all shaders that need material parameters.
-end note 
-FShader<|--FMaterialShader
-
-
-class FMeshMaterialShader
-note top
-Base class of all shaders that need material and vertex factory parameters.
-end note 
-FMaterialShader<|--FMeshMaterialShader
 
 
 

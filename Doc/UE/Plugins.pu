@@ -1,0 +1,19 @@
+@startuml Plugins
+!include Engine.pu
+
+
+class UCableComponent {
+}
+UMeshComponent <|-- UCableComponent
+note top
+Component that allows you to specify custom triangle mesh geometry
+end note 
+
+class FCableSceneProxy {
+}
+FPrimitiveSceneProxy <|-- FCableSceneProxy
+
+UCableComponent --> FCableSceneProxy
+FCableSceneProxy ..> UCableComponent
+
+@enduml
