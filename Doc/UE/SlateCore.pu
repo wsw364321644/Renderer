@@ -1,0 +1,11 @@
+@startuml SlateCore
+class FSimpleSlot
+note top
+A slot that support alignment of content and padding
+end note
+
+
+
+
+
+@enduml
