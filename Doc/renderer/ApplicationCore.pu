@@ -1,0 +1,9 @@
+@startuml ApplicationCore
+
+class Window
+note top
+Interface that defines how to handle interaction with a user via hardware input and output
+end note
+
+
+@enduml

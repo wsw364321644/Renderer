@@ -4,8 +4,213 @@ note top
 A slot that support alignment of content and padding
 end note
 
+class FSlateRenderBatch{
+	+ FShaderParams ShaderParams;
+	/** Dynamically modified offset that occurs when we have relative position stored render batches. */
+	+  FVector2D DynamicOffset;
+	/** The Stored clipping state for the corresponding clipping state index.  The indices are not directly comparable later, so we need to expand it to the full state to be compared. */
+	+ const FSlateClippingState* ClippingState;
+	/** Shader Resource to use with this batch.  */
+	+ const FSlateShaderResource* ShaderResource;
+	+ ISlateUpdatableInstanceBufferRenderProxy* InstanceData;
+	+ FSlateVertexArray* SourceVertices;
+	+ FSlateIndexArray* SourceIndices;
+	+ ICustomSlateElement* CustomDrawer;
+	/** The layer we need to sort by  */
+	+ int32 LayerId;
+	+ int32 VertexOffset;
+	+ int32 IndexOffset;
+	/** Number of vertices in the batch */
+	+ int32 NumVertices;
+	/** Number of indices in the batch */
+	+ int32 NumIndices;
+	+ int32 NextBatchIndex;
+	+ int32 InstanceCount;
+	+ int32 InstanceOffset;
+	+ int8 SceneIndex;
+	+ ESlateBatchDrawFlag DrawFlags;
+	+ ESlateShader ShaderType;
+	+ ESlateDrawPrimitive DrawPrimitiveType;
+	+ ESlateDrawEffect DrawEffects;
+	/** Whether or not the batch can be merged with others in the same layer */
+	+ uint8 bIsMergable : 1;
+	+ uint8 bIsMerged : 1;
+}
+
+class FSlateBatchData{
+    -TArray<FSlateRenderBatch> RenderBatches;
+	-FSlateVertexArray UncachedSourceBatchVertices;
+	-FSlateIndexArray UncachedSourceBatchIndices;
+	-FSlateVertexArray FinalVertexData;
+	-FSlateIndexArray  FinalIndexData;
+	-int32 FirstRenderBatchIndex;
+	-int32 NumLayers;
+	-int32 NumBatches;
+	-bool bIsStencilBufferRequired;
+}
+
+FSlateBatchData -->FSlateRenderBatch
+
+class FSlateDrawElement{
+    -FSlateDataPayload* DataPayload;
+	-FSlateRenderTransform RenderTransform;
+	-FVector2D Position;
+	-FVector2D LocalSize;
+	-int32 LayerId;
+	-FClipStateHandle ClipStateHandle;
+	-float Scale;
+	-int8 SceneIndex;
+	-ESlateDrawEffect DrawEffects;
+	-EElementType ElementType;
+
+	-ESlateBatchDrawFlag BatchFlags;
+	-uint8 bIsCached : 1;
+}
+note top
+* FSlateDrawElement is the building block for Slate's rendering interface.
+* Slate describes its visual output as an ordered list of FSlateDrawElement s
+end note
+
+
+class FSlateCachedElementList{
+    +FSlateDrawElementArray DrawElements
+}
+
+class FSlateWindowElementList{
+    -FSlateBatchData BatchData
+    -TArray<FSlateDrawElement, FSlateStatTrackingMemoryAllocator<FDrawElementStatTracker>> UncachedDrawElements
+    -TArray<FSlateCachedElementData*, TInlineAllocator<4>> CachedElementDataList
+
+}
+note top
+Represents a top level window and its draw elements
+end note
+FSlateWindowElementList --> FSlateBatchData
+FSlateWindowElementList --> FSlateDrawElement
+
+
+class FSlateDrawBuffer{
+    #TArray< TSharedRef<FSlateWindowElementList> > WindowElementLists
+}
+FSlateDrawBuffer --> FSlateWindowElementList
+
+class FSlateElementBatcher{
+    -FSlateBatchData* BatchData
+    -FSlateCachedElementList* CurrentCachedElementList
+}
+note top
+A class which batches Slate elements for rendering
+end note
+FSlateElementBatcher --> FSlateBatchData
+FSlateElementBatcher --> FSlateCachedElementList
+FSlateElementBatcher ..> FSlateDrawElement
+
+class FSlateRenderer
+note top
+Abstract base class for Slate renderers
+end note
+
+class FSlateInvalidationRoot
+
+class FArrangedChildren{
+    +typedef TArray<FArrangedWidget, TInlineAllocator<4>> FArrangedWidgetArray
+    -EVisibility VisibilityFilter
+    -FArrangedWidgetArray Array
+}
+note top
+ * The results of an ArrangeChildren are always returned as an FArrangedChildren.
+ * FArrangedChildren supports a filter that is useful for excluding widgets with unwanted
+ * visibilities.
+end note
+
+class FSlateApplicationBase{
+    #TSharedPtr<FSlateRenderer> Renderer
+}
+note top
+ * This class currently serves a temporary workaround for solving SlateCore dependencies to FSlateApplication.
+ * It should probably be removed once FSlateApplication has been refactored into SlateCore.
+ end note
+
+ FSlateApplicationBase --> FSlateRenderer
 
 
 
 
+
+
+
+
+class SWidget{
+    +void ArrangeChildren(const FGeometry& AllottedGeometry, FArrangedChildren& ArrangedChildren) const
+}
+note top
+ *   Widget is not meant to be directly inherited. Instead consider inheriting from LeafWidget or Panel,
+ *   which represent intended use cases and provide a succinct set of methods which to override.
+ *
+ *   SWidget is the base class for all interactive Slate entities. SWidget's public interface describes
+ *   everything that a Widget can do and is fairly complex as a result.
+end note
+note right of SWidget::ArrangeChildren
+	 * Non-virtual entry point for arrange children. ensures common work is executed before calling the virtual
+	 * ArrangeChildren function.
+	 * Compute the Geometry of all the children and add populate the ArrangedChildren list with their values.
+	 * Each type of Layout panel should arrange children based on desired behavior.
+end note
+
+
+
+
+class SCompoundWidget{
+	#FSimpleSlot ChildSlot
+}
+note top
+A CompoundWidget is the base from which most non-primitive widgets should be built.
+CompoundWidgets have a protected member named ChildSlot.
+end note
+SWidget <|-- SCompoundWidget
+note right of SCompoundWidget::ChildSlot 
+The slot that contains this widget's descendants
+end note
+
+SCompoundWidget --> FSimpleSlot
+
+
+
+class SPanel
+
+note top
+ * Each child widget should be stored in a Slot. The Slot describes how the individual child should be arranged with
+ * respect to its parent (i.e. the Panel) and its peers Widgets (i.e. the Panel's other children.)
+ * For a simple example see StackPanel.
+end note
+SWidget <|-- SPanel
+
+
+
+class SOverlay{
+    #TPanelChildren<FOverlaySlot> Children
+}
+note top
+ * Overlay widgets allow for layering several widgets on top of each other.
+ * Each slot of an overlay represents a layer that can contain one widget.
+ * The slots will be rendered on top of each other in the order they are declared in code.
+end note
+SPanel <|-- SOverlay
+
+
+
+class SWindow{
+
+	#  NativeWindow:TSharedPtr<FGenericWindow>
+	
+	# TWeakPtr<SWindow> ParentWindowPtr
+	# TArray< TSharedRef<SWindow> > ChildWindows
+}
+note top:SWindow is a platform-agnostic representation of a top-level window.
+SCompoundWidget <|-- SWindow
+FSlateInvalidationRoot <|-- SWindow
+
+note right of SWindow::NativeWindow 
+	The native window that is backing this Slate Window
+end note
 @enduml

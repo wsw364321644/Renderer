@@ -11,11 +11,28 @@ start
 :AddStaticMeshes;
 :CacheMeshDrawCommands;
 :ParallelForImpl::ParallelForInternal;
+fork
 :[Scene, SceneInfos]<lambda>(int32 Index);
+
+while (EMeshPass) is ( iter )
+:FPassProcessorManager::GetCreateFunction;
+while (MeshBatches) is ( iter )
+
 |FMeshPassProcessor|
--> FDepthPassMeshProcessor;
+note right
+  FDepthPassMeshProcessor
+end note
+
+
+
 :AddMeshBatch;
 :Process;
 :BuildMeshDrawCommands;
+
+
+|FPrimitiveSceneInfo|
+end while(iter end)
+end while(iter end)
+endfork
 stop
 @enduml

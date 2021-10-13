@@ -3,7 +3,7 @@
 !startsub Slate
 
 !include Engine.pu
-!include Platform.pu
+!include ApplicationCore.pu
 !include plugins.pu
 !include RenderCore.pu
 !include Renderer.pu

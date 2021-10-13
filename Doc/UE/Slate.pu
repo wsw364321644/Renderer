@@ -1,43 +1,16 @@
 @startuml Slate
 !include SlateCore.pu
-
+!include ApplicationCore.pu
 
 
 class FSlateApplication{
 	+ TSharedRef<FGenericWindow> FSlateApplication::MakeWindow( TSharedRef<SWindow> InSlateWindow, const bool bShowImmediately )
 }
+FSlateApplicationBase <|-- FSlateApplication 
+FGenericApplicationMessageHandler <|-- FSlateApplication
 
 
-class SWidget
-
-class SCompoundWidget{
-	#FSimpleSlot ChildSlot
-}
-note top
-A CompoundWidget is the base from which most non-primitive widgets should be built.
-CompoundWidgets have a protected member named ChildSlot.
-end note
-SWidget <|-- SCompoundWidget
-note right of SCompoundWidget::ChildSlot 
-The slot that contains this widget's descendants
-end note
-
-SCompoundWidget --> FSimpleSlot
-
-
-class SWindow{
-
-	#  NativeWindow:TSharedPtr<FGenericWindow>
-	
-	# TWeakPtr<SWindow> ParentWindowPtr
-	# TArray< TSharedRef<SWindow> > ChildWindows
-}
-note top:SWindow is a platform-agnostic representation of a top-level window.
-SCompoundWidget<|-- SWindow
-
-note right of SWindow::NativeWindow 
-	The native window that is backing this Slate Window
-end note
+FSlateApplication ..> SWindow
 
 
 
@@ -71,7 +44,6 @@ SBorder<|-- SButton
 
 
 
-FSlateApplication ..> SWindow
 
 
 

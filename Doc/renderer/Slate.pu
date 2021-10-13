@@ -1,0 +1,26 @@
+@startuml Slate
+
+!include ApplicationCore.pu
+
+
+
+
+class SWindow{
+    -std::shared_ptr<Window> m_window
+}
+note top:SWindow is a platform-agnostic representation of a top-level window.
+
+SWindow-->Window
+
+class SlateManager{
+	+  void AddToView(std::shared_ptr<SWindow> window)
+
+	# std::vector<std::shared_ptr<Window>> m_windows
+}
+
+
+FSlateApplication --> Window
+FSlateApplication ..> SWindow
+
+
+@enduml
