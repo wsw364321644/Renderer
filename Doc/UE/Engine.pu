@@ -1,0 +1,77 @@
+@startuml Engine
+!include RenderCore.pu
+
+
+class FMaterial {
+    +virtual bool ShouldCache(EShaderPlatform Platform, const FShaderType* ShaderType, const FVertexFactoryType* VertexFactoryType) const;
+    -	void SetupMaterialEnvironment(EShaderPlatform Platform,const FShaderParametersMetadata& InUniformBufferStruct,const FUniformExpressionSet& InUniformExpressionSet,FShaderCompilerEnvironment& OutEnvironment) const
+}
+note top
+FMaterial serves 3 intertwined purposes:
+    Represents a material to the material compilation process, and provides hooks for extensibility (CompileProperty, etc)
+    Represents a material to the renderer, with functions to access material properties
+    Stores a cached shader map, and other transient output from a compile, which is necessary with async shader compiling
+       (when a material finishes async compilation, the shader map and compile errors need to be stored somewhere)
+end note 
+
+class FLocalVertexFactory
+FVertexFactory<|--FLocalVertexFactory
+
+note top
+A vertex factory which simply transforms explicit vertex attributes from local to world space.
+end note 
+
+
+class FGPUBaseSkinVertexFactory
+FVertexFactory<|--FGPUBaseSkinVertexFactory
+
+
+class FPrimitiveSceneProxy{
+    +FPrimitiveSceneProxy(const UPrimitiveComponent* InComponent, FName ResourceName = NAME_None)
+}
+
+note top
+Encapsulates the data which is mirrored to render a UPrimitiveComponent parallel to the game thread.
+This is intended to be subclassed to support different primitive types.  
+end note 
+
+
+
+
+
+
+class UActorComponent
+note top
+ActorComponent is the base class for components that define reusable behavior that can be added to different types of Actors.
+end note 
+
+class USceneComponent
+UActorComponent <|-- USceneComponent
+note top
+A SceneComponent has a transform and supports attachment, but has no rendering or collision capabilities.
+end note 
+
+class UPrimitiveComponent{
+    +FPrimitiveSceneProxy* SceneProxy
+    +virtual FPrimitiveSceneProxy* CreateSceneProxy()
+}
+USceneComponent <|-- UPrimitiveComponent
+note top
+PrimitiveComponents are SceneComponents that contain or generate some sort of geometry, generally to be rendered or used as collision data.
+There are several subclasses for the various types of geometry, but the most common by far are the ShapeComponents (Capsule, Sphere, Box), StaticMeshComponent, and SkeletalMeshComponent.
+ShapeComponents generate geometry that is used for collision detection but are not rendered, while StaticMeshComponents and SkeletalMeshComponents contain pre-built geometry that is rendered, but can also be used for collision detection.
+end note 
+
+
+class UMeshComponent
+UPrimitiveComponent <|-- UMeshComponent
+note top
+MeshComponent is an abstract base for any component that is an instance of a renderable collection of triangles.
+end note 
+
+
+FPrimitiveSceneProxy ..> UPrimitiveComponent
+FPrimitiveSceneProxy <-- UPrimitiveComponent:void FScene::AddPrimitive(UPrimitiveComponent* Primitive)
+
+
+@enduml

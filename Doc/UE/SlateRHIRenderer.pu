@@ -1,0 +1,12 @@
+@startuml Slate
+!include SlateCore.pu
+
+class FSlateRHIRenderer{
+    -TUniquePtr<FSlateElementBatcher> ElementBatcher
+    -FSlateDrawBuffer DrawBuffers[NumDrawBuffers]
+}
+FSlateRenderer <|-- FSlateRHIRenderer
+
+FSlateRHIRenderer --> FSlateElementBatcher
+FSlateRHIRenderer --> FSlateDrawBuffer
+@enduml

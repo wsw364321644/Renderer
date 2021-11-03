@@ -1,0 +1,88 @@
+@startuml UMG
+!include Slate.pu
+
+
+class UVisual
+note top
+The base class for elements in UMG: slots and widgets.
+end note
+
+class UWidget{
+    +TSharedRef<SWidget> TakeWidget()
+    #virtual TSharedRef<SWidget> RebuildWidget()
+}
+note top
+This is the base class for all wrapped Slate controls that are exposed to UObjects
+end note
+UVisual <|-- UWidget
+
+note right of UWidget::RebuildWidget
+Function implemented by all subclasses of UWidget is called when the underlying SWidget needs to be constructed
+end note
+
+note right of UWidget::TakeWidget
+	 * Gets the underlying slate widget or constructs it if it doesn't exist.  If you're looking to replace
+	 * what slate widget gets constructed look for RebuildWidget.  For extremely special cases where you actually
+	 * need to change the the GC Root widget of the constructed User Widget - you need to use TakeDerivedWidget
+	 * you must also take care to not call TakeWidget before calling TakeDerivedWidget, as that would put the wrong
+	 * expected wrapper around the resulting widget being constructed.
+end note
+
+
+class UPanelSlot{
+    class UPanelWidget* Parent
+	class UWidget* Content
+}
+note top
+The base class for all Slots in UMG
+end note
+UVisual <|-- UPanelSlot
+
+UPanelSlot <-- UWidget
+
+class UPanelWidget{
+    +int32 GetChildrenCount() const
+    +UWidget* GetChildAt(int32 Index) const
+    +UPanelSlot* AddChild(UWidget* Content)
+
+
+    #TArray<UPanelSlot*> Slots
+    #bool bCanHaveMultipleChildren
+}
+note top
+The base class for all UMG panel widgets.  Panel widgets layout a collection of child widgets.
+end note
+UWidget <|-- UPanelWidget
+
+UPanelSlot <-->UPanelWidget
+
+class UContentWidget
+UPanelWidget <|-- UContentWidget
+
+
+
+
+class UButtonSlot{
+    -TWeakPtr<SButton> Button
+    +void BuildSlot(TSharedRef<SButton> InButton)
+}
+UPanelSlot <|-- UButtonSlot
+UButtonSlot --> SButton
+
+class UButton{
+    #TSharedPtr<SButton> MyButton
+}
+note top
+ * The button is a click-able primitive widget to enable basic interaction, you
+ * can place any other widget inside a button to make a more complex and 
+ * interesting click-able element in your UI.
+ *
+ * * Single Child
+ * * Clickable
+end note
+UContentWidget <|-- UButton
+
+UButton-->UButtonSlot
+UButton -->  SButton
+
+@enduml

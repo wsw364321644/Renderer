@@ -1,36 +1,50 @@
-@startuml
-!startsub Slate
-
+@startuml Slate
+!include SlateCore.pu
+!include ApplicationCore.pu
 
 
 class FSlateApplication{
 	+ TSharedRef<FGenericWindow> FSlateApplication::MakeWindow( TSharedRef<SWindow> InSlateWindow, const bool bShowImmediately )
 }
+FSlateApplicationBase <|-- FSlateApplication 
+FGenericApplicationMessageHandler <|-- FSlateApplication
 
-
-class SWidget
-class SCompoundWidget
-note top
-A CompoundWidget is the base from which most non-primitive widgets should be built.
-CompoundWidgets have a protected member named ChildSlot.
-end note
-class SWindow{
-
-	#  NativeWindow:TSharedPtr<FGenericWindow>
-	
-	# TWeakPtr<SWindow> ParentWindowPtr
-	# TArray< TSharedRef<SWindow> > ChildWindows
-}
-note top:SWindow is a platform-agnostic representation of a top-level window.
-note right of SWindow::NativeWindow 
-	The native window that is backing this Slate Window
-end note
-
-SWidget <|-- SCompoundWidget
-SCompoundWidget<|-- SWindow
 
 FSlateApplication ..> SWindow
 
 
-!endsub
+
+
+class SBorder{
+}
+note top
+A border is an widget that can be used to contain other widgets.
+It has a BorderImage property, which allows it to take on different appearances.
+Border also has a Content() slot as well as some parameters controlling the
+arrangement of said content.
+end note
+SCompoundWidget<|-- SBorder
+
+
+
+class SButton
+note top
+Slate's Buttons are clickable Widgets that can contain arbitrary widgets as its Content()
+end note
+SBorder<|-- SButton
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 @enduml

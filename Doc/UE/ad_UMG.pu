@@ -1,0 +1,142 @@
+@startuml ad_UMG
+
+
+|main|
+start
+partition "[[http://plantuml.com render slate]]" {
+
+|FSlateApplication|
+:Tick;
+:TickAndDrawWidgets;
+:DrawWindows;
+:PrivateDrawWindows;
+
+while (itr SlateWindows)
+#blue:(a)
+:DrawWindowAndChildren;
+
+|SWindow|
+:PaintWindow;
+:FSlateInvalidationRoot::PaintInvalidationRoot;
+:PaintSlowPath;
+
+|SWidget|
+#red:(b)
+:SWidget::Paint;
+:OnPaint;
+while (itr ArrangedChildren)
+->enter Recursion;
+#red:(b)
+partition "**DrawElements** " {
+:FSlateDrawElement::MakeBox;
+note right
+SButton
+end note 
+}
+end while(iter end)
+->exit Recursion;
+#red:(b)
+-[dashed]->
+|FSlateApplication|
+if (bDrawChildWindows) is (true) then
+while (itr WindowChildren)
+->enter Recursion;
+#blue:(a)
+end while(iter end)
+endif
+->exit Recursion;
+#blue:(a)
+
+end while(iter end)
+
+|FSlateRHIRenderer|
+:DrawWindows;
+:DrawWindows_Private;
+
+
+|FSlateElementBatcher|
+:AddElements;
+:AddElementsInternal;
+partition "**AddElement** " {
+    switch (DrawElement.GetElementType() )
+    case ( EElementType::ET_Box: )
+    :AddBoxElement;
+    case ( EElementType::ET_Border ) 
+    :AddBorderElement;
+    case ( EElementType::ET_Text)
+    :AddTextElement;
+    case ( EElementType::ET_ShapedText)
+    :AddShapedTextElement;
+    endswitch
+
+    :CreateRenderBatch;
+}
+-[dashed]->
+|FSlateRHIRenderer|
+:ENQUEUE_RENDER_COMMAND(SlateDrawWindowsCommand);
+fork
+stop
+fork again
+:DrawWindow_RenderThread;
+
+|FRHICommandList|
+:BeginDrawingViewport;
+:ALLOC_COMMAND(FRHICommandBeginDrawingViewport)(Viewport, RenderTargetRHI);
+|FRHICommandListImmediate|
+:ImmediateFlush;
+|FRHICommandListExecutor|
+:ExecuteList;
+:ExecuteInner;
+:ExecuteInner_DoExecute;
+while (itr CmdList)
+|FRHICommand|
+:ExecuteAndDestruct;
+switch (TCmd)
+
+case ( FRHICommandSetScissorRect)
+:Execute;
+|FD3D11DynamicRHI|
+:RHISetScissorRect;
+
+|FRHICommand|
+case (FRHICommandSetGraphicsPipelineState) 
+:Execute;
+|FD3D11DynamicRHI|
+:RHISetGraphicsPipelineState;
+
+|FRHICommand|
+case (FRHICommandSetStencilRef) 
+:Execute;
+
+|FRHICommand|
+case (FRHICommandSetShaderTexture) 
+:Execute;
+|FD3D11DynamicRHI|
+:RHISetShaderTexture;
+
+|FRHICommand|
+case (FRHICommandDrawIndexedPrimitive) 
+:Execute;
+|FD3D11DynamicRHI|
+:RHIDrawIndexedPrimitive;
+
+-[dashed]->
+|FRHICommand|
+
+endswitch
+
+
+end while(iter end)
+kill
+
+
+
+
+|FSlateRHIRenderer|
+end fork
+
+}
+
+
+
+@enduml
