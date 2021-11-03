@@ -47,6 +47,9 @@ if(WIN32)
 endif()
 source_group( TREE ${PROJECT_SOURCE_DIR} FILES ${ApplicationCore_INC} ${ApplicationCore_SRC}  )
 
+file(GLOB_RECURSE Slate_INC LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/Slate/Public/*.h" "${PROJECT_SOURCE_DIR}/Source/Runtime/Slate/Public/*.hpp")
+file(GLOB_RECURSE Slate_SRC LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/Slate/Private/*.cpp")
+source_group(TREE ${PROJECT_SOURCE_DIR} FILES ${Slate_INC} ${Slate_SRC} )
 
 file(GLOB_RECURSE D3D12RHI_INC LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/D3D12RHI/Public/*.h" "${PROJECT_SOURCE_DIR}/Source/Runtime/D3D12RHI/Public/*.hpp")
 file(GLOB_RECURSE D3D12RHI_SRC LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/D3D12RHI/Private/*.cpp")
@@ -106,6 +109,8 @@ set_source_files_properties( ${COMPUTE_SHADER_FILES}
 add_subdirectory( ThirdParty/DirectXTex )
 add_subdirectory( ThirdParty/DirectXTK )
 add_subdirectory( ThirdParty/spdlog )
+
+
 add_subdirectory( ThirdParty/assimp )
 
 add_subdirectory( ThirdParty/gainput )
@@ -121,8 +126,10 @@ add_executable( ${TARGET_NAME} WIN32
     ${Launch_SRC}
     ${ApplicationCore_INC} 
     ${ApplicationCore_SRC}
-	${Engine_INC} 
+    ${Engine_INC}
     ${Engine_SRC}
+    ${Slate_INC}
+    ${Slate_SRC}
     ${D3D12RHI_INC}
     ${D3D12RHI_SRC}
     ${Editor_INC}
@@ -147,6 +154,7 @@ target_include_directories( ${TARGET_NAME}
     PUBLIC ${PROJECT_SOURCE_DIR}/Source/Runtime/Core/Public
     PUBLIC ${PROJECT_SOURCE_DIR}/Source/Runtime/Engine/Public
     PUBLIC ${PROJECT_SOURCE_DIR}/Source/Runtime/D3D12RHI/Public
+    PUBLIC ${PROJECT_SOURCE_DIR}/Source/Runtime/Slate/Public
     PUBLIC ${PROJECT_SOURCE_DIR}/Source/Runtime/ApplicationCore/Public
     PRIVATE ${PROJECT_SOURCE_DIR}/Source/Editor/Public
     PUBLIC ${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Public
@@ -176,6 +184,12 @@ target_link_libraries( ${TARGET_NAME}
     dxgi.lib
     dxguid.lib
 )
+
+
+get_directory_property(ASSIMP_RUNTIME_OUTPUT_DIRECTORY DIRECTORY ThirdParty/assimp DEFINITION ASSIMP_RUNTIME_OUTPUT_DIRECTORY)
+
+add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory    ${ASSIMP_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>)
 
 
 set( COMMAND_ARGUMENTS "-wd \"${CMAKE_SOURCE_DIR}\"" )
