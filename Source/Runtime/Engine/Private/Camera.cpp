@@ -1,5 +1,6 @@
 #include <Camera.h>
-
+#include <CommandList.h>
+#include <World.h>
 using namespace DirectX;
 
 Camera::Camera()
@@ -149,6 +150,10 @@ void Camera::Rotate( FXMVECTOR quaternion )
 
     m_ViewDirty = true;
     m_InverseViewDirty = true;
+}
+
+void Camera::Render(std::shared_ptr<CommandList> commandlist, std::shared_ptr<World> world)
+{
 }
 
 void Camera::UpdateViewMatrix() const

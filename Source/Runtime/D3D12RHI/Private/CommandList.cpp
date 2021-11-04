@@ -1204,6 +1204,9 @@ void CommandList::SetRenderTarget( const RenderTarget& renderTarget )
 
     m_d3d12CommandList->OMSetRenderTargets( static_cast<UINT>( renderTargetDescriptors.size() ),
                                             renderTargetDescriptors.data(), FALSE, pDSV );
+
+
+    SetViewport(renderTarget.GetViewport());
 }
 
 void CommandList::Draw( uint32_t vertexCount, uint32_t instanceCount, uint32_t startVertex, uint32_t startInstance )

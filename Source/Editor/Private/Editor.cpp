@@ -149,7 +149,7 @@ Editor::Editor( const std::wstring& name, int width, int height, bool vSync )
 , m_Fullscreen( false )
 , m_RenderScale( 1.0f )
 {
-    m_Logger = GameFramework::Get().CreateLogger( "HDR" );
+    m_Logger = GameFramework::Get().CreateLogger( "Editor" );
     m_Window = GameFramework::Get().CreateWindow( name, width, height );
 
     m_Window->Update += UpdateEvent::slot( &Editor::OnUpdate, this );
@@ -929,7 +929,7 @@ void Editor::OnRender()
     }
 
     commandList->SetRenderTarget( m_HDRRenderTarget );
-    commandList->SetViewport( m_HDRRenderTarget.GetViewport() );
+
     commandList->SetScissorRect( m_ScissorRect );
 
     // Render the skybox.

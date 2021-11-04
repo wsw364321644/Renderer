@@ -22,3 +22,10 @@ const FPlatformUserId PLATFORMUSERID_NONE = INDEX_NONE;
 
 
 #define assertm(exp, msg) assert(((void)msg, exp))
+
+#define RWProperty(type,name) 								 \
+public:														 \
+	const type& name() const { return _##name; }			 \
+	void name(const type& val) { _##name = val; }			 \
+private:													 \
+	type _##name;

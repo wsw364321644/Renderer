@@ -8,9 +8,11 @@
  *  @brief A DirectX camera class.
  */
 
-
+#include <memory>
 #include <DirectXMath.h>
 
+class CommandList;
+class World;
 // When performing transformations on the camera, 
 // it is sometimes useful to express which space this 
 // transformation should be applied.
@@ -72,6 +74,8 @@ public:
     void XM_CALLCONV Translate( DirectX::FXMVECTOR translation, Space space = Space::Local );
     void Rotate( DirectX::FXMVECTOR quaternion );
 
+
+    void Render(std::shared_ptr<CommandList> commandlist,std::shared_ptr<World> world);
 protected:
     virtual void UpdateViewMatrix() const;
     virtual void UpdateInverseViewMatrix() const;
