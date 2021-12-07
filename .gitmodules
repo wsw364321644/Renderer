@@ -23,3 +23,6 @@
 [submodule "stduuid"]
 	path = ThirdParty/stduuid
 	url = https://github.com/mariusbancila/stduuid.git
+[submodule "taskflow"]
+	path = ThirdParty/taskflow
+	url = https://github.com/taskflow/taskflow
