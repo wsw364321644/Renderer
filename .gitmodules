@@ -26,3 +26,6 @@
 [submodule "taskflow"]
 	path = ThirdParty/taskflow
 	url = https://github.com/taskflow/taskflow
+[submodule "SDL"]
+	path = ThirdParty/SDL
+	url = https://github.com/libsdl-org/SDL

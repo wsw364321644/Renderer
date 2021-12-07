@@ -6,7 +6,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib) # Output directory f
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin) # Output directory for shared lib (.DLL)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin) # Output directory for executables (.EXE)
 
-project (Renderer LANGUAGES CXX)
+project (Renderer LANGUAGES C CXX)
 if( MSVC )
     add_compile_options(/MP)
 endif()
@@ -116,6 +116,8 @@ add_subdirectory( ThirdParty/assimp )
 add_subdirectory( ThirdParty/gainput )
 add_subdirectory( ThirdParty/glm)
 add_subdirectory( ThirdParty/stduuid)
+add_subdirectory( ThirdParty/taskflow)
+add_subdirectory( ThirdParty/SDL)
 
 
 add_executable( ${TARGET_NAME} WIN32
