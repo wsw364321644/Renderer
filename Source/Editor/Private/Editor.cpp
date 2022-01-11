@@ -17,7 +17,7 @@
 #include <SwapChain.h>
 #include <Texture.h>
 
-#include <Window.h>
+#include <GenericPlatform/GenericWindow.h>
 
 #include <wrl/client.h>
 using namespace Microsoft::WRL;
@@ -31,7 +31,7 @@ using namespace DirectX;
 
 #include <algorithm>  // For std::min, std::max, and std::clamp.
 #include "Component/ProcedureMeshComponent.h"
-#include "GameFramework.h"
+#include "GenericPlatform/GameFramework.h"
 struct Mat
 {
     XMMATRIX ModelMatrix;
@@ -131,7 +131,7 @@ XMMATRIX XM_CALLCONV LookAtMatrix( FXMVECTOR Position, FXMVECTOR Direction, FXMV
     return M;
 }
 
-Editor::Editor( const std::wstring& name, int width, int height, bool vSync )
+Editor::Editor( const std::string& name, int width, int height, bool vSync )
 : m_ScissorRect( CD3DX12_RECT( 0, 0, LONG_MAX, LONG_MAX ) )
 , m_Forward( 0 )
 , m_Backward( 0 )
@@ -150,7 +150,12 @@ Editor::Editor( const std::wstring& name, int width, int height, bool vSync )
 , m_RenderScale( 1.0f )
 {
     m_Logger = GameFramework::Get().CreateLogger( "Editor" );
-    m_Window = GameFramework::Get().CreateWindow( name, width, height );
+    m_Window =std::make_shared<SWindow>();
+    m_Window->ClientSize = { width ,height };
+    m_Window->WindowTitle = name;
+
+    GameFramework::Get().GetSlateManager()->AddToView(m_Window);
+
 
     m_Window->Update += UpdateEvent::slot( &Editor::OnUpdate, this );
     m_Window->KeyPressed += KeyboardEvent::slot( &Editor::OnKeyPressed, this );
@@ -183,7 +188,8 @@ uint32_t Editor::Run()
 {
     LoadContent();
 
-    m_Window->Show();
+    
+    m_Window->ShowWindow();
 
     uint32_t retCode = GameFramework::Get().Run();
 
@@ -194,14 +200,16 @@ uint32_t Editor::Run()
 
 bool Editor::LoadContent()
 {
+    auto windowhandle = (HWND)m_Window->GetNativeWindow()->GetOSWindowHandle();
     m_Device    = Device::Create();
-    m_SwapChain = m_Device->CreateSwapChain( m_Window->GetWindowHandle(), DXGI_FORMAT_B8G8R8A8_UNORM );
+    m_SwapChain = m_Device->CreateSwapChain(windowhandle, DXGI_FORMAT_B8G8R8A8_UNORM );
     m_SwapChain->SetVSync( m_VSync );
 
-    m_GUI = m_Device->CreateGUI( m_Window->GetWindowHandle(), m_SwapChain->GetRenderTarget() );
+    m_GUI = m_Device->CreateGUI(windowhandle, m_SwapChain->GetRenderTarget() );
 
+    //todo gui
     // This magic here allows ImGui to process window messages.
-    GameFramework::Get().WndProcHandler += WndProcEvent::slot( &GUI::WndProcHandler, m_GUI );
+    //GameFramework::Get().WndProcHandler += WndProcEvent::slot( &GUI::WndProcHandler, m_GUI );
 
     auto& commandQueue = m_Device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COPY );
     auto  commandList  = commandQueue.GetCommandList();
@@ -548,15 +556,19 @@ void Editor::OnUpdate( UpdateEventArgs& e )
 
         m_Logger->info( "FPS: {:.7}", g_FPS );
 
-        wchar_t buffer[512];
-        ::swprintf_s( buffer, L"HDR [FPS: %f]", g_FPS );
-        m_Window->SetWindowTitle( buffer );
+        char buffer[512];
+        std::sprintf(buffer, "HDR [FPS: %f]", g_FPS);
+        m_Window->SetTitle( buffer );
 
         frameCount = 0;
         totalTime  = 0.0;
     }
-
-    m_Window->SetFullscreen( m_Fullscreen );
+    if (m_Fullscreen) {
+        m_Window->SetWindowMode(EWindowMode::Fullscreen);
+    }
+    else {
+        m_Window->SetWindowMode(EWindowMode::Windowed);
+    }
 
     // To reduce potential input lag, wait for the swap chain to be ready to present before updating the camera.
     m_SwapChain->WaitForSwapChain();
@@ -738,7 +750,7 @@ void Editor::OnGUI( const std::shared_ptr<dx12lib::CommandList>& commandList,
                 m_SwapChain->SetVSync( vSync );
             }
 
-            bool fullscreen = m_Window->IsFullscreen();
+            bool fullscreen = m_Window->GetWindowMode()==EWindowMode::Fullscreen;
             if ( ImGui::MenuItem( "Full screen", "Alt+Enter", &fullscreen ) )
             {
                 // m_Window->SetFullscreen( fullscreen );
@@ -1182,7 +1194,7 @@ void Editor::OnKeyPressed( KeyEventArgs& e )
             GameFramework::Get().Stop();
             break;
         case KeyCode::Enter:
-            if ( e.Alt )
+            if ( e.ModifierKeysState.IsAltDown() )
             {
             case KeyCode::F11:
                 if ( g_AllowFullscreenToggle )
@@ -1243,7 +1255,7 @@ void Editor::OnKeyReleased( KeyEventArgs& e )
         switch ( e.Key )
         {
         case KeyCode::Enter:
-            if ( e.Alt )
+            if (e.ModifierKeysState.IsAltDown())
             {
             case KeyCode::F11:
                 g_AllowFullscreenToggle = true;

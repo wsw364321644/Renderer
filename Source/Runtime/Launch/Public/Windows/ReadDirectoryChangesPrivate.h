@@ -26,6 +26,9 @@
 //	http://qualapps.blogspot.com/2010/05/understanding-readdirectorychangesw.html
 //	See ReadMe.txt for overview information.
 
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
 #include <string>
 #include <vector>
 #include <filesystem>

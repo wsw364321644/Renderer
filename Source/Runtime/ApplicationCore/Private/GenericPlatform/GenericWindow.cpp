@@ -3,169 +3,191 @@
 #include "GenericPlatform/GenericWindow.h"
 
 
-FGenericWindow::FGenericWindow()
+GenericWindow::GenericWindow():
+	bIsFullscreen(false)
+, bIsMinimized(false)
+, bIsMaximized(false)
 {
 
 }
 
-FGenericWindow::~FGenericWindow()
+GenericWindow::~GenericWindow()
 {
 
 }
 
-void FGenericWindow::ReshapeWindow( int32_t X, int32_t Y, int32_t Width, int32_t Height )
+void GenericWindow::ReshapeWindow( int32_t X, int32_t Y, int32_t Width, int32_t Height )
 {
 	// empty default functionality
 }
 
-bool FGenericWindow::GetFullScreenInfo( int32_t& X, int32_t& Y, int32_t& Width, int32_t& Height ) const
+bool GenericWindow::GetFullScreenInfo( int32_t& X, int32_t& Y, int32_t& Width, int32_t& Height ) const
 {
 	// this function cannot return valid results, and should not be needed on consoles, etc
 	//UE_LOG(LogGenericPlatformWindow, Fatal, TEXT("GetFullScreenInfo is not expected to be called on this platform"));
 	return false;
 }
 
-void FGenericWindow::MoveWindowTo ( int32_t X, int32_t Y )
+void GenericWindow::MoveWindowTo ( int32_t X, int32_t Y )
 {
 	// empty default functionality
 }
 
-void FGenericWindow::BringToFront( bool bForce )
+void GenericWindow::BringToFront( bool bForce )
 {
 	// empty default functionality
 }
 
-void FGenericWindow::HACK_ForceToFront()
+void GenericWindow::HACK_ForceToFront()
 {
 	// empty default functionality
 }
 
-void FGenericWindow::Destroy()
+void GenericWindow::Destroy()
 {
 	// empty default functionality
 }
 
-void FGenericWindow::Minimize()
+void GenericWindow::Minimize()
 {
 	// empty default functionality
 }
 
-void FGenericWindow::Maximize()
+void GenericWindow::Maximize()
 {
 	// empty default functionality
 }
 
-void FGenericWindow::Restore()
+void GenericWindow::Restore()
 {
 	// empty default functionality
 }
 
-void FGenericWindow::Show()
+void GenericWindow::Show()
 {
 	// empty default functionality
 }
 
-void FGenericWindow::Hide()
+void GenericWindow::Hide()
 {
 	// empty default functionality
 }
 
-void FGenericWindow::SetWindowMode( EWindowMode::Type InNewWindowMode )
+void GenericWindow::SetWindowMode( EWindowMode InNewWindowMode )
 {
 	// empty default functionality
 }
 
-EWindowMode::Type FGenericWindow::GetWindowMode() const
+EWindowMode GenericWindow::GetWindowMode() const
 {
 	// default functionality
 	return EWindowMode::Windowed;
 }
 
-bool FGenericWindow::IsMaximized() const
+bool GenericWindow::IsMaximized() const
+{
+	return bIsMaximized;
+}
+
+bool GenericWindow::IsMinimized() const
+{
+	return bIsMinimized;
+}
+
+
+bool GenericWindow::IsVisible() const
 {
 	// empty default functionality
 	return true;
 }
 
-bool FGenericWindow::IsMinimized() const
-{
-	return false;
-}
-
-
-bool FGenericWindow::IsVisible() const
-{
-	// empty default functionality
-	return true;
-}
-
-bool FGenericWindow::GetRestoredDimensions(int32_t& X, int32_t& Y, int32_t& Width, int32_t& Height)
+bool GenericWindow::GetRestoredDimensions(int32_t& X, int32_t& Y, int32_t& Width, int32_t& Height)
 {
 	// this function cannot return valid results, and should not be needed on consoles, etc
 	//UE_LOG(LogGenericPlatformWindow, Fatal, TEXT("GetRestoredDimensions is not expected to be called on this platform"));
 	return false;
 }
 
-void FGenericWindow::SetWindowFocus()
+void GenericWindow::SetWindowFocus()
 {
 	// empty default functionality
 }
 
-void FGenericWindow::SetOpacity( const float InOpacity )
+void GenericWindow::SetOpacity( const float InOpacity )
 {
 	// empty default functionality
 }
 
-void FGenericWindow::Enable( bool bEnable )
+void GenericWindow::Enable( bool bEnable )
 {
 	// empty default functionality
 }
 
-bool FGenericWindow::IsPointInWindow( int32_t X, int32_t Y ) const
+bool GenericWindow::IsPointInWindow( int32_t X, int32_t Y ) const
 {
 	// empty default functionality
 	return true;
 }
 	
-int32_t FGenericWindow::GetWindowBorderSize() const
+int32_t GenericWindow::GetWindowBorderSize() const
 {
 	// empty default functionality
 	return 0;
 }
 
-int32_t FGenericWindow::GetWindowTitleBarSize() const
+int32_t GenericWindow::GetWindowTitleBarSize() const
 {
 	// empty default functionality
 	return 0;
 }
 
-void* FGenericWindow::GetOSWindowHandle() const
+void* GenericWindow::GetOSWindowHandle() const
 {
 	return nullptr;
 }
 
-bool FGenericWindow::IsForegroundWindow() const 
+bool GenericWindow::IsForegroundWindow() const 
 {
 	// empty default functionality
 	return true;
 }
 
-void FGenericWindow::SetText(const char* const Text)
+void GenericWindow::SetText(const char* const Text)
 {
 	// empty default functionality
 }
 
-const FGenericWindowDefinition& FGenericWindow::GetDefinition() const
+const GenericWindowDefinition& GenericWindow::GetDefinition() const
 {
 	return *Definition.get();
 }
 
 
-void FGenericWindow::AdjustCachedSize(glm::vec2& Size ) const
+void GenericWindow::AdjustCachedSize(glm::vec2& Size ) const
 {
 }
 
-float FGenericWindow::GetDPIScaleFactor() const
+
+void GenericWindow::OnDPIScaleChanged(DPIScaleEventArgs& e)
 {
-	return 1.0f;
+	DPIScaling = e.DPIScale;
+}
+
+void GenericWindow::OnResize(ResizeEventArgs& e)
+{
+	if ((bIsMinimized || bIsMaximized) && e.State == EWindowState::Restored)
+	{
+		bIsMaximized = false;
+		bIsMinimized = false;
+	}
+	if (!bIsMinimized && e.State == EWindowState::Minimized)
+	{
+		bIsMinimized = true;
+		bIsMaximized = false;
+	}
+	if (!bIsMaximized && e.State == EWindowState::Maximized)
+	{
+		bIsMaximized = true;
+		bIsMinimized = false;
+	}
 }

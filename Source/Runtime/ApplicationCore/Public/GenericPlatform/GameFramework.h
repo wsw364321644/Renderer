@@ -8,20 +8,11 @@
  *  @brief The application class is used to create windows for our application.
  */
 
-#include "Events.h"
-#include "ReadDirectoryChanges.h"
+
 
 #include <gainput/gainput.h>
 #include <spdlog/logger.h>
 
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-
-// I want to use a function with this name but it conflicts with the Windows
-// macro defined in the Windows header files.
-#ifdef CreateWindow
-    #undef CreateWindow
-#endif
 
 #include <cstdint>      // for uint32_t
 #include <limits>       // for std::numeric_limits
@@ -31,7 +22,13 @@
 #include <thread>       // for std::thread
 #include <type_traits>  // for std::enable_if
 
-class Window;
+#include "Events.h"
+#include "ReadDirectoryChanges.h"
+#include "SlateManager.h"
+#include "GenericPlatform/GenericApplication.h"
+
+
+class GenericWindow;
 
 using Logger = std::shared_ptr<spdlog::logger>;
 
@@ -50,7 +47,7 @@ public:
      * @parm hInst The application instance.
      * @returns A reference to the created instance.
      */
-    static GameFramework& Create( HINSTANCE hInst );
+    static GameFramework& Create(std::shared_ptr< GenericApplication> inGenericApplication);
 
     /**
      * Destroy the Application instance.
@@ -63,6 +60,8 @@ public:
      */
     static GameFramework& Get();
 
+    GenericApplication* GetGenericApplication() { return m_GenericApplication.get(); }
+    SlateManager* GetSlateManager() { return m_SlateManager.get(); }
     /**
      * Create a named logger or get a previously created logger with the same
      * name.
@@ -135,46 +134,6 @@ public:
      */
     void Stop();
 
-    /**
-     * To support hot-loading of modified files, you can register a directory
-     * path for listening for file change notifications. File change
-     * notifications are set through the Application::FileChange event.
-     *
-     * @param dir The directory to listen for file changes.
-     * @param recursive Whether to listen for file changes in sub-folders.
-     */
-    void RegisterDirectoryChangeListener( const std::wstring& dir,
-                                          bool recursive = true );
-
-    /**
-     * Create a render window.
-     *
-     * @param windowName The name of the window instance. This will also be the
-     * name that appears in the title of the Window.
-     * @param clientWidth The width (in pixels) of the window's client area.
-     * @param clientHeight The height (in pixels) of the window's client area.
-     * @returns The created window instance.
-     */
-    std::shared_ptr<Window> CreateWindow( const std::wstring& windowName,
-                                          int clientWidth, int clientHeight );
-
-    /**
-     * Get a window by name.
-     *
-     * @param windowName The name that was used to create the window.
-     */
-    std::shared_ptr<Window>
-        GetWindowByName( const std::wstring& windowName ) const;
-
-    /**
-     * Invoked when a message is sent to a window.
-     */
-    WndProcEvent WndProcHandler;
-
-    /**
-     * Invoked when a file is modified on disk.
-     */
-    FileChangeEvent FileChanged;
 
     /**
      * Application is exiting.
@@ -184,14 +143,8 @@ public:
 protected:
     friend LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam );
 
-    GameFramework( HINSTANCE hInst );
+    GameFramework(std::shared_ptr<GenericApplication> inGenericApplication);
     virtual ~GameFramework();
-
-    // A file modification was detected.
-    virtual void OnFileChange( FileChangedEventArgs& e );
-
-    // Windows message handler.
-    virtual LRESULT OnWndProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam );
 
     // Application is going to close
     virtual void OnExit( EventArgs& e );
@@ -204,11 +157,6 @@ private:
     GameFramework& operator=( GameFramework& ) = delete;
     GameFramework& operator=( GameFramework&& ) = delete;
 
-    // Directory change listener thread entry point function.
-    void CheckFileChanges();
-
-    // Handle to application instance.
-    HINSTANCE m_hInstance;
 
     Logger m_Logger;
 
@@ -223,11 +171,8 @@ private:
     // Should the application quit?
     std::atomic_bool m_RequestQuit;
 
-    // Directory change listener.
-    CReadDirectoryChanges m_DirectoryChanges;
-    // Thread to run directory change listener.
-    std::thread m_DirectoryChangeListenerThread;
-    std::mutex  m_DirectoryChangeMutex;
-    // Flag to terminate directory change thread.
-    std::atomic_bool m_bTerminateDirectoryChangeThread;
+
+
+    std::shared_ptr<GenericApplication> m_GenericApplication;
+    std::shared_ptr < SlateManager> m_SlateManager;
 };

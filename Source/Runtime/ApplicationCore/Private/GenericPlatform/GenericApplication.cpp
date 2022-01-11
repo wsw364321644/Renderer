@@ -5,7 +5,6 @@
 #include "GenericPlatform/GenericApplication.h"
 
 
-
 const FGamepadKeyNames::Type FGamepadKeyNames::Invalid("");
 
 // Ensure that the GamepadKeyNames match those in InputCoreTypes.cpp
@@ -119,7 +118,7 @@ float GDebugActionZoneRatio = 1.0f;
 //
 //FSafeZoneConsoleVariables GSafeZoneConsoleVariables;
 
-FPlatformRect FDisplayMetrics::GetMonitorWorkAreaFromPoint(const DirectX::XMFLOAT2& Point) const
+FPlatformRect FDisplayMetrics::GetMonitorWorkAreaFromPoint(const glm::vec2& Point) const
 {
 	for (const FMonitorInfo& Info : MonitorInfo)
 	{
@@ -146,7 +145,7 @@ float FDisplayMetrics::GetDebugActionSafeZoneRatio()
 void FDisplayMetrics::ApplyDefaultSafeZones()
 {
 	// Allow safe zones to be overridden by the command line. Used by mobile PIE.
-	TitleSafePaddingSize = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
+	TitleSafePaddingSize = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
 	bool bSetByCommandLine;
 	bSetByCommandLine = false; //FParse::Value(FCommandLine::Get(), TEXT("SafeZonePaddingLeft="), TitleSafePaddingSize.X);
 	bSetByCommandLine = false; //FParse::Value(FCommandLine::Get(), TEXT("SafeZonePaddingRight="), TitleSafePaddingSize.Y) || bSetByCommandLine;
@@ -159,7 +158,7 @@ void FDisplayMetrics::ApplyDefaultSafeZones()
 		if (SafeZoneRatio < 1.0f)
 		{
 			const float HalfUnsafeRatio = (1.0f - SafeZoneRatio) * 0.5f;
-			TitleSafePaddingSize = DirectX::XMFLOAT4(PrimaryDisplayWidth * HalfUnsafeRatio, PrimaryDisplayHeight * HalfUnsafeRatio, PrimaryDisplayWidth * HalfUnsafeRatio, PrimaryDisplayHeight * HalfUnsafeRatio);
+			TitleSafePaddingSize = glm::vec4(PrimaryDisplayWidth * HalfUnsafeRatio, PrimaryDisplayHeight * HalfUnsafeRatio, PrimaryDisplayWidth * HalfUnsafeRatio, PrimaryDisplayHeight * HalfUnsafeRatio);
 		}
 	}
 
@@ -167,7 +166,7 @@ void FDisplayMetrics::ApplyDefaultSafeZones()
 	if (ActionSafeZoneRatio < 1.0f)
 	{
 		const float HalfUnsafeRatio = (1.0f - ActionSafeZoneRatio) * 0.5f;
-		ActionSafePaddingSize = DirectX::XMFLOAT4(PrimaryDisplayWidth * HalfUnsafeRatio, PrimaryDisplayHeight * HalfUnsafeRatio, PrimaryDisplayWidth * HalfUnsafeRatio, PrimaryDisplayHeight * HalfUnsafeRatio);
+		ActionSafePaddingSize = glm::vec4(PrimaryDisplayWidth * HalfUnsafeRatio, PrimaryDisplayHeight * HalfUnsafeRatio, PrimaryDisplayWidth * HalfUnsafeRatio, PrimaryDisplayHeight * HalfUnsafeRatio);
 	}
 }
 

@@ -5,54 +5,34 @@
 #include <memory>
 
 #include <glm/vec2.hpp>
-struct FGenericWindowDefinition;
 
-/**
- * Modes that an FGenericWindow can be in
- */
-namespace EWindowMode
+#include "GenericPlatform/Events.h"
+
+struct GenericWindowDefinition;
+
+
+enum class EWindowMode
 {
-	enum Type
-	{
-		/** The window is in true fullscreen mode */
-		Fullscreen,
-		/** The window has no border and takes up the entire area of the screen */
-		WindowedFullscreen,
-		/** The window has a border and may not take up the entire screen area */
-		Windowed,
+	/** The window is in true fullscreen mode */
+	Fullscreen,
+	/** The window has no border and takes up the entire area of the screen */
+	WindowedFullscreen,
+	/** The window has a border and may not take up the entire screen area */
+	Windowed,
 
-		/** The total number of supported window modes */
-		NumWindowModes
-	};
-
-	static inline Type ConvertIntToWindowMode(int32_t InWindowMode)
-	{
-		Type WindowMode = Windowed;
-		switch (InWindowMode)
-		{
-		case 0:
-			WindowMode = Fullscreen;
-			break;
-		case 1:
-			WindowMode = WindowedFullscreen;
-			break;
-		case 2:
-		default:
-			WindowMode = Windowed;
-			break;
-		}
-		return WindowMode;
-	}
-}
+	/** The total number of supported window modes */
+	NumWindowModes
+};
 
 
-class  FGenericWindow
+
+class  GenericWindow
 {
 public:
 
-	FGenericWindow();
+	GenericWindow();
 
-	virtual ~FGenericWindow();
+	virtual ~GenericWindow();
 
 	/** Native windows should implement ReshapeWindow by changing the platform-specific window to be located at (X,Y) and be the dimensions Width x Height. */
 	virtual void ReshapeWindow(int32_t X, int32_t Y, int32_t Width, int32_t Height );
@@ -88,10 +68,10 @@ public:
 	virtual void Hide();
 
 	/** Toggle native window between fullscreen and normal mode */
-	virtual void SetWindowMode( EWindowMode::Type InNewWindowMode );
+	virtual void SetWindowMode( EWindowMode InNewWindowMode );
 
 	/** @return true if the native window is currently in fullscreen mode, false otherwise */
-	virtual EWindowMode::Type GetWindowMode() const;
+	virtual EWindowMode GetWindowMode() const;
 
 	/** @return true if the native window is maximized, false otherwise */
 	virtual bool IsMaximized() const;
@@ -153,18 +133,29 @@ public:
 	virtual void SetText(const char* const Text);
 
 	/** @return	The definition describing properties of the window */
-	virtual const FGenericWindowDefinition& GetDefinition() const;
+	virtual const GenericWindowDefinition& GetDefinition() const;
 
 	/** @return	Gives the native window a chance to adjust our stored window size before we cache it off */
 	virtual void AdjustCachedSize( glm::vec2& Size ) const;
 
-	/**
-	 * @return ratio of pixels to SlateUnits in this window.
-	 * E.g. DPIScale of 2.0 means there is a 2x2 pixel square for every 1x1 SlateUnit.
-	 */
-	virtual float GetDPIScaleFactor() const;
-	
-protected:
+	virtual void OnDPIScaleChanged(DPIScaleEventArgs& e) ;
+	virtual void OnResize(ResizeEventArgs& e) ;
+	virtual void OnMinimized(ResizeEventArgs& e) {};
+	virtual void OnMaximized(ResizeEventArgs& e) {};
+	virtual void OnRestored(ResizeEventArgs& e) {};
+	virtual void OnMouseEnter(MouseMotionEventArgs& e) {}
+	virtual void OnMouseLeave(EventArgs& e) {}
+	virtual void OnMouseMoved(MouseMotionEventArgs& e) {}
+	virtual void OnMouseButtonPressed(MouseButtonEventArgs& e) {}
+	virtual void OnMouseButtonReleased(MouseButtonEventArgs& e) {}
 
-	std::shared_ptr< FGenericWindowDefinition > Definition;
+	float GetDPIScaling() const { return DPIScaling; };
+
+protected:
+	std::shared_ptr< GenericWindowDefinition > Definition;
+
+	float DPIScaling;
+	bool bIsFullscreen:1;
+	bool bIsMinimized:1;
+	bool bIsMaximized:1;
 };

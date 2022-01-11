@@ -4,24 +4,13 @@
 
 
 #include "Misc/Optional.h"
-#include <DirectXMath.h>
+#include "Events.h"
+#include <glm/glm.hpp>
 #include <memory>
 #include <vector>
-class FGenericWindow;
+class GenericWindow;
 
-namespace EMouseButtons
-{
-	enum Type
-	{
-		Left = 0,
-		Middle,
-		Right,
-		Thumb01,
-		Thumb02,
 
-		Invalid,
-	};
-}
 
 struct  FGamepadKeyNames
 {
@@ -103,17 +92,6 @@ namespace EWindowZone
 }
 
 
-namespace EWindowAction
-{
-	enum Type
-	{
-		ClickedNonClientArea	= 1,
-		Maximize				= 2,
-		Restore					= 3,
-		WindowMenu				= 4,
-	};
-}
-
 
 /**
  * 
@@ -167,7 +145,7 @@ private:
 
 /** 
  * Context scope that indicates which IInputDevice is currently being handled. 
- * This can be used to determine hardware-specific information when handling input from FGenericApplicationMessageHandler subclasses.
+ * This can be used to determine hardware-specific information when handling input from GenericApplicationMessageHandler subclasses.
  * This is generally set during SendControllerEvents or Tick and is only valid on the game thread.
  */
 class  FInputDeviceScope
@@ -204,13 +182,13 @@ private:
 };
 
 /** Interface that defines how to handle interaction with a user via hardware input and output */
-class FGenericApplicationMessageHandler
+class GenericApplicationMessageHandler
 {
 public:
 
-	virtual ~FGenericApplicationMessageHandler() {}
+	virtual ~GenericApplicationMessageHandler() {}
 
-	virtual bool ShouldProcessUserInputMessages( const std::shared_ptr < FGenericWindow >& PlatformWindow ) const
+	virtual bool ShouldProcessUserInputMessages( const std::shared_ptr < GenericWindow >& PlatformWindow ) const
 	{
 		return false;
 	}
@@ -220,12 +198,12 @@ public:
 		return false;
 	}
 
-	virtual bool OnKeyDown( const int32_t KeyCode, const uint32_t CharacterCode, const bool IsRepeat ) 
+	virtual bool OnKeyDown(const int32_t KeyCode, const uint32_t CharacterCode, const bool IsRepeat)
 	{
 		return false;
 	}
 
-	virtual bool OnKeyUp( const int32_t KeyCode, const uint32_t CharacterCode, const bool IsRepeat )
+	virtual bool OnKeyUp(const int32_t KeyCode, const uint32_t CharacterCode, const bool IsRepeat)
 	{
 		return false;
 	}
@@ -234,32 +212,32 @@ public:
 	{
 	}
 
-	virtual bool OnMouseDown( const std::shared_ptr< FGenericWindow >& Window, const EMouseButtons::Type Button )
+	virtual bool OnMouseDown( const std::shared_ptr< GenericWindow >& Window, const EMouseButton Button )
 	{
 		return false;
 	}
 
-	virtual bool OnMouseDown( const std::shared_ptr< FGenericWindow >& Window, const EMouseButtons::Type Button, const DirectX::XMFLOAT2 CursorPos )
+	virtual bool OnMouseDown( const std::shared_ptr< GenericWindow >& Window, const EMouseButton, const glm::vec2 CursorPos )
 	{
 		return false;
 	}
 
-	virtual bool OnMouseUp( const EMouseButtons::Type Button )
+	virtual bool OnMouseUp( const EMouseButton Button )
 	{
 		return false;
 	}
 
-	virtual bool OnMouseUp( const EMouseButtons::Type Button, const DirectX::XMFLOAT2 CursorPos )
+	virtual bool OnMouseUp( const EMouseButton Button, const glm::vec2 CursorPos )
 	{
 		return false;
 	}
 
-	virtual bool OnMouseDoubleClick( const std::shared_ptr< FGenericWindow >& Window, const EMouseButtons::Type Button )
+	virtual bool OnMouseDoubleClick( const std::shared_ptr< GenericWindow >& Window, const EMouseButton Button )
 	{
 		return false;
 	}
 
-	virtual bool OnMouseDoubleClick( const std::shared_ptr< FGenericWindow >& Window, const EMouseButtons::Type Button, const DirectX::XMFLOAT2 CursorPos )
+	virtual bool OnMouseDoubleClick( const std::shared_ptr< GenericWindow >& Window, const EMouseButton Button, const glm::vec2 CursorPos )
 	{
 		return false;
 	}
@@ -269,7 +247,7 @@ public:
 		return false;
 	}
 
-	virtual bool OnMouseWheel( const float Delta, const DirectX::XMFLOAT2 CursorPos )
+	virtual bool OnMouseWheel( const float Delta, const glm::vec2 CursorPos )
 	{
 		return false;
 	}
@@ -308,7 +286,7 @@ public:
     {
     }
 
-	virtual bool OnTouchGesture( EGestureEvent GestureType, const DirectX::XMFLOAT2& Delta, float WheelDelta, bool bIsDirectionInvertedFromDevice )
+	virtual bool OnTouchGesture( EGestureEvent GestureType, const glm::vec2& Delta, float WheelDelta, bool bIsDirectionInvertedFromDevice )
 	{
 		return false;
 	}
@@ -319,28 +297,28 @@ public:
 
 
 
-	virtual bool OnTouchStarted( const std::shared_ptr< FGenericWindow >& Window, const DirectX::XMFLOAT2& Location, float Force, int32_t TouchIndex, int32_t ControllerId )
+	virtual bool OnTouchStarted( const std::shared_ptr< GenericWindow >& Window, const glm::vec2& Location, float Force, int32_t TouchIndex, int32_t ControllerId )
 	{
 		return false;
 	}
 
 
-	virtual bool OnTouchMoved( const DirectX::XMFLOAT2& Location, float Force, int32_t TouchIndex, int32_t ControllerId )
+	virtual bool OnTouchMoved( const glm::vec2& Location, float Force, int32_t TouchIndex, int32_t ControllerId )
 	{
 		return false;
 	}
 
-	virtual bool OnTouchEnded( const DirectX::XMFLOAT2& Location, int32_t TouchIndex, int32_t ControllerId )
+	virtual bool OnTouchEnded( const glm::vec2& Location, int32_t TouchIndex, int32_t ControllerId )
 	{
 		return false;
 	}
 
-	virtual bool OnTouchForceChanged(const DirectX::XMFLOAT2& Location, float Force, int32_t TouchIndex, int32_t ControllerId)
+	virtual bool OnTouchForceChanged(const glm::vec2& Location, float Force, int32_t TouchIndex, int32_t ControllerId)
 	{
 		return false;
 	}
 
-	virtual bool OnTouchFirstMove(const DirectX::XMFLOAT2& Location, float Force, int32_t TouchIndex, int32_t ControllerId)
+	virtual bool OnTouchFirstMove(const glm::vec2& Location, float Force, int32_t TouchIndex, int32_t ControllerId)
 	{
 		return false;
 	}
@@ -350,57 +328,57 @@ public:
 
 	}
 
-	virtual bool OnMotionDetected( const DirectX::XMFLOAT3 & Tilt, const DirectX::XMFLOAT3& RotationRate, const DirectX::XMFLOAT3& Gravity, const DirectX::XMFLOAT3& Acceleration, int32_t ControllerId )
+	virtual bool OnMotionDetected( const glm::vec3 & Tilt, const glm::vec3& RotationRate, const glm::vec3& Gravity, const glm::vec3& Acceleration, int32_t ControllerId )
 	{
 		return false;
 	}
 
-	virtual bool OnSizeChanged( const std::shared_ptr< FGenericWindow >& Window, const int32_t Width, const int32_t Height, bool bWasMinimized = false )
+	virtual bool OnSizeChanged( const std::shared_ptr< GenericWindow >& Window, const int32_t Width, const int32_t Height, bool bWasMinimized = false )
 	{
 		return false;
 	}
 
-	virtual void OnOSPaint( const std::shared_ptr<FGenericWindow>& Window )
+	virtual void OnOSPaint( const std::shared_ptr<GenericWindow>& Window )
 	{
 	
 	}
 
-	virtual FWindowSizeLimits GetSizeLimitsForWindow( const std::shared_ptr<FGenericWindow>& Window ) const
+	virtual FWindowSizeLimits GetSizeLimitsForWindow( const std::shared_ptr<GenericWindow>& Window ) const
 	{
 		return FWindowSizeLimits();
 	}
 
-	virtual void OnResizingWindow( const std::shared_ptr< FGenericWindow >& Window )
+	virtual void OnResizingWindow( const std::shared_ptr< GenericWindow >& Window )
 	{
 
 	}
 
-	virtual bool BeginReshapingWindow( const std::shared_ptr< FGenericWindow >& Window )
+	virtual bool BeginReshapingWindow( const std::shared_ptr< GenericWindow >& Window )
 	{
 		return true;
 	}
 
-	virtual void FinishedReshapingWindow( const std::shared_ptr< FGenericWindow >& Window )
+	virtual void FinishedReshapingWindow( const std::shared_ptr< GenericWindow >& Window )
 	{
 
 	}
 
-	virtual void HandleDPIScaleChanged( const std::shared_ptr< FGenericWindow >& Window )
+	virtual void HandleDPIScaleChanged( const std::shared_ptr< GenericWindow >& Window )
 	{
 
 	}
 
-	virtual void SignalSystemDPIChanged(const std::shared_ptr< FGenericWindow >& Window)
+	virtual void SignalSystemDPIChanged(const std::shared_ptr< GenericWindow >& Window)
 	{
 
 	}	
 
-	virtual void OnMovedWindow( const std::shared_ptr< FGenericWindow >& Window, const int32_t X, const int32_t Y )
+	virtual void OnMovedWindow( const std::shared_ptr< GenericWindow >& Window, const int32_t X, const int32_t Y )
 	{
 
 	}
 
-	virtual bool OnWindowActivationChanged( const std::shared_ptr< FGenericWindow >& Window, const EWindowActivation ActivationType )
+	virtual bool OnWindowActivationChanged( const std::shared_ptr< GenericWindow >& Window, const EWindowActivation ActivationType )
 	{
 		return false;
 	}
@@ -410,57 +388,62 @@ public:
 		return false;
 	}
 
+	virtual bool OnWindowFocusChanged(const std::shared_ptr< GenericWindow >& Window, bool focus)
+	{
+		return true;
+	}
+
 	virtual bool OnConvertibleLaptopModeChanged()
 	{
 		return false;
 	}
 
-	virtual EWindowZone::Type GetWindowZoneForPoint( const std::shared_ptr< FGenericWindow >& Window, const int32_t X, const int32_t Y )
+	virtual EWindowZone::Type GetWindowZoneForPoint( const std::shared_ptr< GenericWindow >& Window, const int32_t X, const int32_t Y )
 	{
 		return EWindowZone::NotInWindow;
 	}
 
-	virtual void OnWindowClose( const std::shared_ptr< FGenericWindow >& Window )
+	virtual void OnWindowClose( const std::shared_ptr< GenericWindow >& Window )
 	{
 
 	}
 
-	virtual EDropEffect::Type OnDragEnterText( const std::shared_ptr< FGenericWindow >& Window, const std::string& Text )
-	{
-		return EDropEffect::None;
-	}
-
-	virtual EDropEffect::Type OnDragEnterFiles( const std::shared_ptr< FGenericWindow >& Window, const std::vector< std::string >& Files )
+	virtual EDropEffect::Type OnDragEnterText( const std::shared_ptr< GenericWindow >& Window, const std::string& Text )
 	{
 		return EDropEffect::None;
 	}
 
-	virtual EDropEffect::Type OnDragEnterExternal( const std::shared_ptr< FGenericWindow >& Window, const std::string& Text, const std::vector< std::string >& Files )
+	virtual EDropEffect::Type OnDragEnterFiles( const std::shared_ptr< GenericWindow >& Window, const std::vector< std::string >& Files )
 	{
 		return EDropEffect::None;
 	}
 
-	virtual EDropEffect::Type OnDragOver( const std::shared_ptr< FGenericWindow >& Window )
+	virtual EDropEffect::Type OnDragEnterExternal( const std::shared_ptr< GenericWindow >& Window, const std::string& Text, const std::vector< std::string >& Files )
 	{
 		return EDropEffect::None;
 	}
 
-	virtual void OnDragLeave( const std::shared_ptr< FGenericWindow >& Window )
-	{
-
-	}
-
-	virtual EDropEffect::Type OnDragDrop( const std::shared_ptr< FGenericWindow >& Window )
+	virtual EDropEffect::Type OnDragOver( const std::shared_ptr< GenericWindow >& Window )
 	{
 		return EDropEffect::None;
 	}
 
-	virtual bool OnWindowAction( const std::shared_ptr< FGenericWindow >& Window, const EWindowAction::Type InActionType)
+	virtual void OnDragLeave( const std::shared_ptr< GenericWindow >& Window )
+	{
+
+	}
+
+	virtual EDropEffect::Type OnDragDrop( const std::shared_ptr< GenericWindow >& Window )
+	{
+		return EDropEffect::None;
+	}
+
+	virtual bool OnWindowAction( const std::shared_ptr< GenericWindow >& Window, const EWindowState InActionType)
 	{
 		return true;
 	}
 
-	virtual void SetCursorPos(const DirectX::XMFLOAT2& MouseCoordinate)
+	virtual void SetCursorPos(const glm::vec2& MouseCoordinate)
 	{
 
 	}

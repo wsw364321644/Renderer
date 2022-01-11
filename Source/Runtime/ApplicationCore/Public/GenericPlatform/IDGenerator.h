@@ -6,7 +6,7 @@
 #include <uuid.h>
 
 /**
- * Modes that an FGenericWindow can be in
+ * Modes that an GenericWindow can be in
  */
 namespace IDGenerator
 {

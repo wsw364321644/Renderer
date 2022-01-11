@@ -11,19 +11,11 @@ if( MSVC )
     add_compile_options(/MP)
 endif()
 
-file(GLOB_RECURSE CORE_INC LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/Core/Public/*.h" "${PROJECT_SOURCE_DIR}/Source/Runtime/Core/Public/*.hpp")
-file(GLOB_RECURSE CORE_SRC LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/Core/Private/*.cpp")
-source_group(TREE ${PROJECT_SOURCE_DIR} FILES ${CORE_INC} ${CORE_SRC} )
 
-
-file(GLOB_RECURSE Engine_INC LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/Engine/Public/*.h" "${PROJECT_SOURCE_DIR}/Source/Runtime/Engine/Public/*.hpp")
-file(GLOB_RECURSE Engine_SRC LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/Engine/Private/*.cpp")
-source_group(  TREE ${PROJECT_SOURCE_DIR} FILES ${Engine_INC}  ${Engine_SRC} )
 
 
 file(GLOB Launch_INC LIST_DIRECTORIES false CONFIGURE_DEPENDS  "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Public/*.h" "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Public/*.hpp")
 file(GLOB Launch_SRC LIST_DIRECTORIES false CONFIGURE_DEPENDS  "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Private/*.cpp")
-
 if(WIN32)
 	file(GLOB_RECURSE Launch_INC_PLAT LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Public/Windows/*.h" "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Public/Windows/*.hpp")  
     set(Launch_INC "${Launch_INC};${Launch_INC_PLAT}")
@@ -34,9 +26,6 @@ if(WIN32)
 endif()
 source_group( TREE ${PROJECT_SOURCE_DIR} FILES ${Launch_INC} ${Launch_SRC}  )
 
-
-
-
 file(GLOB_RECURSE ApplicationCore_INC LIST_DIRECTORIES false CONFIGURE_DEPENDS  "${PROJECT_SOURCE_DIR}/Source/Runtime/ApplicationCore/Public/GenericPlatform/*.h" "${PROJECT_SOURCE_DIR}/Source/Runtime/ApplicationCore/Public/GenericPlatform/*.hpp")
 file(GLOB_RECURSE ApplicationCore_SRC LIST_DIRECTORIES false CONFIGURE_DEPENDS  "${PROJECT_SOURCE_DIR}/Source/Runtime/ApplicationCore/Private/GenericPlatform/*.cpp")
 if(WIN32)
@@ -46,6 +35,29 @@ if(WIN32)
     set(ApplicationCore_SRC "${ApplicationCore_SRC};${ApplicationCore_SRC_PLAT}")
 endif()
 source_group( TREE ${PROJECT_SOURCE_DIR} FILES ${ApplicationCore_INC} ${ApplicationCore_SRC}  )
+
+
+file(GLOB_RECURSE InputCore_INC LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/InputCore/Public/*.h" "${PROJECT_SOURCE_DIR}/Source/Runtime/InputCore/Public/*.hpp")
+file(GLOB_RECURSE InputCore_SRC LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/InputCore/Private/*.cpp")
+if(WIN32)
+	file(GLOB_RECURSE InputCore_INC_PLAT LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/InputCore/Public/Windows/*.h" "${PROJECT_SOURCE_DIR}/Source/Runtime/InputCore/Public/Windows/*.hpp")  
+    set(InputCore_INC "${InputCore_INC};${InputCore_INC_PLAT}")
+	file(GLOB_RECURSE InputCore_SRC_PLAT LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/InputCore/Private/Windows/*.cpp")
+    set(InputCore_SRC "${InputCore_SRC};${InputCore_SRC_PLAT}")
+endif()
+source_group(TREE ${PROJECT_SOURCE_DIR} FILES ${InputCore_INC} ${InputCore_SRC} )
+
+
+
+
+file(GLOB_RECURSE CORE_INC LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/Core/Public/*.h" "${PROJECT_SOURCE_DIR}/Source/Runtime/Core/Public/*.hpp")
+file(GLOB_RECURSE CORE_SRC LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/Core/Private/*.cpp")
+source_group(TREE ${PROJECT_SOURCE_DIR} FILES ${CORE_INC} ${CORE_SRC} )
+
+
+file(GLOB_RECURSE Engine_INC LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/Engine/Public/*.h" "${PROJECT_SOURCE_DIR}/Source/Runtime/Engine/Public/*.hpp")
+file(GLOB_RECURSE Engine_SRC LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/Engine/Private/*.cpp")
+source_group(  TREE ${PROJECT_SOURCE_DIR} FILES ${Engine_INC}  ${Engine_SRC} )
 
 file(GLOB_RECURSE Slate_INC LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/Slate/Public/*.h" "${PROJECT_SOURCE_DIR}/Source/Runtime/Slate/Public/*.hpp")
 file(GLOB_RECURSE Slate_SRC LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/Slate/Private/*.cpp")
@@ -130,6 +142,8 @@ add_executable( ${TARGET_NAME} WIN32
     ${ApplicationCore_SRC}
     ${Engine_INC}
     ${Engine_SRC}
+    ${InputCore_INC}
+    ${InputCore_SRC}
     ${Slate_INC}
     ${Slate_SRC}
     ${D3D12RHI_INC}
@@ -158,6 +172,7 @@ target_include_directories( ${TARGET_NAME}
     PUBLIC ${PROJECT_SOURCE_DIR}/Source/Runtime/D3D12RHI/Public
     PUBLIC ${PROJECT_SOURCE_DIR}/Source/Runtime/Slate/Public
     PUBLIC ${PROJECT_SOURCE_DIR}/Source/Runtime/ApplicationCore/Public
+    PUBLIC ${PROJECT_SOURCE_DIR}/Source/Runtime/InputCore/Public
     PRIVATE ${PROJECT_SOURCE_DIR}/Source/Editor/Public
     PUBLIC ${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Public
     PRIVATE ${PROJECT_SOURCE_DIR}/ThirdParty/imgui
@@ -180,6 +195,8 @@ target_link_libraries( ${TARGET_NAME}
     gainput
     glm
     stduuid
+	Taskflow
+	SDL2
     d3d12.lib
     dxgi.lib
     d3dcompiler.lib

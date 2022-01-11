@@ -3,7 +3,7 @@
 #include "Camera.h"
 #include "Light.h"
 #include"World.h"
-#include <GameFramework.h>
+#include <GenericPlatform/GameFramework.h>
 
 #include <RenderTarget.h>
 
@@ -26,12 +26,12 @@ class Texture;
 
 }  // namespace dx12lib
 
-class Window;  // From GameFramework.
+class GenericWindow;  // From GameFramework.
 
 class Editor
 {
 public:
-    Editor( const std::wstring& name, int width, int height, bool vSync = false );
+    Editor( const std::string& name, int width, int height, bool vSync = false );
     virtual ~Editor();
 
     /**
@@ -93,7 +93,7 @@ private:
     std::shared_ptr<dx12lib::SwapChain> m_SwapChain;
     std::shared_ptr<dx12lib::GUI>       m_GUI;
 
-    std::shared_ptr<Window> m_Window;
+    std::shared_ptr<SWindow> m_Window;
 
 
     std::shared_ptr<World>       m_World;

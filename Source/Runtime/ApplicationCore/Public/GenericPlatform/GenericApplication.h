@@ -3,50 +3,19 @@
 #pragma once
 #include<vector>
 #include<glm/vec2.hpp>
-#include"Templates/Event.h"
+
+#include "DeviceInputManager.h"
 #include "GenericPlatform/GenericWindowDefinition.h"
 #include "GenericPlatform/GenericWindow.h"
+#include "Misc/HighResolutionTimer.h"
 
 class FSlateApplication;
 class IAnalyticsProvider;
-class ICursor;
+
 class IInputInterface;
 class ITextInputMethodSystem;
 class IForceFeedbackSystem;
 
-/**
-* Enumerates available modifier keys for input gestures.
-*/
-namespace EModifierKey
-{
-	typedef uint8_t Type;
-
-	/** No key. */
-	const Type None	= 0;
-
-	/** Ctrl key (Command key on Mac, Control key on Windows). */
-	const Type Control = 1 << 0;
-
-	/** Alt key. */
-	const Type Alt = 1 << 1;
-
-	/** Shift key. */
-	const Type Shift = 1 << 2;
-
-	/** Cmd key (Control key on Mac, Win key on Windows) */
-	const Type Command = 1 << 3;
-
-	inline EModifierKey::Type FromBools(const bool bControl, const bool bAlt, const bool bShift, const bool bCommand)
-	{
-		EModifierKey::Type ModifierMask = EModifierKey::None;
-		if (bControl)	ModifierMask |= EModifierKey::Control;
-		if (bAlt)		ModifierMask |= EModifierKey::Alt;
-		if (bShift)		ModifierMask |= EModifierKey::Shift;
-		if (bCommand)	ModifierMask |= EModifierKey::Command;
-
-		return ModifierMask;
-	}
-};
 
 
 namespace EPopUpOrientation
@@ -62,241 +31,7 @@ namespace EPopUpOrientation
 /**
  * FModifierKeysState stores the pressed state of keys that are commonly used as modifiers
  */
-class FModifierKeysState
-{
 
-public:
-
-	/**
-	 * Constructor.  Events are immutable once constructed.
-	 *
-	 * @param  bInIsLeftShiftDown  True if left shift is pressed
-	 * @param  bInIsRightShiftDown  True if right shift is pressed
-	 * @param  bInIsLeftControlDown  True if left control is pressed
-	 * @param  bInIsRightControlDown  True if right control is pressed
-	 * @param  bInIsLeftAltDown  True if left alt is pressed
-	 * @param  bInIsRightAltDown  True if right alt is pressed
-	 */
-	FModifierKeysState( const bool bInIsLeftShiftDown,
-						const bool bInIsRightShiftDown,
-						const bool bInIsLeftControlDown,
-						const bool bInIsRightControlDown,
-						const bool bInIsLeftAltDown,
-						const bool bInIsRightAltDown,
-						const bool bInIsLeftCommandDown,
-						const bool bInIsRightCommandDown,
-						const bool bInAreCapsLocked)
-		: bIsLeftShiftDown( bInIsLeftShiftDown ),
-		  bIsRightShiftDown( bInIsRightShiftDown ),
-		  bIsLeftControlDown( bInIsLeftControlDown ),
-		  bIsRightControlDown( bInIsRightControlDown ),
-		  bIsLeftAltDown( bInIsLeftAltDown ),
-		  bIsRightAltDown( bInIsRightAltDown ),
-		  bIsLeftCommandDown( bInIsLeftCommandDown ),
-		  bIsRightCommandDown( bInIsRightCommandDown ),
-		  bAreCapsLocked( bInAreCapsLocked )
-	{
-	}
-
-	FModifierKeysState()
-		: bIsLeftShiftDown(false),
-		  bIsRightShiftDown(false),
-		  bIsLeftControlDown(false),
-		  bIsRightControlDown(false),
-		  bIsLeftAltDown(false),
-		  bIsRightAltDown(false),
-		  bIsLeftCommandDown(false),
-		  bIsRightCommandDown(false),
-		  bAreCapsLocked(false)
-	{
-	}
-	
-	/**
-	 * Returns true if either shift key was down when this event occurred
-	 *
-	 * @return  True if shift is pressed
-	 */
-	bool IsShiftDown() const
-	{
-		return bIsLeftShiftDown || bIsRightShiftDown;
-	}
-
-	/**
-	 * Returns true if left shift key was down when this event occurred
-	 *
-	 * @return  True if left shift is pressed
-	 */
-	bool IsLeftShiftDown() const
-	{
-		return bIsLeftShiftDown;
-	}
-
-	/**
-	 * Returns true if right shift key was down when this event occurred
-	 *
-	 * @return  True if right shift is pressed
-	 */
-	bool IsRightShiftDown() const
-	{
-		return bIsRightShiftDown;
-	}
-
-	/**
-	 * Returns true if either control key was down when this event occurred
-	 *
-	 * @return  True if control is pressed
-	 */
-	bool IsControlDown() const
-	{
-		return bIsLeftControlDown || bIsRightControlDown;
-	}
-
-	/**
-	 * Returns true if left control key was down when this event occurred
-	 *
-	 * @return  True if left control is pressed
-	 */
-	bool IsLeftControlDown() const
-	{
-		return bIsLeftControlDown;
-	}
-
-	/**
-	 * Returns true if right control key was down when this event occurred
-	 *
-	 * @return  True if right control is pressed
-	 */
-	bool IsRightControlDown() const
-	{
-		return bIsRightControlDown;
-	}
-
-	/**
-	 * Returns true if either alt key was down when this event occurred
-	 *
-	 * @return  True if alt is pressed
-	 */
-	bool IsAltDown() const
-	{
-		return bIsLeftAltDown || bIsRightAltDown;
-	}
-
-	/**
-	 * Returns true if left alt key was down when this event occurred
-	 *
-	 * @return  True if left alt is pressed
-	 */
-	bool IsLeftAltDown() const
-	{
-		return bIsLeftAltDown;
-	}
-
-	/**
-	 * Returns true if right alt key was down when this event occurred
-	 *
-	 * @return  True if right alt is pressed
-	 */
-	bool IsRightAltDown() const
-	{
-		return bIsRightAltDown;
-	}
-	
-	/**
-	 * Returns true if either command key was down when this event occurred
-	 *
-	 * @return  True if command is pressed
-	 */
-	bool IsCommandDown() const
-	{
-		return bIsLeftCommandDown || bIsRightCommandDown;
-	}
-	
-	/**
-	 * Returns true if left command key was down when this event occurred
-	 *
-	 * @return  True if left command is pressed
-	 */
-	bool IsLeftCommandDown() const
-	{
-		return bIsLeftCommandDown;
-	}
-	
-	/**
-	 * Returns true if right command key was down when this event occurred
-	 *
-	 * @return  True if right command is pressed
-	 */
-	bool IsRightCommandDown() const
-	{
-		return bIsRightCommandDown;
-	}
-
-
-	/**
-	 * @return  true if the Caps Lock key has been toggled to the enabled state.
-	 */
-	bool AreCapsLocked() const
-	{
-		return bAreCapsLocked;
-	}
-
-	/**
-	 * @param ModifierKeys the modifier keys to test to see if they are pressed.  Returns true if no modifiers are specified.
-	 * @return true if all modifier keys are pressed specified in the modifier keys.
-	 */
-	bool AreModifersDown(EModifierKey::Type ModiferKeys) const
-	{
-		bool AllModifersDown = true;
-
-		if ( (ModiferKeys & EModifierKey::Shift) == EModifierKey::Shift )
-		{
-			AllModifersDown &= IsShiftDown();
-		}
-		if ( (ModiferKeys & EModifierKey::Command) == EModifierKey::Command )
-		{
-			AllModifersDown &= IsCommandDown();
-		}
-		if ( (ModiferKeys & EModifierKey::Control) == EModifierKey::Control )
-		{
-			AllModifersDown &= IsControlDown();
-		}
-		if ( (ModiferKeys & EModifierKey::Alt) == EModifierKey::Alt )
-		{
-			AllModifersDown &= IsAltDown();
-		}
-
-		return AllModifersDown;
-	}
-
-private:
-
-	/** True if the left shift key was down when this event occurred. */
-	uint16_t bIsLeftShiftDown:1;
-
-	/** True if the right shift key was down when this event occurred. */
-	uint16_t bIsRightShiftDown:1;
-
-	/** True if the left control key was down when this event occurred. */
-	uint16_t bIsLeftControlDown:1;
-
-	/** True if the right control key was down when this event occurred. */
-	uint16_t bIsRightControlDown:1;
-
-	/** True if the left alt key was down when this event occurred. */
-	uint16_t bIsLeftAltDown:1;
-
-	/** True if the right alt key was down when this event occurred. */
-	uint16_t bIsRightAltDown:1;
-	
-	/** True if the left command key was down when this event occurred. */
-	uint16_t bIsLeftCommandDown:1;
-	
-	/** True if the right command key was down when this event occurred. */
-	uint16_t bIsRightCommandDown:1;
-
-	/** True if the Caps Lock key has been toggled to the enabled state. */
-	uint16_t bAreCapsLocked:1;
-};
 
 
 struct FPlatformRect
@@ -355,15 +90,15 @@ struct FDisplayMetrics
 	FPlatformRect VirtualDisplayRect;
 
 	/** The safe area for all content on TVs (see http://en.wikipedia.org/wiki/Safe_area_%28television%29) - content will be inset TitleSafePaddingSize.X on left _and_ right */
-	DirectX::XMFLOAT4 TitleSafePaddingSize;
+	glm::vec4 TitleSafePaddingSize;
 
 	/** The safe area for less important spill over on TVs (see TitleSafePaddingSize) */
-	DirectX::XMFLOAT4 ActionSafePaddingSize;
+	glm::vec4 ActionSafePaddingSize;
 
 	static void GetDisplayMetrics(struct FDisplayMetrics& OutDisplayMetrics);
 
 	/** Gets the monitor work area from a position in the global display rect */
-	FPlatformRect GetMonitorWorkAreaFromPoint(const DirectX::XMFLOAT2& Point) const;
+	FPlatformRect GetMonitorWorkAreaFromPoint(const glm::vec2& Point) const;
 
 	/** Logs out display metrics */
 	void PrintToLog() const;
@@ -409,18 +144,17 @@ public:
 	typedef void FOnConsoleCommandListener(std::string);
 
 
-	GenericApplication( const std::shared_ptr< ICursor >& InCursor )
-		: Cursor( InCursor )
-		, MessageHandler(std::make_shared<FGenericApplicationMessageHandler>() )
+	GenericApplication()
+		:MessageHandler(std::make_shared<GenericApplicationMessageHandler>() )
 	{
 
 	}
 
 	virtual ~GenericApplication() {}
 
-	virtual void SetMessageHandler( const std::shared_ptr< FGenericApplicationMessageHandler >& InMessageHandler ) { MessageHandler = InMessageHandler; }
+	virtual void SetMessageHandler( const std::shared_ptr< GenericApplicationMessageHandler >& InMessageHandler ) { MessageHandler = InMessageHandler; }
 
-	std::shared_ptr< FGenericApplicationMessageHandler > GetMessageHandler() { return MessageHandler; }
+	std::shared_ptr< GenericApplicationMessageHandler > GetMessageHandler() { return MessageHandler; }
 
 	virtual void PollGameDeviceState( const float TimeDelta ) { }
 
@@ -430,11 +164,11 @@ public:
 
 	virtual void Tick ( const float TimeDelta ) { }
 
-	virtual std::shared_ptr< FGenericWindow > MakeWindow() { return std::shared_ptr< FGenericWindow >(new FGenericWindow()) ; }
+	virtual std::shared_ptr< GenericWindow > MakeWindow() { return std::shared_ptr< GenericWindow >(new GenericWindow()) ; }
 
-	virtual void InitializeWindow( const std::shared_ptr< FGenericWindow >& Window, const std::shared_ptr< FGenericWindowDefinition >& InDefinition, const std::shared_ptr< FGenericWindow >& InParent, const bool bShowImmediately ) { }
+	virtual void InitializeWindow(const std::shared_ptr< GenericWindow >& Window, const std::shared_ptr< GenericWindowDefinition >& InDefinition, const std::shared_ptr< GenericWindow >& InParent, const bool bShowImmediately ) { }
 
-	virtual void SetCapture( const std::shared_ptr< FGenericWindow >& InWindow ) { }
+	virtual void SetCapture( const std::shared_ptr< GenericWindow >& InWindow ) { }
 
 	virtual void* GetCapture( void ) const { return NULL; }
 
@@ -444,9 +178,9 @@ public:
 	virtual bool IsCursorDirectlyOverSlateWindow() const { return true; }
 
 	/** @return Native window under the mouse cursor. */
-	virtual std::shared_ptr< FGenericWindow > GetWindowUnderCursor() { return std::shared_ptr< FGenericWindow >( nullptr ); }
+	virtual std::shared_ptr< GenericWindow > GetWindowUnderCursor() { return std::shared_ptr< GenericWindow >( nullptr ); }
 
-	virtual void SetHighPrecisionMouseMode( const bool Enable, const std::shared_ptr< FGenericWindow >& InWindow ) { };
+	virtual void SetHighPrecisionMouseMode( const bool Enable, const std::shared_ptr< GenericWindow >& InWindow ) { };
 
 	virtual bool IsUsingHighPrecisionMouseMode() const { return false; }
 	
@@ -471,7 +205,7 @@ public:
 		return OutRect;
 	}
 
-	virtual bool TryCalculatePopupWindowPosition( const FPlatformRect& InAnchor, const DirectX::XMFLOAT2& InSize, const DirectX::XMFLOAT2& ProposedPlacement, const EPopUpOrientation::Type Orientation, /*OUT*/ DirectX::XMFLOAT2* const CalculatedPopUpPosition ) const { return false; }
+	virtual bool TryCalculatePopupWindowPosition( const FPlatformRect& InAnchor, const glm::vec2& InSize, const glm::vec2& ProposedPlacement, const EPopUpOrientation::Type Orientation, /*OUT*/ glm::vec2* const CalculatedPopUpPosition ) const { return false; }
 
 	//DECLARE_EVENT_OneParam(GenericApplication, FOnDisplayMetricsChanged, const FDisplayMetrics&);
 	typedef Delegate<void(const FDisplayMetrics&)> OnDisplayMetricsChangedEvent;
@@ -520,11 +254,11 @@ public:
 
 public:
 
-	const std::shared_ptr< ICursor > Cursor;
-
+	HighResolutionTimer& GetTimer() { return m_Timer; }
+	virtual DeviceInputManager* GetDeviceInputManager() = 0;
 protected:
 
-	std::shared_ptr< class FGenericApplicationMessageHandler > MessageHandler;
+	std::shared_ptr< GenericApplicationMessageHandler > MessageHandler;
 	
 	/** Trigger the OnDisplayMetricsChanged event with the argument 'InMetrics' */
 	void BroadcastDisplayMetricsChanged( const FDisplayMetrics& InMetrics ){ DisplayMetricsChangedEvent( InMetrics ); }
@@ -539,4 +273,5 @@ protected:
 	OnVirtualKeyboardHiddenEvent VirtualKeyboardHiddenEvent;
 	
 
+	HighResolutionTimer m_Timer;
 };

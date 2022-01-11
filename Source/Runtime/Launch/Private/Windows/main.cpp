@@ -1,6 +1,7 @@
 #include <Editor.h>
+#include "Windows/WindowsApplication.h"
 
-#include <Windows/GameFramework.h>
+#include <GenericPlatform/GameFramework.h>
 #include <Device.h>
 
 #define WIN32_LEAN_AND_MEAN
@@ -37,9 +38,12 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
         LocalFree(argv);
     }
 
-    GameFramework::Create(hInstance);
+    HICON AppIconHandle = LoadIcon((HINSTANCE)NULL, IDI_APPLICATION);
+    std::shared_ptr<WindowsApplication> windowsapplication =std::make_shared<WindowsApplication>(hInstance, AppIconHandle);
+
+    GameFramework::Create(windowsapplication);
     {
-        std::unique_ptr<Editor> demo = std::make_unique<Editor>(L"Editor", 1920, 1080, true);
+        std::unique_ptr<Editor> demo = std::make_unique<Editor>("Editor", 1920, 1080, true);
         retCode = demo->Run();
     }
     GameFramework::Destroy();

@@ -25,7 +25,7 @@ const FPlatformUserId PLATFORMUSERID_NONE = INDEX_NONE;
 
 #define RWProperty(type,name) 								 \
 public:														 \
-	const type& name() const { return _##name; }			 \
-	void name(const type& val) { _##name = val; }			 \
+	const type& Get##name() const { return m_##name; }			 \
+	void Set##name(const type& val) { m_##name = val; }			 \
 private:													 \
-	type _##name;
+	type m_##name;
