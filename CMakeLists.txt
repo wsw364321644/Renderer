@@ -1,4 +1,5 @@
 cmake_minimum_required (VERSION 3.16)
+include(${CMAKE_CURRENT_SOURCE_DIR}/Cmake/CMakeLists.txt)
 
 set( TARGET_NAME Editor )
 
@@ -11,76 +12,42 @@ if( MSVC )
     add_compile_options(/MP)
 endif()
 
-
-
-
-file(GLOB Launch_INC LIST_DIRECTORIES false CONFIGURE_DEPENDS  "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Public/*.h" "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Public/*.hpp")
-file(GLOB Launch_SRC LIST_DIRECTORIES false CONFIGURE_DEPENDS  "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Private/*.cpp")
+AddSourceFolder(INCLUDE RECURSE PUBLIC "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Public")
+AddSourceFolder(RECURSE "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Private")
 if(WIN32)
-	file(GLOB_RECURSE Launch_INC_PLAT LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Public/Windows/*.h" "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Public/Windows/*.hpp")  
-    set(Launch_INC "${Launch_INC};${Launch_INC_PLAT}")
-	file(GLOB_RECURSE Launch_SRC_PLAT LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Private/Windows/*.cpp")
-    set(Launch_SRC "${Launch_SRC};${Launch_SRC_PLAT}")
-    file(GLOB_RECURSE Launch_RES_PLAT LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Resources/Windows/*.rc" "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Resources/Windows/*.ico" "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Resources/Windows/*.h")
-    source_group( TREE ${PROJECT_SOURCE_DIR}  FILES ${Launch_RES_PLAT} )
+    AddSourceFolder(INCLUDE PRIVATE "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Resources/Windows")
 endif()
-source_group( TREE ${PROJECT_SOURCE_DIR} FILES ${Launch_INC} ${Launch_SRC}  )
 
-file(GLOB_RECURSE ApplicationCore_INC LIST_DIRECTORIES false CONFIGURE_DEPENDS  "${PROJECT_SOURCE_DIR}/Source/Runtime/ApplicationCore/Public/GenericPlatform/*.h" "${PROJECT_SOURCE_DIR}/Source/Runtime/ApplicationCore/Public/GenericPlatform/*.hpp")
-file(GLOB_RECURSE ApplicationCore_SRC LIST_DIRECTORIES false CONFIGURE_DEPENDS  "${PROJECT_SOURCE_DIR}/Source/Runtime/ApplicationCore/Private/GenericPlatform/*.cpp")
-if(WIN32)
-	file(GLOB_RECURSE ApplicationCore_INC_PLAT LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/ApplicationCore/Public/Windows/*.h" "${PROJECT_SOURCE_DIR}/Source/Runtime/ApplicationCore/Public/Windows/*.hpp")  
-    set(ApplicationCore_INC "${ApplicationCore_INC};${ApplicationCore_INC_PLAT}")
-	file(GLOB_RECURSE ApplicationCore_SRC_PLAT LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/ApplicationCore/Private/Windows/*.cpp")
-    set(ApplicationCore_SRC "${ApplicationCore_SRC};${ApplicationCore_SRC_PLAT}")
-endif()
-source_group( TREE ${PROJECT_SOURCE_DIR} FILES ${ApplicationCore_INC} ${ApplicationCore_SRC}  )
+AddSourceFolder(INCLUDE RECURSE PUBLIC "${PROJECT_SOURCE_DIR}/Source/Runtime/ApplicationCore/Public")
+AddSourceFolder(RECURSE "${PROJECT_SOURCE_DIR}/Source/Runtime/ApplicationCore/Private/")
 
 
-file(GLOB_RECURSE InputCore_INC LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/InputCore/Public/*.h" "${PROJECT_SOURCE_DIR}/Source/Runtime/InputCore/Public/*.hpp")
-file(GLOB_RECURSE InputCore_SRC LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/InputCore/Private/*.cpp")
-if(WIN32)
-	file(GLOB_RECURSE InputCore_INC_PLAT LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/InputCore/Public/Windows/*.h" "${PROJECT_SOURCE_DIR}/Source/Runtime/InputCore/Public/Windows/*.hpp")  
-    set(InputCore_INC "${InputCore_INC};${InputCore_INC_PLAT}")
-	file(GLOB_RECURSE InputCore_SRC_PLAT LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/InputCore/Private/Windows/*.cpp")
-    set(InputCore_SRC "${InputCore_SRC};${InputCore_SRC_PLAT}")
-endif()
-source_group(TREE ${PROJECT_SOURCE_DIR} FILES ${InputCore_INC} ${InputCore_SRC} )
+AddSourceFolder(INCLUDE RECURSE PUBLIC "${PROJECT_SOURCE_DIR}/Source/Runtime/InputCore/Public")
+AddSourceFolder(RECURSE "${PROJECT_SOURCE_DIR}/Source/Runtime/InputCore/Private")
+
+AddSourceFolder(INCLUDE RECURSE PUBLIC "${PROJECT_SOURCE_DIR}/Source/Runtime/Core/Public")
+AddSourceFolder(RECURSE "${PROJECT_SOURCE_DIR}/Source/Runtime/Core/Private")
+
+AddSourceFolder(INCLUDE RECURSE PUBLIC "${PROJECT_SOURCE_DIR}/Source/Runtime/Engine/Public")
+AddSourceFolder(RECURSE "${PROJECT_SOURCE_DIR}/Source/Runtime/Engine/Private")
+
+AddSourceFolder(INCLUDE RECURSE PUBLIC "${PROJECT_SOURCE_DIR}/Source/Runtime/Slate/Public")
+AddSourceFolder(RECURSE "${PROJECT_SOURCE_DIR}/Source/Runtime/Slate/Private")
+
+AddSourceFolder(INCLUDE RECURSE PUBLIC "${PROJECT_SOURCE_DIR}/Source/Runtime/D3D12RHI/Public")
+AddSourceFolder(RECURSE "${PROJECT_SOURCE_DIR}/Source/Runtime/D3D12RHI/Private")
+
+AddSourceFolder(INCLUDE RECURSE PRIVATE "${PROJECT_SOURCE_DIR}/Source/Editor/Public")
+AddSourceFolder(RECURSE "${PROJECT_SOURCE_DIR}/Source/Editor/Private")
 
 
+AddSourceFolder(INCLUDE PRIVATE "${PROJECT_SOURCE_DIR}/ThirdParty/imgui")
+
+set(SourceFiles "${SourceFiles};${PROJECT_SOURCE_DIR}/ThirdParty/imgui/backends/imgui_impl_win32.h;${Imgui_SRC};${PROJECT_SOURCE_DIR}/ThirdParty/imgui/backends/imgui_impl_win32.cpp")
+list(APPEND PrivateIncludeFolders "${PROJECT_SOURCE_DIR}/ThirdParty/imgui/backends") 
 
 
-file(GLOB_RECURSE CORE_INC LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/Core/Public/*.h" "${PROJECT_SOURCE_DIR}/Source/Runtime/Core/Public/*.hpp")
-file(GLOB_RECURSE CORE_SRC LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/Core/Private/*.cpp")
-source_group(TREE ${PROJECT_SOURCE_DIR} FILES ${CORE_INC} ${CORE_SRC} )
-
-
-file(GLOB_RECURSE Engine_INC LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/Engine/Public/*.h" "${PROJECT_SOURCE_DIR}/Source/Runtime/Engine/Public/*.hpp")
-file(GLOB_RECURSE Engine_SRC LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/Engine/Private/*.cpp")
-source_group(  TREE ${PROJECT_SOURCE_DIR} FILES ${Engine_INC}  ${Engine_SRC} )
-
-file(GLOB_RECURSE Slate_INC LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/Slate/Public/*.h" "${PROJECT_SOURCE_DIR}/Source/Runtime/Slate/Public/*.hpp")
-file(GLOB_RECURSE Slate_SRC LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/Slate/Private/*.cpp")
-source_group(TREE ${PROJECT_SOURCE_DIR} FILES ${Slate_INC} ${Slate_SRC} )
-
-file(GLOB_RECURSE D3D12RHI_INC LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/D3D12RHI/Public/*.h" "${PROJECT_SOURCE_DIR}/Source/Runtime/D3D12RHI/Public/*.hpp")
-file(GLOB_RECURSE D3D12RHI_SRC LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Runtime/D3D12RHI/Private/*.cpp")
-source_group(TREE ${PROJECT_SOURCE_DIR} FILES ${D3D12RHI_INC} ${D3D12RHI_SRC} )
-
-
-file(GLOB_RECURSE Editor_INC LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Editor/Public/*.h" "${PROJECT_SOURCE_DIR}/Source/Editor/Public/*.hpp")
-file(GLOB_RECURSE Editor_SRC LIST_DIRECTORIES false  CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Source/Editor/Private/*.cpp")
-source_group(TREE ${PROJECT_SOURCE_DIR} FILES ${Editor_INC} ${Editor_SRC} )
-
-
-file(GLOB  Imgui_INC LIST_DIRECTORIES false    CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/ThirdParty/imgui/*.h" "${PROJECT_SOURCE_DIR}/ThirdParty/imgui/*.hpp" )
-file(GLOB  Imgui_SRC LIST_DIRECTORIES false   CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/ThirdParty/imgui/*.cpp" )
-
-if(WIN32)
-	set(Imgui_INC "${Imgui_INC};${PROJECT_SOURCE_DIR}/ThirdParty/imgui/backends/imgui_impl_win32.h")
-    set(Imgui_SRC "${Imgui_SRC};${PROJECT_SOURCE_DIR}/ThirdParty/imgui/backends/imgui_impl_win32.cpp")
-endif()
-source_group(TREE ${PROJECT_SOURCE_DIR}  FILES ${Imgui_INC} ${Imgui_SRC} )
+source_group( TREE ${PROJECT_SOURCE_DIR}  FILES ${SourceFiles})
 
 
 
@@ -121,10 +88,7 @@ set_source_files_properties( ${COMPUTE_SHADER_FILES}
 add_subdirectory( ThirdParty/DirectXTex )
 add_subdirectory( ThirdParty/DirectXTK )
 add_subdirectory( ThirdParty/spdlog )
-
-
 add_subdirectory( ThirdParty/assimp )
-
 add_subdirectory( ThirdParty/gainput )
 add_subdirectory( ThirdParty/glm)
 add_subdirectory( ThirdParty/stduuid)
@@ -133,28 +97,8 @@ add_subdirectory( ThirdParty/SDL)
 
 
 add_executable( ${TARGET_NAME} WIN32
-
-    ${CORE_INC} 
-    ${CORE_SRC} 
-    ${Launch_INC} 
-    ${Launch_SRC}
-    ${ApplicationCore_INC} 
-    ${ApplicationCore_SRC}
-    ${Engine_INC}
-    ${Engine_SRC}
-    ${InputCore_INC}
-    ${InputCore_SRC}
-    ${Slate_INC}
-    ${Slate_SRC}
-    ${D3D12RHI_INC}
-    ${D3D12RHI_SRC}
-    ${Editor_INC}
-    ${Editor_SRC}
-    ${SHADER_FILES}
-    ${Imgui_INC}
-    ${Imgui_SRC}
+    ${SourceFiles}
 )
-
 
 # Enable C++17 compiler features.
 target_compile_features(  ${TARGET_NAME}
@@ -166,26 +110,22 @@ target_compile_definitions(  ${TARGET_NAME}
     PUBLIC NOMINMAX 
 )
 
-target_include_directories( ${TARGET_NAME}
-    PUBLIC ${PROJECT_SOURCE_DIR}/Source/Runtime/Core/Public
-    PUBLIC ${PROJECT_SOURCE_DIR}/Source/Runtime/Engine/Public
-    PUBLIC ${PROJECT_SOURCE_DIR}/Source/Runtime/D3D12RHI/Public
-    PUBLIC ${PROJECT_SOURCE_DIR}/Source/Runtime/Slate/Public
-    PUBLIC ${PROJECT_SOURCE_DIR}/Source/Runtime/ApplicationCore/Public
-    PUBLIC ${PROJECT_SOURCE_DIR}/Source/Runtime/InputCore/Public
-    PRIVATE ${PROJECT_SOURCE_DIR}/Source/Editor/Public
-    PUBLIC ${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Public
-    PRIVATE ${PROJECT_SOURCE_DIR}/ThirdParty/imgui
-    PRIVATE ${PROJECT_SOURCE_DIR}/ThirdParty/imgui/backends
-    PRIVATE ${PROJECT_SOURCE_DIR}/ThirdParty/gainput/lib/include
-)
-if(WIN32)
-target_include_directories( ${TARGET_NAME}
-    PRIVATE ${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Resources/Windows
-    PUBLIC ${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Public/Windows
-    PUBLIC ${PROJECT_SOURCE_DIR}/Source/Runtime/ApplicationCore/Public/Windows
-)
-endif()
+
+foreach(folderpath IN LISTS PublicIncludeFolders)
+    target_include_directories( ${TARGET_NAME}
+        PUBLIC ${folderpath}
+    )
+endforeach()
+foreach(folderpath IN LISTS PrivateIncludeFolders)
+    target_include_directories( ${TARGET_NAME}
+        PRIVATE ${folderpath}
+    )
+endforeach()
+foreach(folderpath IN LISTS InterfaceIncludeFolders)
+    target_include_directories( ${TARGET_NAME}
+        INTERFACE ${folderpath}
+    )
+endforeach()
 
 target_link_libraries( ${TARGET_NAME}
     DirectXTex
