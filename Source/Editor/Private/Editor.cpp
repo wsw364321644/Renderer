@@ -8,7 +8,7 @@
 #include <CommandQueue.h>
 #include <Device.h>
 #include <GUI.h>
-#include <PlatformHelper.h>
+
 #include <Material.h>
 #include <Mesh.h>
 #include <PipelineStateObject.h>
@@ -28,6 +28,10 @@ using namespace Microsoft::WRL;
 
 using namespace dx12lib;
 using namespace DirectX;
+
+#include <Windows/PlatformHelper.h>
+//todo remove platformspecific
+
 
 #include <algorithm>  // For std::min, std::max, and std::clamp.
 #include "Component/ProcedureMeshComponent.h"

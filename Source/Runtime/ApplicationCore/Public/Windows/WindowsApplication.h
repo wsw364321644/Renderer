@@ -2,7 +2,7 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
-#include "ReadDirectoryChanges.h"
+#include "Windows/ReadDirectoryChanges.h"
 #include "GenericPlatform/GenericApplication.h"
 #include "Windows/WindowsDeviceInputManager.h"
 class WindowsApplication: public GenericApplication

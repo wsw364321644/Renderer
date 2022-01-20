@@ -15,7 +15,7 @@
 #include <PanoToCubemapPSO.h>
 #include <PipelineStateObject.h>
 #include <RenderTarget.h>
-#include <Resource.h>
+
 #include <ResourceStateTracker.h>
 #include <RootSignature.h>
 #include <Scene.h>

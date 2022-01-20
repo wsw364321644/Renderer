@@ -68,7 +68,8 @@ CommandQueue::CommandQueue( Device& device, D3D12_COMMAND_LIST_TYPE type )
     }
 
     m_ProcessInFlightCommandListsThread = std::thread( &CommandQueue::ProccessInFlightCommandLists, this );
-    SetThreadName( m_ProcessInFlightCommandListsThread, threadName );
+    //todo
+    //SetThreadName( m_ProcessInFlightCommandListsThread, threadName );
 }
 
 CommandQueue::~CommandQueue()

@@ -67,4 +67,5 @@ namespace fs = std::experimental::filesystem;
 // Helper functions
 #include <Misc/Helpers.h>
 
-#include <PlatformHelper.h>
+
+#include <Windows/PlatformHelper.h>

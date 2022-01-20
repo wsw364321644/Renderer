@@ -23,7 +23,7 @@
 #include <type_traits>  // for std::enable_if
 
 #include "Events.h"
-#include "ReadDirectoryChanges.h"
+
 #include "SlateManager.h"
 #include "GenericPlatform/GenericApplication.h"
 
@@ -31,11 +31,6 @@
 class GenericWindow;
 
 using Logger = std::shared_ptr<spdlog::logger>;
-
-/**
- * Windows message handler.
- */
-using WndProcEvent = Delegate<LRESULT(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)>;
 
 
 class GameFramework
@@ -141,7 +136,6 @@ public:
     Event Exit;
 
 protected:
-    friend LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam );
 
     GameFramework(std::shared_ptr<GenericApplication> inGenericApplication);
     virtual ~GameFramework();
