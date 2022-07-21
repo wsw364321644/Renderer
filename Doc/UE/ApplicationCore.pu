@@ -6,7 +6,17 @@ Interface that defines how to handle interaction with a user via hardware input 
 end note
 
 
+'GenericPlatform'
 abstract FGenericWindow
+
+class GenericApplication{
+	+ virtual TSharedRef< FGenericWindow > MakeWindow()
+	+ virtual void InitializeWindow( const TSharedRef< FGenericWindow >& Window, const TSharedRef< FGenericWindowDefinition >& InDefinition, const TSharedPtr< FGenericWindow >& InParent, const bool bShowImmediately ) 
+	+ virtual void SetMessageHandler( const TSharedRef< class FGenericApplicationMessageHandler >& InMessageHandler )
+}
+GenericApplication --> FGenericApplicationMessageHandler
+GenericApplication ..> FGenericWindow
+'Windows'
 class FWindowsWindow{
 	- HWND HWnd
 	-FWindowsApplication* OwningApplication;
@@ -27,10 +37,7 @@ end note
 
 FGenericWindow <|-- FWindowsWindow
 
-class GenericApplication{
-	+virtual TSharedRef< FGenericWindow > MakeWindow()
-	+virtual void InitializeWindow( const TSharedRef< FGenericWindow >& Window, const TSharedRef< FGenericWindowDefinition >& InDefinition, const TSharedPtr< FGenericWindow >& InParent, const bool bShowImmediately ) 
-}
+
 class FWindowsApplication{
 	-TArray<TSharedRef<FWindowsWindow>> Windows
 	-TSharedRef<class XInputInterface> XInput
@@ -45,8 +52,7 @@ end note
 
 GenericApplication <|-- FWindowsApplication
 
-FWindowsApplication<-->FWindowsWindow
-GenericApplication..>FGenericWindow
+FWindowsApplication <--> FWindowsWindow
 
 
 @enduml

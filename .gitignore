@@ -19,6 +19,7 @@
 *.nupkg
 *.cso
 
+build
 CMakeSettings.json
 .vs
 Bin

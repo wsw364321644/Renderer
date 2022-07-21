@@ -1,0 +1,112 @@
+@startuml ad_rendering
+
+|FRunnableThreadWin|
+:_ThreadProc;
+:GuardedRun;
+:Run;
+
+|FRenderingThread|
+:Run;
+
+|Global|
+:RenderingThreadMain;
+
+|FTaskGraphImplementation|
+:ProcessThreadUntilRequestReturn;
+
+|FNamedTaskThread|
+:ProcessTasksUntilQuit;
+:ProcessTasksNamedThread;
+
+|TGraphTask|
+:ExecuteTask;
+
+|TEnqueueUniqueRenderCommandType|
+:DoTask;
+
+|FRendererModule|
+:<lambda>FDrawSceneCommand  in BeginRenderingViewFamily;
+
+|Global|
+:RenderViewFamily_RenderThread;
+
+|FDeferredShadingSceneRenderer|
+:Render;
+|FScene|
+:UpdateAllPrimitiveSceneInfos;
+|FDeferredShadingSceneRenderer|
+-[dashed]->
+:InitViews;
+:ComputeViewVisibility;
+:GatherDynamicMeshElements;
+
+
+while (itr InViews)
+|FMeshElementCollector|
+:AddViewMeshArrays;
+|FDeferredShadingSceneRenderer|
+endwhile
+while (itr Primitives)
+|FMeshElementCollector|
+:SetPrimitive;
+
+|FPrimitiveSceneProxy|
+-[dashed]->
+:GetDynamicMeshElements;
+
+|FDeferredShadingSceneRenderer|
+split
+    |FSkeletalMeshSceneProxy|
+    :GetMeshElementsConditionallySelectable;
+    while (itr Views)
+    |FSkeletalMeshObject|
+    :UpdateMinDesiredLODLevel;
+    |FSkeletalMeshSceneProxy|
+    end while
+   
+    while (itr SectionElements)
+    :GetDynamicElementsSection;
+    while (itr Views)
+    |FMeshElementCollector|
+    :AllocateMesh;
+    |FSkeletalMeshSceneProxy|
+    -[dashed]->
+    :CreateBaseMeshBatch;
+    |FMeshElementCollector|
+    -[dashed]->
+    :AddMesh;
+    end while
+    end while
+split again
+    |FPrimitiveSceneProxy|
+    :todo;
+end split
+
+|FDeferredShadingSceneRenderer|
+-[dashed]->
+while (itr views)
+while (itr View.DynamicMeshElements)
+|FMeshElementCollector|
+-[bold]->
+:ComputeDynamicMeshRelevance;
+
+|FDeferredShadingSceneRenderer|
+end while
+end while
+end while
+|FMeshElementCollector|
+:ProcessTasks;
+
+|FDeferredShadingSceneRenderer|
+-[dashed]->
+while (itr InViews)
+:SetupMeshPass;
+while (itr EMeshPass)
+|FParallelMeshDrawCommandPass|
+:DispatchPassSetup;
+
+|FDeferredShadingSceneRenderer|
+end while
+end while
+end
+@enduml

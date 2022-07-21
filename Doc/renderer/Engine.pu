@@ -1,0 +1,9 @@
+@startuml Engine
+
+class ActorComponent
+
+
+class PrimitiveComponent
+ActorComponent <|--PrimitiveComponent
+
+@enduml

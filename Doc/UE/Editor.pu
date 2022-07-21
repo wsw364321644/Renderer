@@ -1,0 +1,21 @@
+@startuml Editor
+!include SlateCore.pu
+
+class FLevelEditorViewportClient{
+
+}
+
+
+class SEditorViewport{
+
+}
+SCompoundWidget <|--SEditorViewport
+
+class SLevelViewport{
+    -TSharedPtr<FLevelEditorViewportClient> LevelViewportClient
+}
+SEditorViewport <|--SLevelViewport 
+SLevelViewport --> FLevelEditorViewportClient
+
+
+@enduml

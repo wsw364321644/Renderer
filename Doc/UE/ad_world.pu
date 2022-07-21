@@ -1,8 +1,12 @@
 @startuml
-
-
-|TEnqueueUniqueRenderCommandType|
+|FEngineLoop|
 start
+while(itr GEngine->GetWorldContexts())
+:ENQUEUE_RENDER_COMMAND(UpdateScenePrimitives);
+fork
+start
+fork again
+|TEnqueueUniqueRenderCommandType|
 :DoTask;
 |FScene|
 :UpdateAllPrimitiveSceneInfos;
@@ -23,16 +27,35 @@ note right
   FDepthPassMeshProcessor
 end note
 
-
-
 :AddMeshBatch;
 :Process;
 :BuildMeshDrawCommands;
 
-
 |FPrimitiveSceneInfo|
 end while(iter end)
 end while(iter end)
-endfork
+end fork
+kill
+stop
+|FEngineLoop|
+end fork
+end while(iter end)
+
+:ENQUEUE_RENDER_COMMAND(BeginFrame);
+
+
+while(itr GEngine->GetWorldContexts())
+:ENQUEUE_RENDER_COMMAND(SceneStartFrame);
+fork
+start
+fork again
+|FScene|
+:StartFrame;
+kill
+|FEngineLoop|
+end fork
+
+
+
 stop
 @enduml

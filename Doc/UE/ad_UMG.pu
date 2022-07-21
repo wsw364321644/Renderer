@@ -23,6 +23,10 @@ while (itr SlateWindows)
 |SWidget|
 #red:(b)
 :SWidget::Paint;
+|FPaintArgs|
+:RecordHittestGeometry(const SWidget* Widget, const FGeometry& WidgetGeometry, int32 LayerId);
+-[dashed]->
+|SWidget|
 :OnPaint;
 while (itr ArrangedChildren)
 ->enter Recursion;
@@ -79,10 +83,9 @@ stop
 fork again
 :DrawWindow_RenderThread;
 
-|FRHICommandList|
+|FRHICommandListImmediate|
 :BeginDrawingViewport;
 :ALLOC_COMMAND(FRHICommandBeginDrawingViewport)(Viewport, RenderTargetRHI);
-|FRHICommandListImmediate|
 :ImmediateFlush;
 |FRHICommandListExecutor|
 :ExecuteList;
@@ -97,31 +100,39 @@ case ( FRHICommandSetScissorRect)
 :Execute;
 |FD3D11DynamicRHI|
 :RHISetScissorRect;
-
 |FRHICommand|
+-[dashed]->
+
+
 case (FRHICommandSetGraphicsPipelineState) 
 :Execute;
 |FD3D11DynamicRHI|
 :RHISetGraphicsPipelineState;
+|FRHICommand|
+-[dashed]->
+
 
 |FRHICommand|
 case (FRHICommandSetStencilRef) 
 :Execute;
-
 |FRHICommand|
+-[dashed]->
+
+
 case (FRHICommandSetShaderTexture) 
 :Execute;
 |FD3D11DynamicRHI|
 :RHISetShaderTexture;
-
 |FRHICommand|
+-[dashed]->
+
+
 case (FRHICommandDrawIndexedPrimitive) 
 :Execute;
 |FD3D11DynamicRHI|
 :RHIDrawIndexedPrimitive;
-
--[dashed]->
 |FRHICommand|
+-[dashed]->
 
 endswitch
 

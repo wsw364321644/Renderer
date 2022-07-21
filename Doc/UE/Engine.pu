@@ -1,9 +1,13 @@
 @startuml Engine
+skinparam groupInheritance 2
+
 !include RenderCore.pu
+!include SlateCore.pu
+
 
 
 class FMaterial {
-    +virtual bool ShouldCache(EShaderPlatform Platform, const FShaderType* ShaderType, const FVertexFactoryType* VertexFactoryType) const;
+    + virtual bool ShouldCache(EShaderPlatform Platform, const FShaderType* ShaderType, const FVertexFactoryType* VertexFactoryType) const;
     -	void SetupMaterialEnvironment(EShaderPlatform Platform,const FShaderParametersMetadata& InUniformBufferStruct,const FUniformExpressionSet& InUniformExpressionSet,FShaderCompilerEnvironment& OutEnvironment) const
 }
 note top
@@ -23,11 +27,14 @@ end note
 
 
 class FGPUBaseSkinVertexFactory
-FVertexFactory<|--FGPUBaseSkinVertexFactory
+FVertexFactory <|--FGPUBaseSkinVertexFactory
 
 
 class FPrimitiveSceneProxy{
     +FPrimitiveSceneProxy(const UPrimitiveComponent* InComponent, FName ResourceName = NAME_None)
+
+    -FSceneInterface* Scene
+	-FPrimitiveSceneInfo* PrimitiveSceneInfo
 }
 
 note top
@@ -35,9 +42,345 @@ Encapsulates the data which is mirrored to render a UPrimitiveComponent parallel
 This is intended to be subclassed to support different primitive types.  
 end note 
 
+FPrimitiveSceneProxy --> FSceneInterface
+
+FPrimitiveSceneProxy ..> FMeshElementCollector
+
+
+interface FSceneInterface{
+}
 
 
 
+class FMaterialRenderProxy{
+	const FMaterial& GetIncompleteMaterialWithFallback(ERHIFeatureLevel::Type InFeatureLevel) const;
+}
+FMaterialRenderProxy --|> FRenderResource
+FMaterialRenderProxy ..> FMaterial
+
+
+class FMeshBatchElement{
+    + FRHIUniformBuffer* PrimitiveUniformBuffer  //网格的UniformBuffer, 如果使用GPU Scene, 则需要为null.
+    + const TUniformBuffer<FPrimitiveUniformShaderParameters>* PrimitiveUniformBufferResource //网格的UniformBuffer在CPU侧的数据.
+    + const FIndexBuffer* IndexBuffer // 索引缓冲
+}
+
+class FMeshBatch{
+    + TArray<FMeshBatchElement,TInlineAllocator<1> > Elements // 这组FMeshBatchElement的数据拥有相同的材质和顶点缓冲。
+    + const FVertexFactory* VertexFactory; // 顶点工厂.
+    + const FMaterialRenderProxy* MaterialRenderProxy; // 渲染所用的材质.
+    + uint16 MeshIdInPrimitive; // 图元所在的网格id, 用于相同图元的稳定排序.
+    + int8 LODIndex; // 网格LOD索引, 用于LOD的平滑过渡.
+    + uint8 SegmentIndex; // 子模型索引.
+
+    + uint32 ReverseCulling : 1;
+    + uint32 bDisableBackfaceCulling : 1;
+
+    + uint32 CastShadow        : 1; // 是否在阴影Pass中渲染.
+    + uint32 bUseForMaterial    : 1; // 是否在需要材质的Pass中渲染.
+    + uint32 bUseForDepthPass : 1; // 是否在深度Pass中渲染.
+    + uint32 bUseAsOccluder    : 1; // 标明是否遮挡体.
+    + uint32 bWireframe        : 1; // 是否线框模式
+
+    + {field} uint32 Type:PT_NumBits; // 图元类型, 如PT_TriangleList(默认), PT_LineList, ...
+    + {field} uint32 DepthPriorityGroup:SDPG_NumBits; // 深度优先级组, 如SDPG_World (default), SDPG_Foreground
+
+    + bool IsTranslucent(ERHIFeatureLevel::Type InFeatureLevel) const;
+    + bool IsDecal(ERHIFeatureLevel::Type InFeatureLevel) const;
+    + bool IsDualBlend(ERHIFeatureLevel::Type InFeatureLevel) const;
+    + bool UseForHairStrands(ERHIFeatureLevel::Type InFeatureLevel) const;
+    + bool IsMasked(ERHIFeatureLevel::Type InFeatureLevel) const;
+    + int32 GetNumPrimitives() const;
+    + bool HasAnyDrawCalls() const;
+}
+FMeshBatch --> FMeshBatchElement
+FMeshBatch --> FVertexFactory
+FMeshBatch --> FMaterialRenderProxy
+
+class ConstructionValues{
+    + const FRenderTarget* RenderTarget;     /** The views which make up the family. */
+    + FSceneInterface* Scene;		/** The render target which the views are being rendered to. */
+    + FEngineShowFlags EngineShowFlags;		/** The engine show flags for the views. */
+    + int32 ViewModeParam;		/** Additional view params related to the current viewmode (example : texcoord index) */
+    + FName ViewModeParamName;		/** An name bound to the current viewmode param. (example : texture name) */
+    + float CurrentWorldTime;		/** The current world time. */
+    + float DeltaWorldTime;		/** The difference between the last world time and CurrentWorldTime. */
+    + float CurrentRealTime;		/** The current real time. */
+    + float GammaCorrection;		/** Gamma correction used when rendering this family. Default is 1.0 */
+    + uint32 bAdditionalViewFamily : 1;		/** Indicates whether the view family is additional. */
+    + uint32 bRealtimeUpdate:1;		/** Indicates whether the view family is updated in real-time. */
+    + uint32 bDeferClear:1;		/** Used to defer the back buffer clearing to just before the back buffer is drawn to */
+    + uint32 bResolveScene:1;		/** If true then results of scene rendering are copied/resolved to the RenderTarget. */	
+    + uint32 bTimesSet:1;		/** Safety check to ensure valid times are set either from a valid world/scene pointer or via the SetWorldTimes function */
+}
+class FSceneViewFamily{
+	+ TArray<const FSceneView*> Views;    /** The views which make up the family. */
+	+ EViewModeIndex ViewMode;	/** View mode of the family. */
+	+ const FRenderTarget* RenderTarget;	/** The render target which the views are being rendered to. */
+	+ FSceneInterface* Scene;	/** The scene being viewed. */
+	+ FEngineShowFlags EngineShowFlags;	/** The new show flags for the views (meant to replace the old system). */
+	+ float CurrentWorldTime;	/** The current world time. */
+	+ float DeltaWorldTime;	/** The difference between the last world time and CurrentWorldTime. */
+	+ float CurrentRealTime;	/** The current real time. */
+	+ uint32 FrameNumber;	/** Copy from main thread GFrameNumber to be accessible on render thread side. UINT_MAX before CreateSceneRenderer() or BeginRenderingViewFamily() was called */
+	+ bool bAdditionalViewFamily;	/** Indicates this view family is an additional one. */
+	+ bool bRealtimeUpdate;	/** Indicates whether the view family is updated in realtime. */
+	+ bool bDeferClear;	/** Used to defer the back buffer clearing to just before the back buffer is drawn to */
+	+ bool bResolveScene;	/** if true then results of scene rendering are copied/resolved to the RenderTarget. */
+	+ bool bMultiGPUForkAndJoin;	/** if true then each view is not rendered using the same GPUMask. */
+	+ bool bIsRenderedImmediatelyAfterAnotherViewFamily = false;	/** Whether this view is rendered in BeginRenderingViewFamily() immediately after another render. */
+	+ ESceneCaptureSource SceneCaptureSource;    * Which component of the scene rendering should be output to the final render target. * If SCS_FinalColorLDR this indicates do nothing.
+	+ ESceneCaptureCompositeMode SceneCaptureCompositeMode;	/** When enabled, the scene capture will composite into the render target instead of overwriting its contents. */
+	+ bool bWorldIsPaused;	 * GetWorld->IsPaused() && !Simulate	 * Simulate is excluded as the camera can move which invalidates motionblur
+	+ bool bIsHDR;	/** When enabled, the post processing will output in HDR space */
+	+ bool bRequireMultiView;	/** True if scenecolor and depth should be multiview-allocated */
+	+ float GammaCorrection;	/** Gamma correction used when rendering this family. Default is 1.0 */
+	+ FExposureSettings ExposureSettings;	/** Editor setting to allow designers to override the automatic expose. 0:Automatic, following indices: -4 .. +4 */
+	+ bool bLateLatchingEnabled;	/** Enable LateLatching mechanism for this viewFamily */
+	+ TArray<TSharedRef<class ISceneViewExtension, ESPMode::ThreadSafe> > ViewExtensions;	/** Extensions that can modify view parameters on the render thread. *
+	+ FDisplayInternalsData DisplayInternalsData;	// for r.DisplayInternals (allows for easy passing down data from main to render thread)
+	+ float SecondaryViewFraction;	 * Secondary view fraction to support High DPI monitor still with same primary screen percentage range for temporal	 * upscale to test content consistently in editor no mater of the HighDPI scale. 
+	+ ESecondaryScreenPercentageMethod SecondaryScreenPercentageMethod;
+ 
+    + FSceneViewFamily( const ConstructionValues& CVS );
+}
+note top
+A set of views into a scene which only have different view transforms and owner actors.
+end note 
+
+FSceneViewFamily ..> ConstructionValues
+FSceneView "n"-- FSceneViewFamily
+
+class FSceneView{
+    + const FSceneViewFamily* Family;
+	+ FSceneViewStateInterface* State;	/** can be 0 (thumbnail rendering) */
+	+ TUniformBufferRef<FViewUniformShaderParameters> ViewUniformBuffer;	/** The uniform buffer for the view's parameters. This is only initialized in the rendering thread's copies of the FSceneView. */
+
+}
+note top
+A projection from scene space into a 2D screen region.
+end note 
+
+
+
+class FMeshElementCollector{
+    # TChunkedArray<FMeshBatch> MeshBatchStorage; * Using TChunkedArray which will never realloc as new elements are added
+	# TArray<TArray<FMeshBatchAndRelevance, SceneRenderingAllocator>*, TInlineAllocator<2> > MeshBatches; /** Meshes to render */
+	# TArray<int32, TInlineAllocator<2> > NumMeshBatchElementsPerView; /** Number of elements in gathered meshes per view. */
+	# TArray<FSimpleElementCollector*, TInlineAllocator<2> > SimpleElementCollectors; /** PDIs */
+	# TArray<FSceneView*, TInlineAllocator<2> > Views; /** Views being collected for */
+	# TArray<uint16, TInlineAllocator<2> > MeshIdInPrimitivePerView; /** Current Mesh Id In Primitive per view */
+    # TArray<FMaterialRenderProxy*, SceneRenderingAllocator> TemporaryProxies; /** Material proxies that will be deleted at the end of the frame. */
+	# TArray<FOneFrameResource*, SceneRenderingAllocator> OneFrameResources; /** Resources that will be deleted at the end of the frame. */
+	# const FPrimitiveSceneProxy* PrimitiveSceneProxy; /** Current primitive being gathered. */
+    
+	# FGlobalDynamicIndexBuffer* DynamicIndexBuffer;
+	# FGlobalDynamicVertexBuffer* DynamicVertexBuffer;
+	# FGlobalDynamicReadBuffer* DynamicReadBuffer;
+
+	# ERHIFeatureLevel::Type FeatureLevel;
+	# const bool bUseAsyncTasks;/** This is related to some cvars and FApp stuff and if true means calling code should use async tasks. */
+	# {field} TArray<TFunction<void()>*, SceneRenderingAllocator> ParallelTasks;/** Tasks to wait for at the end of gathering dynamic mesh elements. */
+	# TArray<TArray<FPrimitiveUniformShaderParameters>*, TInlineAllocator<2> > DynamicPrimitiveShaderDataPerView;/** Tracks dynamic primitive data for upload to GPU Scene for every view, when enabled. */
+
+	# void SetPrimitive(const FPrimitiveSceneProxy* InPrimitiveSceneProxy, FHitProxyId DefaultHitProxyId)
+    + inline FMeshBatch& AllocateMesh()
+    + void ClearViewMeshArrays()
+    + void AddViewMeshArrays(FSceneView* InView, TArray<FMeshBatchAndRelevance,SceneRenderingAllocator>* ViewMeshes,FSimpleElementCollector* ViewSimpleElementCollector, TArray<FPrimitiveUniformShaderParameters>* InDynamicPrimitiveShaderData,ERHIFeatureLevel::Type InFeatureLevel,FGlobalDynamicIndexBuffer* InDynamicIndexBuffer,FGlobalDynamicVertexBuffer* InDynamicVertexBuffer,FGlobalDynamicReadBuffer* InDynamicReadBuffer)
+}
+FMeshElementCollector --> FSceneView
+FMeshElementCollector --> FMeshBatch
+
+class FSectionElementInfo{
+    + UMaterialInterface* Material;
+    + bool bEnableShadowCasting; /** Whether shadow casting is enabled for this section. */
+    + int32 UseMaterialIndex; /** Index into the materials array of the skel mesh or the component after LOD mapping */
+}
+
+class FLODSectionElements{
+    + TArray<FSectionElementInfo> SectionElements;
+}
+FLODSectionElements --> FSectionElementInfo
+
+class FSkeletalMeshSceneProxy{
+	# AActor* Owner;
+	# class FSkeletalMeshObject* MeshObject;
+	# FSkeletalMeshRenderData* SkeletalMeshRenderData;
+
+    # uint8 bForceWireframe : 1;
+	# uint8 bIsCPUSkinned : 1;
+	# uint8 bCanHighlightSelectedSections : 1;
+	# uint8 bRenderStatic:1;
+	# uint8 bDrawDebugSkeleton:1;
+
+    # EnumAsByte<ERHIFeatureLevel::Type> FeatureLevel;
+	# bool bMaterialsNeedMorphUsage_GameThread;
+	# FMaterialRelevance MaterialRelevance;
+
+	# TArray<FLODSectionElements> LODSections;    	/** Array of section elements for each LOD */
+
+	# TArray<TPair<int32, FCapsuleShape>> ShadowCapsuleData;	 * BoneIndex->capsule pairs used for rendering sphere/capsule shadows 	 * Note that these are in refpose component space, NOT bone space.
+	# TArray<uint16> ShadowCapsuleBoneIndices;
+	# TSet<UMaterialInterface*> MaterialsInUse_GameThread;	/** Set of materials used by this scene proxy, safe to access from the game thread. */
+	# FBoxSphereBounds PreSkinnedLocalBounds;	/** The primitive's pre-skinned local space bounds. */
+
+    # void GetDynamicElementsSection(const TArray<const FSceneView*>& Views, const FSceneViewFamily& ViewFamily, uint32 VisibilityMap,const FSkeletalMeshLODRenderData& LODData, const int32 LODIndex, const int32 SectionIndex, bool bSectionSelected,const FSectionElementInfo& SectionElementInfo, bool bInSelectable, FMeshElementCollector& Collector) const;
+
+}
+FSkeletalMeshSceneProxy --|>  FPrimitiveSceneProxy
+FSkeletalMeshSceneProxy --> FSkeletalMeshObject
+FSkeletalMeshSceneProxy --> FSkeletalMeshRenderData
+FSkeletalMeshSceneProxy --> FLODSectionElements
+
+
+class FSkeletalMeshObject{
+	+ TArray<FSkelMeshObjectLODInfo> LODInfo;
+	+ TArray<FCapsuleShape> ShadowCapsuleShapes;
+	+ int32 MinDesiredLODLevel;	 *	Lowest (best) LOD that was desired for rendering this SkeletalMesh last frame. 	 *	This should only ever be WRITTEN by the RENDER thread (in FSkeletalMeshProxy::PreRenderView) and READ by the GAME thread (in USkeletalMeshComponent::UpdateSkelPose).
+	+ float MaxDistanceFactor;	 *	High (best) DistanceFactor that was desired for rendering this SkeletalMesh last frame. Represents how big this mesh was in screen space  	 *	This should only ever be WRITTEN by the RENDER thread (in FSkeletalMeshProxy::PreRenderView) and READ by the GAME thread (in USkeletalMeshComponent::UpdateSkelPose).
+	+ int32 WorkingMinDesiredLODLevel;	/** This frames min desired LOD level. This is copied (flipped) to MinDesiredLODLevel at the beginning of the next frame. */
+	+ float WorkingMaxDistanceFactor;	/** This frames max distance factor. This is copied (flipped) to MaxDistanceFactor at the beginning of the next frame. */
+	+ bool bHasBeenUpdatedAtLeastOnce;	/** This is set to true when we have sent our Mesh data to the rendering thread at least once as it needs to have have a datastructure created there for each MeshObject **/
+
+
+    # FSkeletalMeshRenderData* SkeletalMeshRenderData; /** The skeletal mesh resource with which to render. */
+	# TArray<FSkeletalMeshLODInfo> SkeletalMeshLODInfo;/** Per-LOD info. */
+}
+
+note top
+Interface for mesh rendering data
+end note 
+FSkeletalMeshObject --> FSkeletalMeshRenderData
+
+
+class FSkeletalMeshObjectGPUSkin{
+	- TArray<struct FSkeletalMeshObjectLOD> LODs;    	/** Render data for each LOD */
+	- FDynamicSkelMeshObjectDataGPUSkin* DynamicData;	/** Data that is updated dynamically and is needed for rendering */
+	- FGraphEventRef RHIThreadFenceForDynamicData;	/** Fence for dynamic Data */
+	- bool bNeedsUpdateDeferred;	/** True if we are doing a deferred update later in GDME. */
+	- bool bMorphNeedsUpdateDeferred;	/** If true and we are doing a deferred update, then also update the morphs */
+	- bool bMorphResourcesInitialized;	/** true if the morph resources have been initialized */
+	- uint32 LastBoneTransformRevisionNumber;	/** last updated bone transform revision number */
+}
+FSkeletalMeshObjectGPUSkin --|> FSkeletalMeshObject
+note top
+Render data for a GPU skinned mesh
+end note 
+
+
+'Engine'
+
+class UEngine{
+   # TIndirectArray<FWorldContext>	WorldList
+}
+UEngine --> FWorldContext
+
+class UGameEngine{
+	+ TWeakPtr<class SWindow> GameViewportWindow;	/** The game viewport window */
+	+ TSharedPtr<class FSceneViewport> SceneViewport;	/** The primary scene viewport */
+	+ TSharedPtr<class SViewport> GameViewportWidget;	/** The game viewport widget */
+}
+UGameEngine --|> UEngine
+UGameEngine --> FSceneViewport
+
+class UGameInstance{
+    # TArray<ULocalPlayer*> LocalPlayers
+    # UOnlineSession* OnlineSession
+}
+UGameInstance --> ULocalPlayer
+
+class ULocalPlayer{
+    - APlayerController* PlayerController
+}
+ULocalPlayer --> APlayerController
+
+
+class FWorldContext{
+    + UGameInstance* OwningGameInstance
+    + UGameViewportClient* GameViewport
+    + TArray<class ULevel*> LoadedLevelsForPendingMapChange
+    - UWorld*	ThisCurrentWorld
+}
+FWorldContext --> UWorld
+FWorldContext --> UGameViewportClient
+FWorldContext --> UGameInstance
+
+class UWorld{
+    + ULevel* PersistentLevel
+    + UNetDriver* NetDriver
+    + FSceneInterface*  Scene
+
+    - TArray<ULevelStreaming*> StreamingLevels
+}
+UWorld --> FSceneInterface
+
+
+
+
+
+
+
+class FRenderTarget{
+   # FTexture2DRHIRef RenderTargetTextureRHI
+}
+
+
+class FViewport{}
+FRenderTarget <|-- FViewport
+note top
+ * Encapsulates the I/O of a viewport.
+ * The viewport display is implemented using the platform independent RHI.
+end note 
+
+
+class FViewportClient{
+    + virtual void Precache() {}
+	+ virtual void RedrawRequested(FViewport* Viewport)
+	+ virtual void RequestInvalidateHitProxy(FViewport* Viewport) 
+	+ virtual void Draw(FViewport* Viewport,FCanvas* Canvas) 
+	+ virtual bool ProcessScreenShots(FViewport* Viewport) 
+	+ virtual UWorld* GetWorld() const
+	+ virtual struct FEngineShowFlags* GetEngineShowFlags() 
+ 
+    + virtual bool InputKey(const FInputKeyEventArgs& EventArgs)
+ 
+    + virtual void LostFocus(FViewport* Viewport) {}
+	+ virtual void ReceivedFocus(FViewport* Viewport) {}
+	+ virtual bool IsFocused(FViewport* Viewport) { return true; }
+ 
+	+ virtual void Activated(FViewport* Viewport, const FWindowActivateEvent& InActivateEvent) {}
+	+ virtual void Deactivated(FViewport* Viewport, const FWindowActivateEvent& InActivateEvent) {}
+}
+class FCommonViewportClient
+FViewportClient <|-- FCommonViewportClient
+
+
+class UGameViewportClient{
+	# UWorld* World;
+	# UGameInstance* GameInstance;
+	+ FEngineShowFlags EngineShowFlags;		/** The show flags used by the viewport's players. */
+	+ FViewport* Viewport;	/** The platform-specific viewport which this viewport client is attached to. */
+	+ FViewportFrame* ViewportFrame;	/** The platform-specific viewport frame which this viewport is contained by. */
+
+}
+
+FCommonViewportClient <|-- UGameViewportClient
+UGameViewportClient --> FViewport
+
+'GameFramework'
+class APlayerController{
+    + APawn* AcknowledgedPawn
+}
+note top
+ * In networked games, PlayerControllers exist on the server for every player-controlled pawn,
+ * and also on the controlling client's machine. They do NOT exist on a client's
+ * machine for pawns controlled by remote players elsewhere on the network.
+end note 
+
+
+
+
+'Components'
 
 
 class UActorComponent
@@ -62,6 +405,11 @@ There are several subclasses for the various types of geometry, but the most com
 ShapeComponents generate geometry that is used for collision detection but are not rendered, while StaticMeshComponents and SkeletalMeshComponents contain pre-built geometry that is rendered, but can also be used for collision detection.
 end note 
 
+UPrimitiveComponent .. FPrimitiveSceneProxy 
+
+note right of UPrimitiveComponent::CreateSceneProxy
+CreateSceneProxy in void FScene::AddPrimitive(UPrimitiveComponent* Primitive)
+end note
 
 class UMeshComponent
 UPrimitiveComponent <|-- UMeshComponent
@@ -70,8 +418,67 @@ MeshComponent is an abstract base for any component that is an instance of a ren
 end note 
 
 
-FPrimitiveSceneProxy ..> UPrimitiveComponent
-FPrimitiveSceneProxy <-- UPrimitiveComponent:void FScene::AddPrimitive(UPrimitiveComponent* Primitive)
+'Slate'
+
+class FSceneViewport{  
+   # FViewportClient* ViewportClient
+}
+ISlateViewport <|-- FSceneViewport
+FViewport <|-- FSceneViewport
+note top
+MeshComponent is an abstract base for any component that is an instance of a renderable collection of triangles.
+end note 
 
 
+'Rendering'
+
+class FSkelMeshRenderSection{
+	+ {field}  uint16 MaterialIndex;    /** Material (texture) used for this section. */
+	+ uint32 BaseIndex;	/** The offset of this section's indices in the LOD's index buffer. */
+	+ uint32 NumTriangles;	/** The number of triangles in this section. */
+	+ bool bRecomputeTangent;	/** This section will recompute tangent in runtime */
+	+ bool bCastShadow;	/** This section will cast shadow */
+	+ ESkinVertexColorChannel RecomputeTangentsVertexMaskChannel;	/** Which channel for masking the recompute tangents */
+	+ uint32 BaseVertexIndex;	/** The offset into the LOD's vertex buffer of this section's vertices. */
+	+ TArray<FMeshToMeshVertData> ClothMappingData;	/** The extra vertex data for mapping to an APEX clothing simulation mesh. */
+	+ TArray<FBoneIndexType> BoneMap;	/** The bones which are used by the vertices of this section. Indices of bones in the USkeletalMesh::RefSkeleton array */
+	+ uint32 NumVertices;	/** The number of triangles in this section. */
+	+ int32 MaxBoneInfluences;	/** max # of bones used to skin the vertices in this section */
+	+ int16 CorrespondClothAssetIndex;	// INDEX_NONE if not set
+	+ {field} FClothingSectionData ClothingData;	/** Clothing data for this section, clothing is only present if ClothingData.IsValid() returns true */
+	+ FDuplicatedVerticesBuffer DuplicatedVerticesBuffer;	/** Index Buffer containting all duplicated vertices in the section and a buffer containing which indices into the index buffer are relevant per vertex **/
+	+ bool bDisabled;	/** Disabled sections will not be collected when rendering, controlled from the source section in the skeletal mesh asset */
+}
+
+class FSkeletalMeshLODRenderData{
+	+ TArray<FSkelMeshRenderSection>	RenderSections; /** Info about each section of this LOD for rendering */
+	+  {field} FMultiSizeIndexContainer	MultiSizeIndexContainer;	// Index Buffer (MultiSize: 16bit or 32bit)
+	+ FMultiSizeIndexContainer	AdjacencyMultiSizeIndexContainer;	/** Resources needed to render the model using PN-AEN */
+	+ FStaticMeshVertexBuffers	StaticVertexBuffers;	/** static vertices from chunks for skinning on GPU */
+	+ FSkinWeightVertexBuffer		SkinWeightVertexBuffer;	/** Skin weights for skinning */
+	+ FSkeletalMeshVertexClothBuffer	ClothVertexBuffer;	/** A buffer for cloth mesh-mesh mapping */
+	+ FMorphTargetVertexInfoBuffers	MorphTargetVertexInfoBuffers;	/** GPU friendly access data for MorphTargets for an LOD */
+	+ FSkinWeightProfilesData SkinWeightProfilesData;	/** Skin weight profile data structures, can contain multiple profiles and their runtime FSkinWeightVertexBuffer */
+	+ TArray<FBoneIndexType> ActiveBoneIndices;
+	+ TArray<FBoneIndexType> RequiredBones;
+	+ uint32 BuffersSize;
+	+ TResourceArray<uint8> RayTracingData;	/** Precooked raytracing data*/
+	+ typename TChooseClass<USE_BULKDATA_STREAMING_TOKEN, FBulkDataStreamingToken, FByteBulkData>::Result StreamingBulkData;
+	+ {field} uint32 bStreamedDataInlined : 1;	/** Whether buffers of this LOD is inlined (i.e. stored in .uexp instead of .ubulk) */
+	+ uint32 bIsLODOptional : 1;	/** Whether this LOD is below MinLod */
+}
+FSkeletalMeshLODRenderData --> FSkelMeshRenderSection
+
+
+class FSkeletalMeshRenderData{
+	+ TIndirectArray<FSkeletalMeshLODRenderData> LODRenderData; /** Per-LOD render data. */	
+	+ bool bReadyForStreaming;  /** True if rhi resources are initialized */	
+	+ uint8 NumInlinedLODs;  /** Const after serialization. */
+	+ uint8 NumNonOptionalLODs;	/** Const after serialization. */
+	+ uint8 CurrentFirstLODIdx;	/** [RenderThread] Index of the most detailed valid LOD. */
+	+ uint8 PendingFirstLODIdx;	/** [GameThread/RenderThread] Future value of CurrentFirstLODIdx. */
+	+ uint8 LODBiasModifier;	/** Runtime LOD bias modifier for this skeletal mesh */
+    
+}
+FSkeletalMeshRenderData --> FSkeletalMeshLODRenderData
 @enduml

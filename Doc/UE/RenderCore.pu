@@ -1,5 +1,10 @@
 @startuml RenderCore
 
+class FRenderResource
+note top
+ A rendering resource which is owned by the rendering thread.
+ NOTE - Adding new virtual methods to this class may require stubs added to FViewport/FDummyViewport, otherwise certain modules may have link errors
+end note 
 
 class FShaderResource 
 note top

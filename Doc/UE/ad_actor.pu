@@ -1,0 +1,35 @@
+@startuml
+|FEngineLoop|
+start
+:Tick;
+
+|Uworld|
+:Tick;
+:RunTickGroup;
+
+|FTickTaskManagerInterface|
+:RunTickGroup;
+
+|FTickTaskSequencer|
+:ReleaseTickGroup;
+
+|FTaskGraphInterface|
+:WaitUntilTasksComplete;
+:ProcessThreadUntilRequestReturn;
+
+|FTaskThreadBase|
+:ProcessTasksUntilQuit;
+:ProcessTasksNamedThread;
+
+|FBaseGraphTask|
+:Execute;
+:ExecuteTask;
+
+switch (TTask)
+case ( FTickFunctionTask)
+|FTickFunctionTask|
+|FBaseGraphTask|
+endswitch
+
+stop
+@enduml

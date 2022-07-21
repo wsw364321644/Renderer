@@ -1,4 +1,4 @@
-@startuml
+@startuml RHI
 
 
 abstract FRHIResource
@@ -18,5 +18,22 @@ class FD3D11DynamicRHI
 FDynamicRHI <|-- FD3D11DynamicRHI
 
 
+
+
+class FRHICommandListBase{
+}
+class FRHIComputeCommandList{
+}
+FRHICommandListBase <|-- FRHIComputeCommandList
+
+class FRHICommandList{
+}
+FRHIComputeCommandList <|-- FRHICommandList
+
+class FRHICommandListImmediate{
+	+ void ImmediateFlush(EImmediateFlushType::Type FlushType);
+}
+
+FRHICommandList <|-- FRHICommandListImmediate
 
 @enduml

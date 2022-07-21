@@ -1,4 +1,7 @@
 @startuml SlateCore
+
+!include ApplicationCore.pu
+
 class FSimpleSlot
 note top
 A slot that support alignment of content and padding
@@ -49,7 +52,7 @@ class FSlateBatchData{
 	-bool bIsStencilBufferRequired;
 }
 
-FSlateBatchData -->FSlateRenderBatch
+FSlateBatchData --> FSlateRenderBatch
 
 class FSlateDrawElement{
     -FSlateDataPayload* DataPayload;
@@ -110,38 +113,55 @@ note top
 Abstract base class for Slate renderers
 end note
 
-class FSlateInvalidationRoot
 
-class FArrangedChildren{
-    +typedef TArray<FArrangedWidget, TInlineAllocator<4>> FArrangedWidgetArray
-    -EVisibility VisibilityFilter
-    -FArrangedWidgetArray Array
+
+
+
+
+class ISlateViewport{
+	+virtual FReply OnKeyDown( const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent )
+	+virtual void OnMouseEnter( const FGeometry& MyGeometry, const FPointerEvent& MouseEvent )
 }
 note top
- * The results of an ArrangeChildren are always returned as an FArrangedChildren.
- * FArrangedChildren supports a filter that is useful for excluding widgets with unwanted
- * visibilities.
+ Viewport implementation interface that is used by SViewport when it needs to draw and processes input.
 end note
 
+
+
+
+
+'Application'
+
 class FSlateApplicationBase{
-    #TSharedPtr<FSlateRenderer> Renderer
+    # TSharedPtr<FSlateRenderer> Renderer
+
+	// Holds a pointer to the current application.
+	# static TSharedPtr<FSlateApplicationBase> CurrentBaseApplication;
+
+	// Holds a pointer to the platform application.
+	# static TSharedPtr<class GenericApplication> PlatformApplication;
 }
 note top
  * This class currently serves a temporary workaround for solving SlateCore dependencies to FSlateApplication.
  * It should probably be removed once FSlateApplication has been refactored into SlateCore.
  end note
 
- FSlateApplicationBase --> FSlateRenderer
+FSlateApplicationBase --> FSlateRenderer
+FSlateApplicationBase --> GenericApplication
 
 
 
 
 
 
+
+
+'Widgets'
 
 
 class SWidget{
     +void ArrangeChildren(const FGeometry& AllottedGeometry, FArrangedChildren& ArrangedChildren) const
+	- virtual void OnArrangeChildren(const FGeometry& AllottedGeometry, FArrangedChildren& ArrangedChildren)
 }
 note top
  *   Widget is not meant to be directly inherited. Instead consider inheriting from LeafWidget or Panel,
@@ -157,27 +177,11 @@ note right of SWidget::ArrangeChildren
 	 * Each type of Layout panel should arrange children based on desired behavior.
 end note
 
+SWidget ..> FArrangedChildren
 
 
-
-class SCompoundWidget{
-	#FSimpleSlot ChildSlot
+class SPanel{
 }
-note top
-A CompoundWidget is the base from which most non-primitive widgets should be built.
-CompoundWidgets have a protected member named ChildSlot.
-end note
-SWidget <|-- SCompoundWidget
-note right of SCompoundWidget::ChildSlot 
-The slot that contains this widget's descendants
-end note
-
-SCompoundWidget --> FSimpleSlot
-
-
-
-class SPanel
-
 note top
  * Each child widget should be stored in a Slot. The Slot describes how the individual child should be arranged with
  * respect to its parent (i.e. the Panel) and its peers Widgets (i.e. the Panel's other children.)
@@ -199,12 +203,27 @@ SPanel <|-- SOverlay
 
 
 
-class SWindow{
+class SCompoundWidget{
+	#FSimpleSlot ChildSlot
+}
+note top
+A CompoundWidget is the base from which most non-primitive widgets should be built.
+CompoundWidgets have a protected member named ChildSlot.
+end note
+SWidget <|-- SCompoundWidget
+note right of SCompoundWidget::ChildSlot 
+The slot that contains this widget's descendants
+end note
 
-	#  NativeWindow:TSharedPtr<FGenericWindow>
+SCompoundWidget --> FSimpleSlot
+
+
+class SWindow{
 	
 	# TWeakPtr<SWindow> ParentWindowPtr
 	# TArray< TSharedRef<SWindow> > ChildWindows
+
+	# TSharedPtr<FGenericWindow> NativeWindow
 }
 note top:SWindow is a platform-agnostic representation of a top-level window.
 SCompoundWidget <|-- SWindow
@@ -213,4 +232,36 @@ FSlateInvalidationRoot <|-- SWindow
 note right of SWindow::NativeWindow 
 	The native window that is backing this Slate Window
 end note
+
+SWindow --> FGenericWindow
+
+
+'FastUpdate'
+
+class FSlateInvalidationRoot{
+	/** List of all the Widget included by this SlateInvalidationRoot. */
+	- FSlateInvalidationWidgetList* FastWidgetPathList;
+	/** Index to widgets which are dirty, volatile, or need some sort of per frame update (such as a tick or timer) */
+	- FSlateInvalidationWidgetHeap* WidgetsNeedingUpdate;
+	/** Index to widgets that will be updated. */
+	- TArray<FSlateInvalidationWidgetIndex> FinalUpdateList;
+	/** Widget that has ChildOrder invalidation. */
+	- TArray<TWeakPtr<SWidget>> WidgetsNeedingChildOrderUpdate;
+}
+
+
+'Layout'
+class FArrangedChildren{
+    +typedef TArray<FArrangedWidget, TInlineAllocator<4>> FArrangedWidgetArray
+    -EVisibility VisibilityFilter
+    -FArrangedWidgetArray Array
+}
+note top
+ * The results of an ArrangeChildren are always returned as an FArrangedChildren.
+ * FArrangedChildren supports a filter that is useful for excluding widgets with unwanted
+ * visibilities.
+end note
+
+
+
 @enduml

@@ -1,5 +1,6 @@
 @startuml Renderer
 !include RenderCore.pu
+!include Engine.pu
 
 class FMaterialShader {
     +template<typename ShaderRHIParamRef> FORCEINLINE_DEBUGGABLE void SetViewParameters(FRHICommandList& RHICmdList, const ShaderRHIParamRef ShaderRHI, const FSceneView& View, const TUniformBufferRef<FViewUniformShaderParameters>& ViewUniformBuffer)
@@ -53,4 +54,42 @@ FMeshPassProcessor<|--FBasePassMeshProcessor
 note top
 BassPassRendering.cpp
 end note 
+
+
+
+class FPrimitiveSceneInfo{
+    FPrimitiveSceneProxy* Proxy
+}
+FPrimitiveSceneInfo -- FPrimitiveSceneProxy
+
+class Fscene{
+    +UWorld* World
+    +TArray<FPrimitiveSceneInfo*> Primitives
+	+TArray<FMatrix> PrimitiveTransforms
+	+TArray<FPrimitiveSceneProxy*> PrimitiveSceneProxies
+	+TArray<FPrimitiveBounds> PrimitiveBounds
+	+TArray<FPrimitiveFlagsCompact> PrimitiveFlagsCompact
+	+TArray<FPrimitiveVisibilityId> PrimitiveVisibilityIds
+	+TArray<uint8> PrimitiveOcclusionFlags
+	+TArray<FBoxSphereBounds> PrimitiveOcclusionBounds
+	+TArray<FPrimitiveComponentId> PrimitiveComponentIds
+	+TArray<FPrimitiveVirtualTextureFlags> PrimitiveVirtualTextureFlags
+	+TArray<FPrimitiveVirtualTextureLodInfo> PrimitiveVirtualTextureLod
+}
+FSceneInterface <|-- Fscene
+Fscene --> UWorld
+Fscene --> FPrimitiveSceneInfo
+Fscene --> FPrimitiveSceneProxy
+
+
+class FSceneRenderer{
+	+ FScene* Scene; /** The scene being rendered. */
+	+ FSceneViewFamily ViewFamily; /** The view family being rendered.  This references the Views array. */
+	+ TArray<FViewInfo> Views; /** The views being rendered. */
+	+ FMeshElementCollector MeshCollector;
+	+ FMeshElementCollector RayTracingCollector;
+}
+FSceneRenderer --> Fscene
+FSceneRenderer --> FSceneViewFamily
+FSceneRenderer --> FMeshElementCollector
 @enduml

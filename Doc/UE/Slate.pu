@@ -3,15 +3,6 @@
 !include ApplicationCore.pu
 
 
-class FSlateApplication{
-	+ TSharedRef<FGenericWindow> FSlateApplication::MakeWindow( TSharedRef<SWindow> InSlateWindow, const bool bShowImmediately )
-}
-FSlateApplicationBase <|-- FSlateApplication 
-FGenericApplicationMessageHandler <|-- FSlateApplication
-
-
-FSlateApplication ..> SWindow
-
 
 
 
@@ -35,16 +26,29 @@ SBorder<|-- SButton
 
 
 
+class SViewport{
+	/** Interface to the rendering and I/O implementation of the viewport. */
+	# TWeakPtr<ISlateViewport>  ViewportInterface;
+}
+
+SCompoundWidget<|-- SViewport
+
+SViewport -->ISlateViewport
 
 
 
 
 
+'Application'
+
+class FSlateApplication{
+	+ TSharedRef<FGenericWindow> MakeWindow( TSharedRef<SWindow> InSlateWindow, const bool bShowImmediately )
+}
+FSlateApplicationBase <|-- FSlateApplication 
+FGenericApplicationMessageHandler <|-- FSlateApplication
 
 
-
-
-
+FSlateApplication ..> SWindow
 
 
 @enduml
