@@ -127,11 +127,12 @@ void WindowsWindow::SetText(const char* const Text)
 void WindowsWindow::SetWindowMode(EWindowMode InNewWindowMode)
 {
     if (WindowMode == InNewWindowMode) { return; }
+    ::GetWindowRect(m_hWnd, &m_WindowRect);
     switch(InNewWindowMode){
     case EWindowMode::Fullscreen: {
         // Store the current window dimensions so they can be restored
  // when switching out of fullscreen state.
-        ::GetWindowRect(m_hWnd, &m_WindowRect);
+        
 
         // Set the window style to a borderless fullscreen window so the
         // client area fills the entire screen.
