@@ -1,9 +1,9 @@
-#include "SWidget.h"
-#include "GenericPlatform/GenericWindow.h"
-
-#include "GenericPlatform/Events.h"
+#pragma once
 #include <glm/glm.hpp>
 #include <string>
+#include "SWidget.h"
+#include "GenericPlatform/GenericWindow.h"
+#include "GenericPlatform/Events.h"
 class SWindow :public SWidget{
 
     

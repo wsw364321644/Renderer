@@ -18,14 +18,13 @@
 #include <Texture.h>
 
 #include <GenericPlatform/GenericWindow.h>
-
+#include <imgui.h>
 #include <wrl/client.h>
 using namespace Microsoft::WRL;
 
 #include <DirectXColors.h>
 #include <DirectXMath.h>
 #include <d3dcompiler.h>
-
 using namespace dx12lib;
 using namespace DirectX;
 

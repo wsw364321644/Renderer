@@ -8,13 +8,11 @@
  *  @brief Wrapper for ImGui. This class is used internally by the Window class.
  */
 
-#include "imgui.h"
-
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>  // For HWND
 
 #include <memory>  // For std::shared_ptr
-
+struct ImGuiContext;
 namespace dx12lib
 {
 

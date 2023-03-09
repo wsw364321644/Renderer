@@ -9,7 +9,7 @@
 #include <RootSignature.h>
 #include <ShaderResourceView.h>
 #include <Texture.h>
-
+#include <imgui.h>
 // Include compiled shaders for ImGui.
 
 #include <imgui_impl_win32.h>
