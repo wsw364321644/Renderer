@@ -1,6 +1,6 @@
-#include <Editor.h>
+#include "Editor.h"
 #include "Windows/WindowsApplication.h"
-
+#include "LaunchEngineLoop.h"
 #include <GenericPlatform/GameFramework.h>
 #include <Device.h>
 
@@ -11,6 +11,7 @@
 
 using namespace dx12lib;
 
+FEngineLoop	GEngineLoop;
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nCmdShow)
 {
 
@@ -38,13 +39,14 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
         LocalFree(argv);
     }
 
-    HICON AppIconHandle = LoadIcon((HINSTANCE)NULL, IDI_APPLICATION);
-    std::shared_ptr<WindowsApplication> windowsapplication =std::make_shared<WindowsApplication>(hInstance, AppIconHandle);
 
-    GameFramework::Create(windowsapplication);
+
+    GameFramework::Create();
     {
         std::unique_ptr<Editor> demo = std::make_unique<Editor>("Editor", 1920, 1080, true);
-        retCode = demo->Run();
+        retCode = demo->Init();
+        GEngineLoop.Run();
+        demo->UnloadContent();
     }
     GameFramework::Destroy();
 

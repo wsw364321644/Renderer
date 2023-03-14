@@ -187,18 +187,14 @@ Editor::~Editor()
     _aligned_free( m_pAlignedCameraData );
 }
 
-uint32_t Editor::Run()
+bool Editor::Init()
 {
     LoadContent();
 
     
     m_Window->ShowWindow();
 
-    uint32_t retCode = GameFramework::Get().Run();
-
-    UnloadContent();
-
-    return retCode;
+    return true;
 }
 
 bool Editor::LoadContent()

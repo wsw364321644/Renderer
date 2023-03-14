@@ -37,7 +37,7 @@ public:
     /**
      * Start the main game loop.
      */
-    uint32_t Run();
+    bool Init();
 
     /**
      *  Load content required for the demo.

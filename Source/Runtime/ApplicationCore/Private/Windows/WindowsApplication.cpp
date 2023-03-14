@@ -510,7 +510,7 @@ void WindowsApplication::OnFileChange(FileChangedEventArgs& e)
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 
-    WindowsApplication* app = dynamic_cast<WindowsApplication*>(GameFramework::Get().GetGenericApplication());
+    WindowsApplication* app = dynamic_cast<WindowsApplication*>(SlateManager::GetGenericApplication());
     return app->ProcessMessage(hwnd, message, wParam, lParam);
 }
 
