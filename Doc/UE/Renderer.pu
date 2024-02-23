@@ -82,6 +82,33 @@ Fscene --> FPrimitiveSceneInfo
 Fscene --> FPrimitiveSceneProxy
 
 
+
+class FParallelMeshDrawCommandPass{
+	+ 	void DispatchPassSetup(
+		FScene* Scene,
+		const FViewInfo& View, 
+		EMeshPass::Type PassType, 
+		FExclusiveDepthStencil::Type BasePassDepthStencilAccess,
+		FMeshPassProcessor* MeshPassProcessor,
+		const TArray<FMeshBatchAndRelevance, SceneRenderingAllocator>& DynamicMeshElements,
+		const TArray<FMeshPassMask, SceneRenderingAllocator>* DynamicMeshElementsPassRelevance,
+		int32 NumDynamicMeshElements,
+		TArray<const FStaticMeshBatch*, SceneRenderingAllocator>& InOutDynamicMeshCommandBuildRequests,
+		int32 NumDynamicMeshCommandBuildRequestElements,
+		FMeshCommandOneFrameArray& InOutMeshDrawCommands,
+		FMeshPassProcessor* MobileBasePassCSMMeshPassProcessor = nullptr, // Required only for the mobile base pass.
+		FMeshCommandOneFrameArray* InOutMobileBasePassCSMMeshDrawCommands = nullptr // Required only for the mobile base pass.
+	);
+}
+
+
+class FViewInfo{
+	+ TStaticArray<FParallelMeshDrawCommandPass, EMeshPass::Num> ParallelMeshDrawCommandPasses;
+}
+FViewInfo --|> FSceneView
+FViewInfo --> FParallelMeshDrawCommandPass
+
+
 class FSceneRenderer{
 	+ FScene* Scene; /** The scene being rendered. */
 	+ FSceneViewFamily ViewFamily; /** The view family being rendered.  This references the Views array. */
@@ -92,4 +119,6 @@ class FSceneRenderer{
 FSceneRenderer --> Fscene
 FSceneRenderer --> FSceneViewFamily
 FSceneRenderer --> FMeshElementCollector
+FSceneRenderer --> FViewInfo
+FSceneRenderer ..> FMeshPassProcessor
 @enduml
