@@ -10,7 +10,7 @@
 
 
 
-#include <gainput/gainput.h>
+#include <SDL.h>
 #include <spdlog/logger.h>
 
 
@@ -25,7 +25,7 @@
 #include "Events.h"
 
 #include "SlateManager.h"
-#include "GenericPlatform/GenericApplication.h"
+
 
 
 class GenericWindow;
@@ -42,7 +42,7 @@ public:
      * @parm hInst The application instance.
      * @returns A reference to the created instance.
      */
-    static GameFramework& Create(std::shared_ptr< GenericApplication> inGenericApplication);
+    static GameFramework& Create();
 
     /**
      * Destroy the Application instance.
@@ -55,7 +55,6 @@ public:
      */
     static GameFramework& Get();
 
-    GenericApplication* GetGenericApplication() { return m_GenericApplication.get(); }
     SlateManager* GetSlateManager() { return m_SlateManager.get(); }
     /**
      * Create a named logger or get a previously created logger with the same
@@ -63,50 +62,13 @@ public:
      */
     Logger CreateLogger( const std::string& name );
 
-    /**
-     * Get the keyboard device ID.
-     */
-    gainput::DeviceId GetKeyboardId() const;
-
-    /**
-     * Get the mouse device ID.
-     */
-    gainput::DeviceId GetMouseId() const;
-
-    /**
-     * Get a gamepad device ID.
-     *
-     * @param index The index of the connected pad [0 ... gainput::MaxPadCount)
-     */
-    gainput::DeviceId GetPadId( unsigned index = 0 ) const;
-
-    /**
-     * Get an input device.
-     *
-     * @param InputDevice the Type of device to retrieve. (Must be derived from
-     * gainput::InputDevice)
-     */
-    template<class T>
-    T* GetDevice( gainput::DeviceId deviceId ) const
-    {
-        static_assert( std::is_base_of_v<gainput::InputDevice, T> );
-        return static_cast<T*>( m_InputManager.GetDevice( deviceId ) );
-    }
-
-    /**
-     * Create a gainput input map.
-     * 
-     * @param [name] (Optional) name of the input map.
-     * @see http://gainput.johanneskuhlmann.de/api/classgainput_1_1InputMap.html
-     */
-    std::shared_ptr<gainput::InputMap> CreateInputMap( const char* name = nullptr );
 
     /**
      * Start the main application run loop.
      *
      * @returns The error code (if an error occurred).
      */
-    int32_t Run();
+    void UpdateTime();
 
     /**
      * Inform the input manager of changes to the size of the display.
@@ -128,7 +90,7 @@ public:
      * Stop the application.
      */
     void Stop();
-
+    bool GetRequestStop() { return m_RequestQuit; }
 
     /**
      * Application is exiting.
@@ -137,7 +99,7 @@ public:
 
 protected:
 
-    GameFramework(std::shared_ptr<GenericApplication> inGenericApplication);
+    GameFramework();
     virtual ~GameFramework();
 
     // Application is going to close
@@ -154,19 +116,12 @@ private:
 
     Logger m_Logger;
 
-    // Gainput input manager.
-    gainput::InputManager m_InputManager;
-    gainput::DeviceId     m_KeyboardDevice;
-    gainput::DeviceId     m_MouseDevice;
-    gainput::DeviceId     m_GamepadDevice[gainput::MaxPadCount];
 
-    // Set to true while the application is running.
-    std::atomic_bool m_bIsRunning;
     // Should the application quit?
     std::atomic_bool m_RequestQuit;
 
 
 
-    std::shared_ptr<GenericApplication> m_GenericApplication;
+    
     std::shared_ptr < SlateManager> m_SlateManager;
 };

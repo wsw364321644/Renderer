@@ -18,14 +18,13 @@
 #include <Texture.h>
 
 #include <GenericPlatform/GenericWindow.h>
-
+#include <imgui.h>
 #include <wrl/client.h>
 using namespace Microsoft::WRL;
 
 #include <DirectXColors.h>
 #include <DirectXMath.h>
 #include <d3dcompiler.h>
-
 using namespace dx12lib;
 using namespace DirectX;
 
@@ -188,18 +187,14 @@ Editor::~Editor()
     _aligned_free( m_pAlignedCameraData );
 }
 
-uint32_t Editor::Run()
+bool Editor::Init()
 {
     LoadContent();
 
     
     m_Window->ShowWindow();
 
-    uint32_t retCode = GameFramework::Get().Run();
-
-    UnloadContent();
-
-    return retCode;
+    return true;
 }
 
 bool Editor::LoadContent()

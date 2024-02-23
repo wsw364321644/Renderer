@@ -1,13 +1,13 @@
 #include "GenericPlatform/GameFrameworkPCH.h"
 
-#include <GenericPlatform/GameFramework.h>
-
+#include "GenericPlatform/GameFramework.h"
+#include "Misc/App.h"
+#include <chrono>
 static GameFramework* gs_pSingelton = nullptr;
 
 
-GameFramework::GameFramework(std::shared_ptr<GenericApplication> inGenericApplication)
-:  m_bIsRunning( false )
-, m_RequestQuit( false )
+GameFramework::GameFramework()
+: m_RequestQuit( false )
 {
 
     // Init spdlog.
@@ -23,21 +23,9 @@ GameFramework::GameFramework(std::shared_ptr<GenericApplication> inGenericApplic
                                                        spdlog::thread_pool(), spdlog::async_overflow_policy::block );
     spdlog::register_logger( m_Logger );
     spdlog::set_default_logger( m_Logger );
-
-    // Init gainput.
-    m_KeyboardDevice = m_InputManager.CreateDevice<gainput::InputDeviceKeyboard>();
-    m_MouseDevice    = m_InputManager.CreateDevice<gainput::InputDeviceMouse>();
-    for ( unsigned i = 0; i < gainput::MaxPadCount; ++i )
-    { m_GamepadDevice[i] = m_InputManager.CreateDevice<gainput::InputDevicePad>( i ); }
-
-    // This will prevent normalization of mouse coordinates.
-    m_InputManager.SetDisplaySize(1, 1);
-
-
-
-    m_GenericApplication = inGenericApplication;
-    m_SlateManager = std::make_shared< SlateManager>();
-    m_GenericApplication->SetMessageHandler(m_SlateManager);
+    
+    m_SlateManager = SlateManager::Create();
+    
 }
 
 GameFramework::~GameFramework()
@@ -45,11 +33,11 @@ GameFramework::~GameFramework()
 
 }
 
-GameFramework& GameFramework::Create(std::shared_ptr<GenericApplication> inGenericApplication)
+GameFramework& GameFramework::Create()
 {
     if ( !gs_pSingelton )
     {
-        gs_pSingelton = new GameFramework(inGenericApplication);
+        gs_pSingelton = new GameFramework();
 
         spdlog::info( "GameFramework class created." );
     }
@@ -87,63 +75,17 @@ Logger GameFramework::CreateLogger( const std::string& name )
     return logger;
 }
 
-gainput::DeviceId GameFramework::GetKeyboardId() const
+
+
+void GameFramework::UpdateTime()
 {
-    return m_KeyboardDevice;
+    FApp::UpdateLastTime();
+    auto now = std::chrono::steady_clock::now();
+    FApp::SetCurrentTime(std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch()).count()/ std::micro::den);
+    auto lasttime=FApp::GetLastTime();
+    FApp::SetDeltaTime(FApp::GetCurrentTime()- FApp::GetLastTime());
 }
 
-gainput::DeviceId GameFramework::GetMouseId() const
-{
-    return m_MouseDevice;
-}
-
-gainput::DeviceId GameFramework::GetPadId( unsigned index /*= 0 */ ) const
-{
-    assert( index >= 0 && index < gainput::MaxPadCount );
-    return m_GamepadDevice[index];
-}
-
-std::shared_ptr<gainput::InputMap> GameFramework::CreateInputMap( const char* name )
-{
-    return std::make_shared<gainput::InputMap>( m_InputManager, name );
-}
-
-int32_t GameFramework::Run()
-{
-    assert( !m_bIsRunning );
-
-    m_bIsRunning = true;
-
-    MSG msg = {};
-    while ( ::PeekMessage( &msg, NULL, 0, 0, PM_REMOVE ) && msg.message != WM_QUIT )
-    {
-        ::TranslateMessage( &msg );
-        ::DispatchMessage( &msg );
-
-        m_InputManager.HandleMessage( msg );
-
-        // Check to see of the application wants to quit.
-        if ( m_RequestQuit )
-        {
-            ::PostQuitMessage( 0 );
-            m_RequestQuit = false;
-        }
-    }
-
-    m_bIsRunning = false;
-
-    return static_cast<int32_t>( msg.wParam );
-}
-
-void GameFramework::SetDisplaySize( int width, int height )
-{
-    m_InputManager.SetDisplaySize( width, height );
-}
-
-void GameFramework::ProcessInput()
-{
-    m_InputManager.Update();
-}
 
 void GameFramework::Stop()
 {

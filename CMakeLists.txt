@@ -31,6 +31,9 @@ AddSourceFolder(RECURSE "${PROJECT_SOURCE_DIR}/Source/Runtime/Core/Private")
 AddSourceFolder(INCLUDE RECURSE PUBLIC "${PROJECT_SOURCE_DIR}/Source/Runtime/Engine/Public")
 AddSourceFolder(RECURSE "${PROJECT_SOURCE_DIR}/Source/Runtime/Engine/Private")
 
+AddSourceFolder(INCLUDE RECURSE PUBLIC "${PROJECT_SOURCE_DIR}/Source/Runtime/Renderer/Public")
+AddSourceFolder(RECURSE "${PROJECT_SOURCE_DIR}/Source/Runtime/Renderer/Private")
+
 AddSourceFolder(INCLUDE RECURSE PUBLIC "${PROJECT_SOURCE_DIR}/Source/Runtime/Slate/Public")
 AddSourceFolder(RECURSE "${PROJECT_SOURCE_DIR}/Source/Runtime/Slate/Private")
 
@@ -39,12 +42,6 @@ AddSourceFolder(RECURSE "${PROJECT_SOURCE_DIR}/Source/Runtime/D3D12RHI/Private")
 
 AddSourceFolder(INCLUDE RECURSE PRIVATE "${PROJECT_SOURCE_DIR}/Source/Editor/Public")
 AddSourceFolder(RECURSE "${PROJECT_SOURCE_DIR}/Source/Editor/Private")
-
-
-AddSourceFolder(INCLUDE PRIVATE "${PROJECT_SOURCE_DIR}/ThirdParty/imgui")
-
-set(SourceFiles "${SourceFiles};${PROJECT_SOURCE_DIR}/ThirdParty/imgui/backends/imgui_impl_win32.h;${Imgui_SRC};${PROJECT_SOURCE_DIR}/ThirdParty/imgui/backends/imgui_impl_win32.cpp")
-list(APPEND PrivateIncludeFolders "${PROJECT_SOURCE_DIR}/ThirdParty/imgui/backends") 
 
 
 source_group( TREE ${PROJECT_SOURCE_DIR}  FILES ${SourceFiles})
@@ -94,7 +91,7 @@ add_subdirectory( ThirdParty/glm)
 add_subdirectory( ThirdParty/stduuid)
 add_subdirectory( ThirdParty/taskflow)
 add_subdirectory( ThirdParty/SDL)
-
+add_subdirectory( Source/imgui )
 
 add_executable( ${TARGET_NAME} WIN32
     ${SourceFiles}
@@ -132,11 +129,12 @@ target_link_libraries( ${TARGET_NAME}
 	DirectXTK
 	spdlog
 	assimp
-    gainput
+    gainputstatic
     glm
     stduuid
 	Taskflow
 	SDL2
+	imgui_a
     d3d12.lib
     dxgi.lib
     d3dcompiler.lib

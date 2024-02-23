@@ -1,9 +1,21 @@
 #include "SlateManager.h"
 #include "GenericPlatform/GameFramework.h"
 #include "Misc/Helpers.h"
+#include "GenericPlatform/PlatformApplicationMisc.h"
+#include "Misc/App.h"
 #include <memory>
+std::shared_ptr<GenericApplication> SlateManager::m_GenericApplication;
 SlateManager::~SlateManager()
 {
+}
+
+std::shared_ptr<SlateManager> SlateManager::Create()
+{
+	auto sm=std::make_shared<SlateManager>();
+	m_GenericApplication.reset(FPlatformApplicationMisc::CreateApplication());
+	m_GenericApplication->SetMessageHandler(sm);
+	
+	return sm;
 }
 
 SlateManager::SlateManager()
@@ -12,8 +24,8 @@ SlateManager::SlateManager()
 
 void SlateManager::AddToView(std::shared_ptr<SWindow> window)
 {
-	auto app = GameFramework::Get().GetGenericApplication();
-	std::shared_ptr <GenericWindow> platformWindow= app->MakeWindow();
+
+	std::shared_ptr <GenericWindow> platformWindow= m_GenericApplication->MakeWindow();
 
 	std::shared_ptr< GenericWindowDefinition > Definition = std::make_shared< GenericWindowDefinition>();
 
@@ -53,7 +65,7 @@ void SlateManager::AddToView(std::shared_ptr<SWindow> window)
 
 	//Definition->SizeLimits = InSlateWindow->GetSizeLimits();
 
-	app->InitializeWindow(platformWindow, Definition, nullptr, false);
+	m_GenericApplication->InitializeWindow(platformWindow, Definition, nullptr, false);
 	window->SetPlatformWindow(platformWindow);
 
 	Windows.push_back(window);
@@ -65,7 +77,7 @@ void SlateManager::OnOSPaint(const std::shared_ptr<GenericWindow>& Window)
 
 	// Delta and total time will be filled in by the Window.
 	UpdateEventArgs updateEventArgs(0.0, 0.0);
-	auto& Timer=GameFramework::Get().GetGenericApplication()->GetTimer();
+	auto& Timer= m_GenericApplication->GetTimer();
 	updateEventArgs.DeltaTime = Timer.ElapsedSeconds();
 	updateEventArgs.TotalTime = Timer.TotalSeconds();
 	window->OnUpdate(updateEventArgs);
@@ -73,6 +85,11 @@ void SlateManager::OnOSPaint(const std::shared_ptr<GenericWindow>& Window)
 
 void SlateManager::HandleDPIScaleChanged(const std::shared_ptr<GenericWindow>& Window)
 {
+}
+
+void SlateManager::PollGameDeviceState()
+{
+	m_GenericApplication->PollGameDeviceState(FApp::GetDeltaTime());
 }
 
 const std::shared_ptr<SWindow> SlateManager::FindWindowByNative(const std::shared_ptr<GenericWindow>& Window)
