@@ -4,9 +4,6 @@
 [submodule "DirectXTK"]
 	path = ThirdParty/DirectXTK
 	url = https://github.com/microsoft/DirectXTK.git
-[submodule "spdlog"]
-	path = ThirdParty/spdlog
-	url = https://github.com/gabime/spdlog.git
 [submodule "imgui"]
 	path = ThirdParty/imgui
 	url = https://github.com/ocornut/imgui.git
@@ -23,9 +20,3 @@
 [submodule "stduuid"]
 	path = ThirdParty/stduuid
 	url = https://github.com/mariusbancila/stduuid.git
-[submodule "taskflow"]
-	path = ThirdParty/taskflow
-	url = https://github.com/taskflow/taskflow
-[submodule "SDL"]
-	path = ThirdParty/SDL
-	url = https://github.com/libsdl-org/SDL

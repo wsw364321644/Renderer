@@ -1,155 +1,74 @@
-cmake_minimum_required (VERSION 3.16)
-include(${CMAKE_CURRENT_SOURCE_DIR}/Cmake/CMakeLists.txt)
+cmake_minimum_required(VERSION 3.16)
+include(ExternalProject)
+include(FetchContent)
+set(UTILPP_TAG bbe5a2400dca91b1b8a93b0230cd99254b038ec2)
+set(OCmakeUtil_TAG da88ebcc080f0374b0fb6e9e05abdc26541d4fdb)
 
-set( TARGET_NAME Editor )
+project(Renderer LANGUAGES C CXX)
 
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib) # Output directory for static lib (.LIB)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin) # Output directory for shared lib (.DLL)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin) # Output directory for executables (.EXE)
-
-project (Renderer LANGUAGES C CXX)
-if( MSVC )
-    add_compile_options(/MP)
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set(CMAKE_INSTALL_PREFIX
+        "${CMAKE_BINARY_DIR}/rundir"
+        CACHE STRING "Directory to install after building" FORCE)
 endif()
 
-AddSourceFolder(INCLUDE RECURSE PUBLIC "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Public")
-AddSourceFolder(RECURSE "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Private")
-if(WIN32)
-    AddSourceFolder(INCLUDE PRIVATE "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Resources/Windows")
-endif()
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-AddSourceFolder(INCLUDE RECURSE PUBLIC "${PROJECT_SOURCE_DIR}/Source/Runtime/ApplicationCore/Public")
-AddSourceFolder(RECURSE "${PROJECT_SOURCE_DIR}/Source/Runtime/ApplicationCore/Private/")
-
-
-AddSourceFolder(INCLUDE RECURSE PUBLIC "${PROJECT_SOURCE_DIR}/Source/Runtime/InputCore/Public")
-AddSourceFolder(RECURSE "${PROJECT_SOURCE_DIR}/Source/Runtime/InputCore/Private")
-
-AddSourceFolder(INCLUDE RECURSE PUBLIC "${PROJECT_SOURCE_DIR}/Source/Runtime/Core/Public")
-AddSourceFolder(RECURSE "${PROJECT_SOURCE_DIR}/Source/Runtime/Core/Private")
-
-AddSourceFolder(INCLUDE RECURSE PUBLIC "${PROJECT_SOURCE_DIR}/Source/Runtime/Engine/Public")
-AddSourceFolder(RECURSE "${PROJECT_SOURCE_DIR}/Source/Runtime/Engine/Private")
-
-AddSourceFolder(INCLUDE RECURSE PUBLIC "${PROJECT_SOURCE_DIR}/Source/Runtime/Renderer/Public")
-AddSourceFolder(RECURSE "${PROJECT_SOURCE_DIR}/Source/Runtime/Renderer/Private")
-
-AddSourceFolder(INCLUDE RECURSE PUBLIC "${PROJECT_SOURCE_DIR}/Source/Runtime/Slate/Public")
-AddSourceFolder(RECURSE "${PROJECT_SOURCE_DIR}/Source/Runtime/Slate/Private")
-
-AddSourceFolder(INCLUDE RECURSE PUBLIC "${PROJECT_SOURCE_DIR}/Source/Runtime/D3D12RHI/Public")
-AddSourceFolder(RECURSE "${PROJECT_SOURCE_DIR}/Source/Runtime/D3D12RHI/Private")
-
-AddSourceFolder(INCLUDE RECURSE PRIVATE "${PROJECT_SOURCE_DIR}/Source/Editor/Public")
-AddSourceFolder(RECURSE "${PROJECT_SOURCE_DIR}/Source/Editor/Private")
-
-
-source_group( TREE ${PROJECT_SOURCE_DIR}  FILES ${SourceFiles})
-
-
-
-file(GLOB_RECURSE VERTEX_SHADER_FILES LIST_DIRECTORIES false   CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Shaders/Vertex/*.hlsl")
-file(GLOB_RECURSE PIXEL_SHADER_FILES LIST_DIRECTORIES false   CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Shaders/Pixel/*.hlsl")
-file(GLOB_RECURSE COMPUTE_SHADER_FILES LIST_DIRECTORIES false   CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/Shaders/Compute/*.hlsl")
-set( SHADER_FILES
-    ${VERTEX_SHADER_FILES}
-    ${PIXEL_SHADER_FILES}
-    ${COMPUTE_SHADER_FILES}
+FetchContent_Declare(
+    OCmakeUtil
+    GIT_REPOSITORY https://github.com/wsw364321644/OCmakeUtil.git
+    GIT_TAG ${OCmakeUtil_TAG}
 )
-source_group( TREE ${PROJECT_SOURCE_DIR}  FILES ${SHADER_FILES} )
+FetchContent_MakeAvailable(OCmakeUtil)
 
-set_source_files_properties( ${SHADER_FILES} 
-    PROPERTIES
-        VS_SHADER_OBJECT_FILE_NAME "${CMAKE_SOURCE_DIR}/Data/Shaders/%(Filename).cso"
-        VS_SHADER_MODEL 6.0
-        VS_SHADER_DISABLE_OPTIMIZATIONS $<$<CONFIG:Debug>:ON>
-        VS_SHADER_ENABLE_DEBUG $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:ON>
-        VS_SHADER_FLAGS $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:-Qembed_debug>
+ImportProject(LIBUV STATIC_CRT SSH TAG be6b81a352d17513c95be153afcb3148f1a451cd) # 1.47.0
+
+set(UTILPP_WITH_STATIC_LIBUV OFF CACHE BOOL "" FORCE)
+set(UTILPP_STATIC_CRT OFF CACHE BOOL "" FORCE)
+FetchContent_Declare(
+    utilpp
+    GIT_REPOSITORY git@ssh.github.com:wsw364321644/utilpp.git
+    GIT_TAG ${UTILPP_TAG}
+)
+FetchContent_MakeAvailable(utilpp)
+
+set(SDL_TEST OFF CACHE BOOL "" FORCE)
+FetchContent_Declare(
+    sdl
+    GIT_REPOSITORY git@ssh.github.com:libsdl-org/SDL.git
+    GIT_TAG 859844eae358447be8d66e6da59b6fb3df0ed778
+)
+FetchContent_MakeAvailable(sdl)
+
+ExternalProject_Add(
+    assets
+    URL https://github.com/jpvanoosten/LearningDirectX12/releases/download/v1.1.0/Assets.7z
+    SOURCE_DIR ${CMAKE_INSTALL_PREFIX}/bin/Assets
+    DOWNLOAD_EXTRACT_TIMESTAMP FALSE
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND ""
+    INSTALL_COMMAND ""
 )
 
-set_source_files_properties( ${VERTEX_SHADER_FILES}
-    PROPERTIES 
-        VS_SHADER_TYPE Vertex
-)
+#FetchContent_Declare(
+#    assets
+#    URL      
+#)
+#FetchContent_MakeAvailable(assets)
 
-set_source_files_properties( ${PIXEL_SHADER_FILES}
-    PROPERTIES 
-        VS_SHADER_TYPE Pixel
-)
-set_source_files_properties( ${COMPUTE_SHADER_FILES}
-    PROPERTIES
-        VS_SHADER_TYPE Compute
-)
+set(ASSIMP_WARNINGS_AS_ERRORS OFF)
+set(UUID_USING_CXX20_SPAN ON)
+add_subdirectory(ThirdParty/assimp)
 
+set(UUID_BUILD_TESTS OFF)
+add_subdirectory(ThirdParty/stduuid)
 
-add_subdirectory( ThirdParty/DirectXTex )
-add_subdirectory( ThirdParty/DirectXTK )
-add_subdirectory( ThirdParty/spdlog )
-add_subdirectory( ThirdParty/assimp )
-add_subdirectory( ThirdParty/gainput )
-add_subdirectory( ThirdParty/glm)
-add_subdirectory( ThirdParty/stduuid)
-add_subdirectory( ThirdParty/taskflow)
-add_subdirectory( ThirdParty/SDL)
-add_subdirectory( Source/imgui )
-
-add_executable( ${TARGET_NAME} WIN32
-    ${SourceFiles}
-)
-
-# Enable C++17 compiler features.
-target_compile_features(  ${TARGET_NAME}
-    PUBLIC cxx_std_17
-)
-
-# Remove those pesky min/max macros defined in global scope.
-target_compile_definitions(  ${TARGET_NAME}
-    PUBLIC NOMINMAX 
-)
-
-
-foreach(folderpath IN LISTS PublicIncludeFolders)
-    target_include_directories( ${TARGET_NAME}
-        PUBLIC ${folderpath}
-    )
-endforeach()
-foreach(folderpath IN LISTS PrivateIncludeFolders)
-    target_include_directories( ${TARGET_NAME}
-        PRIVATE ${folderpath}
-    )
-endforeach()
-foreach(folderpath IN LISTS InterfaceIncludeFolders)
-    target_include_directories( ${TARGET_NAME}
-        INTERFACE ${folderpath}
-    )
-endforeach()
-
-target_link_libraries( ${TARGET_NAME}
-    DirectXTex
-	DirectXTK
-	spdlog
-	assimp
-    gainputstatic
-    glm
-    stduuid
-	Taskflow
-	SDL2
-	imgui_a
-    d3d12.lib
-    dxgi.lib
-    d3dcompiler.lib
-    dxgi.lib
-    dxguid.lib
-)
-
-
-get_directory_property(ASSIMP_RUNTIME_OUTPUT_DIRECTORY DIRECTORY ThirdParty/assimp DEFINITION ASSIMP_RUNTIME_OUTPUT_DIRECTORY)
-
-add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory    ${ASSIMP_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>)
-
-
-set( COMMAND_ARGUMENTS "-wd \"${CMAKE_SOURCE_DIR}\"" )
-configure_file( ${TARGET_NAME}.vcxproj.user.in ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.vcxproj.user @ONLY )
-
-message("${CMAKE_CURRENT_BINARY_DIR}" )
+add_subdirectory(ThirdParty/DirectXTex)
+add_subdirectory(ThirdParty/DirectXTK)
+add_subdirectory(ThirdParty/gainput)
+add_subdirectory(ThirdParty/glm)
+add_subdirectory(Source/imgui)
+add_subdirectory(Source)
