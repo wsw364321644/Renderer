@@ -37,9 +37,9 @@ void Texture::Resize( uint32_t width, uint32_t height, uint32_t depthOrArraySize
         resDesc.MipLevels        = resDesc.SampleDesc.Count > 1 ? 1 : 0;
 
         auto d3d12Device = m_Device.GetD3D12Device();
-
+        auto heapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
         ThrowIfFailed( d3d12Device->CreateCommittedResource(
-            &CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_DEFAULT ), D3D12_HEAP_FLAG_NONE, &resDesc,
+            &heapProperties, D3D12_HEAP_FLAG_NONE, &resDesc,
             D3D12_RESOURCE_STATE_COMMON, m_d3d12ClearValue.get(), IID_PPV_ARGS( &m_d3d12Resource ) ) );
 
         // Retain the name of the resource if one was already specified.

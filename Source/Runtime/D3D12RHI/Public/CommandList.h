@@ -495,7 +495,7 @@ private:
     std::shared_ptr<Scene> CreateScene( const VertexCollection& vertices, const IndexCollection& indicies );
 
     // Helper function for inverting normals for "inside" vs "outside" viewing.
-    inline void CommandList::InvertNormals( VertexCollection& vertices );
+    inline void InvertNormals( VertexCollection& vertices );
 
 
 

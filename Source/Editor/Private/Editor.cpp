@@ -870,8 +870,8 @@ void Editor::OnGUI( const std::shared_ptr<dx12lib::CommandList>& commandList,
 
     ImVec2 canvas_p0 = ImGui::GetCursorScreenPos();      // ImDrawList API uses screen coordinates!
     ImVec2 canvas_sz = ImGui::GetContentRegionAvail();   // Resize canvas to what's available
-    //if (canvas_sz.x < 50.0f) canvas_sz.x = 50.0f;
-    //if (canvas_sz.y < 50.0f) canvas_sz.y = 50.0f;
+    if (canvas_sz.x < 50.0f) canvas_sz.x = 50.0f;
+    if (canvas_sz.y < 50.0f) canvas_sz.y = 50.0f;
     ImVec2 canvas_p1 = ImVec2(canvas_p0.x + canvas_sz.x, canvas_p0.y + canvas_sz.y);
 
     ImGui::GetWindowDrawList()->AddImage(&tex, canvas_p0, canvas_p1);

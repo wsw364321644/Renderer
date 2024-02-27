@@ -1,11 +1,10 @@
 #pragma once
 
-
-#include "Misc/Optional.h"
 #include "Events.h"
 #include <glm/glm.hpp>
 #include <memory>
 #include <vector>
+#include <optional>
 class GenericWindow;
 
 
@@ -122,23 +121,23 @@ enum class EGestureEvent : uint8_t
 struct FWindowSizeLimits
 {
 public:
-	FWindowSizeLimits& SetMinWidth(TOptional<float> InValue){ MinWidth = InValue; return *this; }
-	const TOptional<float>& GetMinWidth() const { return MinWidth; }
+	FWindowSizeLimits& SetMinWidth(std::optional<float> InValue){ MinWidth = InValue; return *this; }
+	const std::optional<float>& GetMinWidth() const { return MinWidth; }
 
-	FWindowSizeLimits& SetMinHeight(TOptional<float> InValue){ MinHeight = InValue; return *this; }
-	const TOptional<float>& GetMinHeight() const { return MinHeight; }
+	FWindowSizeLimits& SetMinHeight(std::optional<float> InValue){ MinHeight = InValue; return *this; }
+	const std::optional<float>& GetMinHeight() const { return MinHeight; }
 
-	FWindowSizeLimits& SetMaxWidth(TOptional<float> InValue){ MaxWidth = InValue; return *this; }
-	const TOptional<float>& GetMaxWidth() const { return MaxWidth; }
+	FWindowSizeLimits& SetMaxWidth(std::optional<float> InValue){ MaxWidth = InValue; return *this; }
+	const std::optional<float>& GetMaxWidth() const { return MaxWidth; }
 
-	FWindowSizeLimits& SetMaxHeight(TOptional<float> InValue){ MaxHeight = InValue; return *this; }
-	const TOptional<float>& GetMaxHeight() const { return MaxHeight; }
+	FWindowSizeLimits& SetMaxHeight(std::optional<float> InValue){ MaxHeight = InValue; return *this; }
+	const std::optional<float>& GetMaxHeight() const { return MaxHeight; }
 
 private:
-	TOptional<float> MinWidth;
-	TOptional<float> MinHeight;
-	TOptional<float> MaxWidth;
-	TOptional<float> MaxHeight;
+	std::optional<float> MinWidth;
+	std::optional<float> MinHeight;
+	std::optional<float> MaxWidth;
+	std::optional<float> MaxHeight;
 };
 
 /** 

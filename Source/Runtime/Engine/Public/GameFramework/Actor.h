@@ -55,8 +55,9 @@ public:
             ChildComponents.end(),
             [](std::shared_ptr<ActorComponent>& p) { 
                 bool b = dynamic_cast<inclass>(p) != nullptr;
-                if(b)
-                    OnRemoveComponent(this, p->get());
+                if (b) {
+                    OnRemoveComponent(this, p.get());
+                }
                 return b; 
             }
         ),

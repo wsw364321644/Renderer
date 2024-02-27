@@ -6,7 +6,7 @@
 #include "GenericPlatform/GenericWindowDefinition.h"
 #include "GenericPlatform/GenericWindow.h"
 #include "Misc/HighResolutionTimer.h"
-
+#include "Misc/CoreMiscDefines.h"
 class FSlateApplication;
 class IAnalyticsProvider;
 
