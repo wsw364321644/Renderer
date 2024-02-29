@@ -8,7 +8,7 @@
 #include "Component/StaticMeshComponent.h"
 
 
-using ComponentChangeEvent = Delegate<void(Actor*, ActorComponent*)>;
+using ComponentChangeEvent = CommonDelegate<void(Actor*, ActorComponent*)>;
 
 class Actor
 {

@@ -1,5 +1,6 @@
 #pragma once
 #include<vector>
+#include<functional>
 #include<glm/vec2.hpp>
 
 #include "DeviceInputManager.h"
@@ -206,7 +207,7 @@ public:
 	virtual bool TryCalculatePopupWindowPosition( const FPlatformRect& InAnchor, const glm::vec2& InSize, const glm::vec2& ProposedPlacement, const EPopUpOrientation::Type Orientation, /*OUT*/ glm::vec2* const CalculatedPopUpPosition ) const { return false; }
 
 	//DECLARE_EVENT_OneParam(GenericApplication, FOnDisplayMetricsChanged, const FDisplayMetrics&);
-	typedef Delegate<void(const FDisplayMetrics&)> OnDisplayMetricsChangedEvent;
+	typedef CommonDelegate<void(const FDisplayMetrics&)> OnDisplayMetricsChangedEvent;
 	/** Notifies subscribers when any of the display metrics change: e.g. resolution changes or monitor sare re-arranged. */
 	OnDisplayMetricsChangedEvent& OnDisplayMetricsChanged(){ return DisplayMetricsChangedEvent; }
 
@@ -215,11 +216,11 @@ public:
 	
 	/** Delegate for virtual keyboard being shown/hidden in case UI wants to slide out of the way */
 	//DECLARE_EVENT_OneParam(FSlateApplication, FVirtualKeyboardShownEvent, FPlatformRect);
-	typedef Delegate<void(FPlatformRect)> OnVirtualKeyboardShownEvent;
+	typedef CommonDelegate<void(FPlatformRect)> OnVirtualKeyboardShownEvent;
 	OnVirtualKeyboardShownEvent& OnVirtualKeyboardShown()  { return VirtualKeyboardShownEvent; }
 	
 	//DECLARE_EVENT(FSlateApplication, FVirtualKeyboardHiddenEvent);
-	typedef Delegate<void()> OnVirtualKeyboardHiddenEvent;
+	typedef CommonDelegate<void()> OnVirtualKeyboardHiddenEvent;
 	OnVirtualKeyboardHiddenEvent& OnVirtualKeyboardHidden()  { return VirtualKeyboardHiddenEvent; }
 
 	

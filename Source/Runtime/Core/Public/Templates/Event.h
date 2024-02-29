@@ -1,51 +1,41 @@
 #pragma once
-
-/**
- *  @file Events.h
- *  @date September 29, 2020
- *  @author Jeremiah van Oosten
- *
- *  @brief Application and Window events.
- */
-
-#include "signals.hpp"
-
+#include <sigslot/signal.hpp>
 #include <string>
 
 /**
- * A Delegate holds function callbacks.
+ * A CommonDelegate holds function callbacks.
  */
 
-// Primary delegate template.
+// Primary CommonDelegate template.
 template<typename Func>
-class Delegate;
+class CommonDelegate;
 
 template<typename R, typename... Args>
-class Delegate<R( Args... )>
+class CommonDelegate<R( Args... )>
 {
 public:
-    using slot              = sig::slot<R( Args... )>;
-    using signal            = sig::signal<R( Args... )>;
-    using connection        = sig::connection;
-    using scoped_connection = sig::scoped_connection;
+    //using slot              = sigslot::slot<R(  )>;
+    using signal = sigslot::signal<Args...>;
+    using connection = sigslot::connection;
+    //using scoped_connection = sig::scoped_connection;
+
+    ///**
+    // * Add function callback to the CommonDelegate.
+    // *
+    // * @param f The function to add to the CommonDelegate.
+    // * @returns The connection object that can be used to remove the callback
+    // * from the CommonDelegate.
+    // */
+    //template<typename Func, typename... Args>
+    //connection operator+=( Func&& f, Args... args)
+    //{
+    //    return m_Callbacks.connect( std::forward<Func>( f ), std::forward<Args>(args)...);
+    //}
 
     /**
-     * Add function callback to the delegate.
+     * Remove a callback function from the CommonDelegate.
      *
-     * @param f The function to add to the delegate.
-     * @returns The connection object that can be used to remove the callback
-     * from the delegate.
-     */
-    template<typename Func>
-    connection operator+=( Func&& f )
-    {
-        return m_Callbacks.connect( std::forward<Func>( f ) );
-    }
-
-    /**
-     * Remove a callback function from the delegate.
-     *
-     * @param f The function to remove from the delegate.
+     * @param f The function to remove from the CommonDelegate.
      * @returns The number of callback functions removed.
      */
     template<typename Func>
@@ -55,18 +45,18 @@ public:
     }
 
     /**
-     * Invoke the delegate.
+     * Invoke the CommonDelegate.
      */
-    opt::optional<R> operator()( Args... args )
+    void operator()( Args... args )
     {
         return m_Callbacks( std::forward<Args>( args )... );
     }
 
 
-    template<typename Func, typename Ptr>
-    connection Bind(Func&& f, Ptr&& p)
+    template<typename Func, typename ...Args>
+    connection Bind(Func&& f, Args... args)
     {
-        return m_Callbacks.connect(std::forward<Func>(f), std::forward<Ptr>(p));
+        return m_Callbacks.connect(std::forward<Func>(f), std::forward<Args>(args)...);
     }
 
     void Reset()
@@ -76,5 +66,4 @@ public:
 private:
     signal m_Callbacks;
 };
-
 

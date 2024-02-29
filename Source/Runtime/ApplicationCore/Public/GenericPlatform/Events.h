@@ -10,8 +10,7 @@
 
 #include "keyCodes.h"
 
-#include "Templates/signals.hpp"
-#include "Templates//Event.h"
+#include "Templates/Event.h"
 #include <string>
 
 
@@ -25,7 +24,7 @@ public:
 };
 
 // Define the default event.
-using Event = Delegate<void(EventArgs&)>;
+using Event = CommonDelegate<void(EventArgs&)>;
 
 /**
  * Update event args.
@@ -44,7 +43,7 @@ public:
     double TotalTime;
 };
 
-using UpdateEvent = Delegate<void(UpdateEventArgs&)>;
+using UpdateEvent = CommonDelegate<void(UpdateEventArgs&)>;
 
 class DPIScaleEventArgs : public EventArgs
 {
@@ -57,7 +56,7 @@ public:
     float DPIScale;
 };
 
-using DPIScaleEvent = Delegate<void(DPIScaleEventArgs&)>;
+using DPIScaleEvent = CommonDelegate<void(DPIScaleEventArgs&)>;
 
 /**
  * EventArgs for a WindowClosing event.
@@ -81,7 +80,7 @@ public:
     bool ConfirmClose;
 };
 
-using WindowCloseEvent = Delegate<void(WindowCloseEventArgs&)>;
+using WindowCloseEvent = CommonDelegate<void(WindowCloseEventArgs&)>;
 
 enum class KeyState
 {
@@ -383,7 +382,7 @@ public:
     FModifierKeysState ModifierKeysState;
 };
 
-using KeyboardEvent = Delegate<void(KeyEventArgs&)>;
+using KeyboardEvent = CommonDelegate<void(KeyEventArgs&)>;
 
 /**
  * MouseMotionEventArgs are used to indicate the mouse moved or was dragged over
@@ -420,7 +419,7 @@ public:
     FModifierKeysState ModifierKeysState;
 };
 
-using MouseMotionEvent = Delegate<void(MouseMotionEventArgs&)>;
+using MouseMotionEvent = CommonDelegate<void(MouseMotionEventArgs&)>;
 
 enum class EMouseButton
 {
@@ -472,7 +471,7 @@ public:
     FModifierKeysState ModifierKeysState;
 };
 
-using MouseButtonEvent = Delegate<void(MouseButtonEventArgs&)>;
+using MouseButtonEvent = CommonDelegate<void(MouseButtonEventArgs&)>;
 
 /**
  * MouseWheelEventArgs indicates if the mouse wheel was moved and how much.
@@ -509,7 +508,7 @@ public:
     int Y;              // The Y-position of the cursor relative to the upper-left corner of
                         // the client area.
 };
-using MouseWheelEvent = Delegate<void(MouseWheelEventArgs&)>;
+using MouseWheelEvent = CommonDelegate<void(MouseWheelEventArgs&)>;
 
 enum class EWindowState
 {
@@ -543,7 +542,7 @@ public:
     // If the window was minimized or maximized.
     EWindowState State;
 };
-using ResizeEvent = Delegate<void(ResizeEventArgs&)>;
+using ResizeEvent = CommonDelegate<void(ResizeEventArgs&)>;
 
 /**
  * Generic user event args.
@@ -563,7 +562,7 @@ public:
     void* Data1;
     void* Data2;
 };
-using UserEvent = Delegate<void(UserEventArgs&)>;
+using UserEvent = CommonDelegate<void(UserEventArgs&)>;
 
 /**
  * Used to notify a runtime error occurred.
@@ -582,7 +581,7 @@ public:
     std::string ErrorString;
     std::string CompilerError;
 };
-using RuntimeErrorEvent = Delegate<void(RuntimeErrorEventArgs&)>;
+using RuntimeErrorEvent = CommonDelegate<void(RuntimeErrorEventArgs&)>;
 
 enum class FileAction
 {
@@ -610,4 +609,4 @@ public:
     FileAction   Action;  // The action that triggered this event.
     std::wstring Path;    // The file or directory path that was modified.
 };
-using FileChangeEvent = Delegate<void(FileChangedEventArgs&)>;
+using FileChangeEvent = CommonDelegate<void(FileChangedEventArgs&)>;

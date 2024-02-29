@@ -82,6 +82,7 @@ target_compile_definitions(${TARGET_NAME} PUBLIC NOMINMAX)
 AddTargetInclude(${TARGET_NAME})
 
 target_link_libraries(${TARGET_NAME} PRIVATE sutils)
+target_link_libraries(${TARGET_NAME} PRIVATE Pal::Sigslot)
 target_link_libraries(${TARGET_NAME} PRIVATE DirectXTex)
 target_link_libraries(${TARGET_NAME} PRIVATE DirectXTK)
 target_link_libraries(${TARGET_NAME} PRIVATE spdlog)

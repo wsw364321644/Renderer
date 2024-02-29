@@ -160,13 +160,13 @@ Editor::Editor( const std::string& name, int width, int height, bool vSync )
     GameFramework::Get().GetSlateManager()->AddToView(m_Window);
 
 
-    m_Window->Update += UpdateEvent::slot( &Editor::OnUpdate, this );
-    m_Window->KeyPressed += KeyboardEvent::slot( &Editor::OnKeyPressed, this );
-    m_Window->KeyReleased += KeyboardEvent::slot( &Editor::OnKeyReleased, this );
-    m_Window->MouseMoved += MouseMotionEvent::slot( &Editor::OnMouseMoved, this );
-    m_Window->MouseWheel += MouseWheelEvent::slot( &Editor::OnMouseWheel, this );
-    m_Window->Resize += ResizeEvent::slot( &Editor::OnResize, this );
-    m_Window->DPIScaleChanged += DPIScaleEvent::slot( &Editor::OnDPIScaleChanged, this );
+    m_Window->Update.Bind(&Editor::OnUpdate, this);
+    m_Window->KeyPressed.Bind(&Editor::OnKeyPressed, this );
+    m_Window->KeyReleased.Bind(&Editor::OnKeyReleased, this );
+    m_Window->MouseMoved.Bind(&Editor::OnMouseMoved, this );
+    m_Window->MouseWheel.Bind(&Editor::OnMouseWheel, this );
+    m_Window->Resize.Bind(&Editor::OnResize, this );
+    m_Window->DPIScaleChanged.Bind(&Editor::OnDPIScaleChanged, this );
 
     XMVECTOR cameraPos    = XMVectorSet( 0, 5, -20, 1 );
     XMVECTOR cameraTarget = XMVectorSet( 0, 5, 0, 1 );
