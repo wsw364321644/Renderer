@@ -7,6 +7,7 @@ set(OCmakeUtil_TAG da88ebcc080f0374b0fb6e9e05abdc26541d4fdb)
 project(Renderer LANGUAGES C CXX)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(CMAKE_INSTALL_PREFIX
         "${CMAKE_BINARY_DIR}/rundir"
@@ -19,7 +20,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 FetchContent_Declare(
     OCmakeUtil
-    GIT_REPOSITORY https://github.com/wsw364321644/OCmakeUtil.git
+    GIT_REPOSITORY git@ssh.github.com:wsw364321644/OCmakeUtil.git
     GIT_TAG ${OCmakeUtil_TAG}
 )
 FetchContent_MakeAvailable(OCmakeUtil)
@@ -43,6 +44,13 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(sdl)
 
+FetchContent_Declare(
+  sigslot
+  GIT_REPOSITORY https://github.com/palacaze/sigslot
+  GIT_TAG        33802bb3e94c4dfe07bd41b537b36806f94c3e3a # v1.2.2
+)
+FetchContent_MakeAvailable(sigslot)
+
 ExternalProject_Add(
     assets
     URL https://github.com/jpvanoosten/LearningDirectX12/releases/download/v1.1.0/Assets.7z
@@ -53,17 +61,16 @@ ExternalProject_Add(
     INSTALL_COMMAND ""
 )
 
-#FetchContent_Declare(
-#    assets
-#    URL      
-#)
-#FetchContent_MakeAvailable(assets)
-
+# FetchContent_Declare(
+# assets
+# URL
+# )
+# FetchContent_MakeAvailable(assets)
 set(ASSIMP_WARNINGS_AS_ERRORS OFF)
-set(UUID_USING_CXX20_SPAN ON)
 add_subdirectory(ThirdParty/assimp)
 
 set(UUID_BUILD_TESTS OFF)
+set(UUID_USING_CXX20_SPAN ON)
 add_subdirectory(ThirdParty/stduuid)
 
 add_subdirectory(ThirdParty/DirectXTex)
