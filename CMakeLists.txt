@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 include(ExternalProject)
 include(FetchContent)
-set(UTILPP_TAG bbe5a2400dca91b1b8a93b0230cd99254b038ec2)
+set(UTILPP_TAG 883ac8b2c8dc4e8e3bdb1da8b995d60473e1231c)
 set(OCmakeUtil_TAG da88ebcc080f0374b0fb6e9e05abdc26541d4fdb)
 
 project(Renderer LANGUAGES C CXX)

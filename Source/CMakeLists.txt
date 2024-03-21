@@ -74,7 +74,7 @@ add_executable(${TARGET_NAME} WIN32
 set_target_properties(${TARGET_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin)
 
 # Enable C++20 compiler features.
-target_compile_features(${TARGET_NAME} PRIVATE cxx_std_20)
+target_compile_features(${TARGET_NAME} PRIVATE cxx_std_23)
 
 # Remove those pesky min/max macros defined in global scope.
 target_compile_definitions(${TARGET_NAME} PUBLIC NOMINMAX)
@@ -82,6 +82,7 @@ target_compile_definitions(${TARGET_NAME} PUBLIC NOMINMAX)
 AddTargetInclude(${TARGET_NAME})
 
 target_link_libraries(${TARGET_NAME} PRIVATE sutils)
+target_link_libraries(${TARGET_NAME} PRIVATE simple_logger)
 target_link_libraries(${TARGET_NAME} PRIVATE Pal::Sigslot)
 target_link_libraries(${TARGET_NAME} PRIVATE DirectXTex)
 target_link_libraries(${TARGET_NAME} PRIVATE DirectXTK)
