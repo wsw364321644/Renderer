@@ -24,13 +24,13 @@ enum class EWindowMode
 
 
 
-class  GenericWindow
+class  FGenericWindow
 {
 public:
 
-	GenericWindow();
+	FGenericWindow();
 
-	virtual ~GenericWindow();
+	virtual ~FGenericWindow();
 
 	/** Native windows should implement ReshapeWindow by changing the platform-specific window to be located at (X,Y) and be the dimensions Width x Height. */
 	virtual void ReshapeWindow(int32_t X, int32_t Y, int32_t Width, int32_t Height );

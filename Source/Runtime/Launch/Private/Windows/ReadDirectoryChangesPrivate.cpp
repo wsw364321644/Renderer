@@ -155,7 +155,7 @@ void CReadChangesRequest::ProcessNotification()
         FILE_NOTIFY_INFORMATION& fni = (FILE_NOTIFY_INFORMATION&)*pBase;
 
         std::wstring wstrFilename( fni.FileName, fni.FileNameLength / sizeof( wchar_t ) );
-        fs::path     filePath = m_DirectoryPath / wstrFilename;
+        std::filesystem::path     filePath = m_DirectoryPath / wstrFilename;
 
         // If it could be a short filename, expand it.
         LPCWSTR wszFilename = ::PathFindFileNameW( filePath.c_str() );

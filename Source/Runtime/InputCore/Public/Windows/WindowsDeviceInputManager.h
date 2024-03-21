@@ -10,7 +10,7 @@
 
 
 
-class WindowsDeviceInputManager :public DeviceInputManager {
+class WindowsDeviceInputManager :public FDeviceInputManager {
 public:
 	virtual ~WindowsDeviceInputManager();
 

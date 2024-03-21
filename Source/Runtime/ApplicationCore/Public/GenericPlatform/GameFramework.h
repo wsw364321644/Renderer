@@ -11,26 +11,19 @@
 
 
 #include <SDL.h>
-#include <spdlog/logger.h>
 
+#include <memory>
+#include <unordered_map> 
+#include <string> 
 
-#include <cstdint>      // for uint32_t
-#include <limits>       // for std::numeric_limits
-#include <memory>       // for std::shared_ptr
-#include <mutex>        // for std::mutex
-#include <string>       // for std::wstring
-#include <thread>       // for std::thread
-#include <type_traits>  // for std::enable_if
-
+#include <TimeRecorder.h>
 #include "Events.h"
 
-#include "SlateManager.h"
+extern const char* ENGINE_LOG_NAME;
 
 
-
-class GenericWindow;
-
-using Logger = std::shared_ptr<spdlog::logger>;
+class SlateManager;
+class FGameInstance;
 
 
 class GameFramework
@@ -55,20 +48,13 @@ public:
      */
     static GameFramework& Get();
 
-    SlateManager* GetSlateManager() { return m_SlateManager.get(); }
-    /**
-     * Create a named logger or get a previously created logger with the same
-     * name.
-     */
-    Logger CreateLogger( const std::string& name );
+    SlateManager* GetSlateManager() {
+        return m_SlateManager.get();
+    }
 
+    void Tick();
 
-    /**
-     * Start the main application run loop.
-     *
-     * @returns The error code (if an error occurred).
-     */
-    void UpdateTime();
+    std::weak_ptr<FGameInstance> CreateGameInstance(std::string name);
 
     /**
      * Inform the input manager of changes to the size of the display.
@@ -104,7 +90,7 @@ protected:
 
     // Application is going to close
     virtual void OnExit( EventArgs& e );
-
+    void UpdateTime();
 private:
     // Private and deleted. Please don't try to create copies
     // of this singleton!
@@ -114,8 +100,6 @@ private:
     GameFramework& operator=( GameFramework&& ) = delete;
 
 
-    Logger m_Logger;
-
 
     // Should the application quit?
     std::atomic_bool m_RequestQuit;
@@ -124,4 +108,5 @@ private:
 
     
     std::shared_ptr < SlateManager> m_SlateManager;
+    std::unordered_map <std::string, std::shared_ptr<FGameInstance>> GameInstances;
 };

@@ -1,48 +1,5 @@
 #pragma once
 
-/**
- *  @file Helpers.h
- *  @date August 28, 2017
- *  @author Jeremiah van Oosten
- *
- *  @brief Helper functions.
- */
-
-#include <cstdint>
-#include <codecvt>
-//#include <functional>
-#include <thread>   // For std::thread
-
-
-
-// Convert a multi-byte character string (UTF-8) to a wide (UTF-16) encoded string.
-inline std::wstring ConvertString( const std::string& string )
-{
-    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-    return converter.from_bytes( string );
-}
-
-// Converts a wide (UTF-16) encoded string into a multi-byte (UTF-8) character string.
-inline std::string ConvertString( const std::wstring& wstring )
-{
-    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-    return converter.to_bytes( wstring );
-}
-
-inline std::wstring to_wstring( const std::string& s )
-{
-    return ConvertString( s );
-}
-
-inline const std::wstring& to_wstring( const std::wstring& s )
-{
-    return s;
-}
-
-inline std::wstring to_wstring( char c )
-{
-    return to_wstring( std::string( 1, c ) );
-}
 
 //// Set the name of an std::thread.
 //// Useful for debugging.
@@ -79,13 +36,6 @@ inline std::wstring to_wstring( char c )
 // Hashers for view descriptions.
 namespace std
 {
-    // Source: https://stackoverflow.com/questions/2590677/how-do-i-combine-hash-values-in-c0x
-    template <typename T>
-    inline void hash_combine(std::size_t& seed, const T& v)
-    {
-        std::hash<T> hasher;
-        seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-    }
 
 //    template<>
 //    struct hash<D3D12_SHADER_RESOURCE_VIEW_DESC>

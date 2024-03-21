@@ -13,12 +13,6 @@ enum ENoInit {NoInit};
 enum EInPlace {InPlace};
 
 
-
-// Handle type to stably track users on a specific platform
-typedef int32_t FPlatformUserId;
-const FPlatformUserId PLATFORMUSERID_NONE = INDEX_NONE;
-
-
 #define assertm(exp, msg) assert(((void)msg, exp))
 
 #define RWProperty(type,name) 								 \

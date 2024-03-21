@@ -1,7 +1,7 @@
-#include "GenericPlatform/GameFrameworkPCH.h"
-
-#include <Windows/WindowsWindow.h>
-#include "Misc/Helpers.h"
+#include "Windows/WindowsWindow.h"
+#include "GenericPlatform/GameFramework.h"
+#include <LoggerHelper.h>
+#include <string_convert.h>
 
 WindowsWindow::WindowsWindow()
     : m_hWnd(NULL)
@@ -30,13 +30,13 @@ void WindowsWindow::Initialize(WindowsApplication* const Application, const std:
     int windowX = std::max<int>(0, (screenWidth - (int)width) / 2);
     int windowY = std::max<int>(0, (screenHeight - (int)height) / 2);
 
-
-    m_hWnd = ::CreateWindowExW(NULL, WINDOW_CLASS_NAME, ConvertString(Definition->Title).c_str(), WS_OVERLAPPEDWINDOW, windowX,
+    auto titleu16=U8ToU16(Definition->Title.c_str());
+    m_hWnd = ::CreateWindowExW(NULL, WINDOW_CLASS_NAME, (LPCWSTR)titleu16.c_str(), WS_OVERLAPPEDWINDOW, windowX,
         windowY, width, height, NULL, NULL, InHInstance, NULL);
 
     if (!m_hWnd)
     {
-        spdlog::error("Failed to create window.");
+        GetLogger(ENGINE_LOG_NAME)->error("Failed to create window.");
         return ;
     }
     DPIScaling = ::GetDpiForWindow(m_hWnd) / 96.0f;
@@ -121,7 +121,8 @@ void WindowsWindow::Hide()
 void WindowsWindow::SetText(const char* const Text)
 {
     Definition->Title = Text;
-    ::SetWindowTextW(m_hWnd, ConvertString(Text).c_str());
+    auto titleu16=U8ToU16(Text);
+    ::SetWindowTextW(m_hWnd, (LPCWSTR)titleu16.c_str());
 }
 
 void WindowsWindow::SetWindowMode(EWindowMode InNewWindowMode)

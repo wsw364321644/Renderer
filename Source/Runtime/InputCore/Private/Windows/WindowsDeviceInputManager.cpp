@@ -2,8 +2,9 @@
 #include "GenericPlatform/GameFramework.h"
 #include "Windows/WindowsApplication.h"
 #include "Windows/WindowsWindow.h"
+#include "SlateManager.h"
 #include <typeinfo>
-#include "spdlog/spdlog.h"
+#include <LoggerHelper.h>
 
 
 
@@ -11,8 +12,25 @@ WindowsDeviceInputManager::~WindowsDeviceInputManager()
 {
 }
 
-WindowsDeviceInputManager::WindowsDeviceInputManager() :DeviceInputManager()
+WindowsDeviceInputManager::WindowsDeviceInputManager() :FDeviceInputManager()
 {
+	RAWINPUTDEVICE Rid[2];
+
+	Rid[0].usUsagePage = 0x01;          // HID_USAGE_PAGE_GENERIC
+	Rid[0].usUsage = 0x02;              // HID_USAGE_GENERIC_MOUSE
+	Rid[0].dwFlags = RIDEV_NOLEGACY;    // adds mouse and also ignores legacy mouse messages
+	Rid[0].hwndTarget = 0;
+
+	Rid[1].usUsagePage = 0x01;          // HID_USAGE_PAGE_GENERIC
+	Rid[1].usUsage = 0x06;              // HID_USAGE_GENERIC_KEYBOARD
+	Rid[1].dwFlags = RIDEV_NOLEGACY;    // adds keyboard and also ignores legacy keyboard messages
+	Rid[1].hwndTarget = 0;
+
+	//if (RegisterRawInputDevices(Rid, 2, sizeof(Rid[0])) == FALSE)
+	//{
+	//	//registration failed. Call GetLastError for the cause of the error
+	//	GameFramework::Get().CreateLogger(ENGINE_LOG_NAME)->critical("Can not RegisterRawInputDevices with error code:", GetLastError());
+	//}
 }
 
 bool WindowsDeviceInputManager::IsInputMessage(uint32_t msg)
@@ -130,7 +148,7 @@ bool WindowsDeviceInputManager::ProcessMessage(HWND hwnd, uint32_t msg, WPARAM w
 		KeyCode      key = (KeyCode)wParam;
 		KeyEventArgs keyEventArgs(key, c, KeyState::Pressed, bLShift, bRShift, bLControl, bRControl, bLAlt, bRAlt, bCapital);
 
-		MessageHandler->OnKeyDown(wParam,c, bIsRepeat);
+		MessageHandler->OnKeyDown(wParam, c, bIsRepeat);
 	}
 	break;
 	case WM_SYSKEYUP:
@@ -191,10 +209,9 @@ bool WindowsDeviceInputManager::ProcessMessage(HWND hwnd, uint32_t msg, WPARAM w
 		int x = ((int)(short)LOWORD(lParam));
 		int y = ((int)(short)HIWORD(lParam));
 
-		MouseButtonEventArgs mouseButtonEventArgs(DecodeMouseButton(msg, wParam,lParam), ButtonState::Pressed, lButton,
+		MouseButtonEventArgs mouseButtonEventArgs(DecodeMouseButton(msg, wParam, lParam), ButtonState::Pressed, lButton,
 			mButton, rButton, control, shift, x, y);
 		pWindow->OnMouseButtonPressed(mouseButtonEventArgs);
-
 
 		MessageHandler->OnMouseDown(pWindow, DecodeMouseButton(msg, wParam, lParam));
 	}
@@ -219,7 +236,7 @@ bool WindowsDeviceInputManager::ProcessMessage(HWND hwnd, uint32_t msg, WPARAM w
 			mButton, rButton, control, shift, x, y);
 		pWindow->OnMouseButtonReleased(mouseButtonEventArgs);
 
-		MessageHandler->OnMouseDown(pWindow, DecodeMouseButton(msg, wParam, lParam));
+		MessageHandler->OnMouseUp( DecodeMouseButton(msg, wParam, lParam));
 	}
 	break;
 	case WM_LBUTTONDBLCLK:
@@ -242,6 +259,7 @@ bool WindowsDeviceInputManager::ProcessMessage(HWND hwnd, uint32_t msg, WPARAM w
 		MessageHandler->OnMouseDoubleClick(pWindow, DecodeMouseButton(msg, wParam, lParam));
 	}
 	break;
+	case WM_MOUSEHWHEEL:
 	case WM_MOUSEWHEEL:
 	{
 		// The distance the mouse wheel is rotated.
@@ -278,6 +296,48 @@ bool WindowsDeviceInputManager::ProcessMessage(HWND hwnd, uint32_t msg, WPARAM w
 		pWindow->OnMouseLeave(mouseLeaveEventArgs);
 	}
 	break;
+	case WM_INPUT: {
+		UINT dwSize;
+
+		GetRawInputData((HRAWINPUT)lParam, RID_INPUT, NULL, &dwSize, sizeof(RAWINPUTHEADER));
+		LPBYTE lpb = new BYTE[dwSize];
+		if (lpb == NULL)
+		{
+			return 0;
+		}
+
+		if (GetRawInputData((HRAWINPUT)lParam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)) != dwSize) {
+			GetLogger(ENGINE_LOG_NAME)->warn("GetRawInputData does not return correct size !");
+			break;
+		}
+
+		RAWINPUT* raw = (RAWINPUT*)lpb;
+
+		if (raw->header.dwType == RIM_TYPEKEYBOARD)
+		{
+			printf(" Kbd: make=%04x Flags:%04x Reserved:%04x ExtraInformation:%08x, msg=%04x VK=%04x \n", raw->data.keyboard.MakeCode,
+				raw->data.keyboard.Flags,
+				raw->data.keyboard.Reserved,
+				raw->data.keyboard.ExtraInformation,
+				raw->data.keyboard.Message,
+				raw->data.keyboard.VKey);
+		}
+		else if (raw->header.dwType == RIM_TYPEMOUSE)
+		{
+			printf("Mouse: usFlags=%04x ulButtons=%04x usButtonFlags=%04x usButtonData=%04x ulRawButtons=%04x lLastX=%04x lLastY=%04x ulExtraInformation=%04x\r\n", raw->data.mouse.usFlags,
+				raw->data.mouse.ulButtons,
+				raw->data.mouse.usButtonFlags,
+				raw->data.mouse.usButtonData,
+				raw->data.mouse.ulRawButtons,
+				raw->data.mouse.lLastX,
+				raw->data.mouse.lLastY,
+				raw->data.mouse.ulExtraInformation);
+
+		}
+
+		delete[] lpb;
+		break;
+	}
 	}
 	return true;
 }

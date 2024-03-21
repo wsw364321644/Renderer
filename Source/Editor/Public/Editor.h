@@ -1,16 +1,16 @@
 #pragma once
 
-#include "Camera.h"
-#include "Light.h"
-#include"World.h"
-#include <GenericPlatform/GameFramework.h>
-
-#include <RenderTarget.h>
 
 #include <DirectXMath.h>
-
 #include <string>
 
+#include "RenderTarget.h"
+#include "Camera.h"
+#include "Light.h"
+#include "World.h"
+#include "GenericPlatform/GameFramework.h"
+
+extern const char* EDITOR_LOG_NAME;
 namespace dx12lib
 {
 class CommandList;
@@ -26,7 +26,8 @@ class Texture;
 
 }  // namespace dx12lib
 
-class GenericWindow;  // From GameFramework.
+class SWindow;
+class FGenericWindow;  // From GameFramework.
 
 class Editor
 {
@@ -175,6 +176,4 @@ private:
     // Define some lights.
     std::vector<PointLight> m_PointLights;
     std::vector<SpotLight>  m_SpotLights;
-
-    Logger m_Logger;
 };

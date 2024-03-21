@@ -20,7 +20,7 @@
 LRESULT CALLBACK WndProc( HWND, UINT, WPARAM,
                           LPARAM );  // Defined in the Application class.
 
-class WindowsWindow : public GenericWindow
+class WindowsWindow : public FGenericWindow
 {
 public:
     static constexpr wchar_t     WINDOW_CLASS_NAME[]= L"RenderWindow";

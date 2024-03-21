@@ -1,15 +1,14 @@
 #include "GenericPlatform/GameFrameworkPCH.h"
 
 #include <Misc/HighResolutionTimer.h>
-
+#include <TimeRecorder.h>
 using namespace std::chrono;
 
 #define WINDOWS_CLOCK         0
-#define HIGH_RESOLUTION_CLOCK 1
-#define STEADY_CLOCK          2
+#define STEADY_CLOCK          1
 
 #ifndef USE_CLOCK
-    #define USE_CLOCK HIGH_RESOLUTION_CLOCK
+    #define USE_CLOCK STEADY_CLOCK
 #endif
 
 #if USE_CLOCK == WINDOWS_CLOCK
@@ -60,89 +59,36 @@ private:
     double        elapsedNanoseconds;
     double        totalNanseconds;
 };
-#elif USE_CLOCK == HIGH_RESOLUTION_CLOCK
-class HighResolutionTimer::impl
-{
-public:
-    impl()
-    : elapsedTime( 0.0 )
-    , totalTime( 0.0 )
-    {
-        t0 = high_resolution_clock::now();
-    }
-
-    void Tick()
-    {
-        t1                                = high_resolution_clock::now();
-        duration<double, std::nano> delta = t1 - t0;
-        t0                                = t1;
-        elapsedTime                       = delta.count();
-        totalTime += elapsedTime;
-    }
-
-    void Reset()
-    {
-        t0          = high_resolution_clock::now();
-        elapsedTime = 0.0;
-        totalTime   = 0.0;
-    }
-
-    double ElapsedNanoseconds() const
-    {
-        return elapsedTime;
-    }
-
-    double TotalNanoseconds() const
-    {
-        return totalTime;
-    }
-
-private:
-    high_resolution_clock::time_point t0, t1;
-    double                            elapsedTime;
-    double                            totalTime;
-};
 #elif USE_CLOCK == STEADY_CLOCK
 class HighResolutionTimer::impl
 {
 public:
     impl()
-    : elapsedTime( 0.0 )
-    , totalTime( 0.0 )
     {
-        t0 = steady_clock::now();
     }
 
     void Tick()
     {
-        t1                                = steady_clock::now();
-        duration<double, std::nano> delta = t1 - t0;
-        t0                                = t1;
-        elapsedTime                       = delta.count();
-        totalTime += elapsedTime;
+        Recorder.Tick();
     }
 
     void Reset()
     {
-        t0          = steady_clock::now();
-        elapsedTime = 0.0;
-        totalTime   = 0.0;
+        Recorder.Reset();
     }
 
     double ElapsedNanoseconds() const
     {
-        return elapsedTime;
+        return double(Recorder.GetDelta<std::chrono::nanoseconds>().count());
     }
 
     double TotalNanoseconds() const
     {
-        return totalTime;
+        return double(Recorder.GetTotalTime<std::chrono::nanoseconds>().count());
     }
 
 private:
-    steady_clock::time_point t0, t1;
-    double                   elapsedTime;
-    double                   totalTime;
+    FTimeRecorder Recorder;
 };
 #endif
 

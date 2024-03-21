@@ -58,7 +58,6 @@ static void WinPumpMessages()
 void FPlatformApplicationMisc::PumpMessages(bool bFromMainLoop)
 {
 	WinPumpMessages();
-
 }
 
 void FPlatformApplicationMisc::RequestExitWithStatus(bool Force, uint8_t ReturnCode)

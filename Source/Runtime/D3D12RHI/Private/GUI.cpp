@@ -10,9 +10,9 @@
 #include <ShaderResourceView.h>
 #include <Texture.h>
 #include <imgui.h>
-// Include compiled shaders for ImGui.
 
-#include <imgui_impl_win32.h>
+// Include compiled shaders for ImGui.
+//#include <imgui_impl_win32.h>
 
 using namespace dx12lib;
 
@@ -39,16 +39,45 @@ GUI::GUI( Device& device, HWND hWnd, const RenderTarget& renderTarget )
 , m_pImGuiCtx( nullptr )
 {
     m_pImGuiCtx = ImGui::CreateContext();
-    ImGui::SetCurrentContext( m_pImGuiCtx );
-    if ( !ImGui_ImplWin32_Init( m_hWnd ) )
-    {
-        throw std::exception( "Failed to initialize ImGui" );
-    }
-
     ImGuiIO& io = ImGui::GetIO();
+
+    ////////ImGui_ImplWin32_Init////////////
+    //if ( !ImGui_ImplWin32_Init( m_hWnd ) )
+    //{
+    //    throw std::exception( "Failed to initialize ImGui" );
+    //}
+
+    io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;         // We can honor GetMouseCursor() values (optional)
+    io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;          // We can honor io.WantSetMousePos requests (optional, rarely used)
+    io.BackendPlatformName = "imgui_impl_dx12";
+
+    // Keyboard mapping. ImGui will use those indices to peek into the io.KeysDown[] array that we will update during the application lifetime.
+    io.KeyMap[ImGuiKey_Tab] = VK_TAB;
+    io.KeyMap[ImGuiKey_LeftArrow] = VK_LEFT;
+    io.KeyMap[ImGuiKey_RightArrow] = VK_RIGHT;
+    io.KeyMap[ImGuiKey_UpArrow] = VK_UP;
+    io.KeyMap[ImGuiKey_DownArrow] = VK_DOWN;
+    io.KeyMap[ImGuiKey_PageUp] = VK_PRIOR;
+    io.KeyMap[ImGuiKey_PageDown] = VK_NEXT;
+    io.KeyMap[ImGuiKey_Home] = VK_HOME;
+    io.KeyMap[ImGuiKey_End] = VK_END;
+    io.KeyMap[ImGuiKey_Insert] = VK_INSERT;
+    io.KeyMap[ImGuiKey_Delete] = VK_DELETE;
+    io.KeyMap[ImGuiKey_Backspace] = VK_BACK;
+    io.KeyMap[ImGuiKey_Space] = VK_SPACE;
+    io.KeyMap[ImGuiKey_Enter] = VK_RETURN;
+    io.KeyMap[ImGuiKey_Escape] = VK_ESCAPE;
+    io.KeyMap[ImGuiKey_KeyPadEnter] = VK_RETURN;
+    io.KeyMap[ImGuiKey_A] = 'A';
+    io.KeyMap[ImGuiKey_C] = 'C';
+    io.KeyMap[ImGuiKey_V] = 'V';
+    io.KeyMap[ImGuiKey_X] = 'X';
+    io.KeyMap[ImGuiKey_Y] = 'Y';
+    io.KeyMap[ImGuiKey_Z] = 'Z';
+    ////////ImGui_ImplWin32_Init////////////
+
     io.ConfigWindowsMoveFromTitleBarOnly = true;
 
-    io.FontGlobalScale = ::GetDpiForWindow( m_hWnd ) / 96.0f;
     // Allow user UI scaling using CTRL+Mouse Wheel scrolling
     io.FontAllowUserScaling = true;
 
@@ -180,10 +209,28 @@ GUI::~GUI()
     Destroy();
 }
 
-void GUI::NewFrame()
+
+void GUI::NewFrame(double delta)
 {
     ImGui::SetCurrentContext( m_pImGuiCtx );
-    ImGui_ImplWin32_NewFrame();
+
+    /////ImGui_ImplWin32_NewFrame///////
+    //ImGui_ImplWin32_NewFrame();
+    ImGuiIO& io = ImGui::GetIO();
+    IM_ASSERT(io.Fonts->IsBuilt() && "Font atlas not built! It is generally built by the renderer backend. Missing call to renderer _NewFrame() function? e.g. ImGui_ImplOpenGL3_NewFrame().");
+
+    // Setup display size (every frame to accommodate for window resizing)
+    RECT rect = { 0, 0, 0, 0 };
+    ::GetClientRect(m_hWnd, &rect);
+    io.DisplaySize = ImVec2((float)(rect.right - rect.left), (float)(rect.bottom - rect.top));
+    io.DeltaTime = (float)delta;
+    // Read keyboard modifiers inputs
+    io.KeyCtrl = (::GetKeyState(VK_CONTROL) & 0x8000) != 0;
+    io.KeyShift = (::GetKeyState(VK_SHIFT) & 0x8000) != 0;
+    io.KeyAlt = (::GetKeyState(VK_MENU) & 0x8000) != 0;
+    io.KeySuper = false;
+    // io.KeysDown[], io.MousePos, io.MouseDown[], io.MouseWheel: filled by the WndProc handler below.
+
     ImGui::NewFrame();
 }
 
@@ -191,7 +238,7 @@ void GUI::Render( const std::shared_ptr<CommandList>& commandList, const RenderT
 {
     assert( commandList );
 
-    ImGui::SetCurrentContext( m_pImGuiCtx );
+    //ImGui::SetCurrentContext( m_pImGuiCtx );
     ImGui::Render();
 
     ImGuiIO&    io       = ImGui::GetIO();
@@ -290,7 +337,6 @@ void GUI::Render( const std::shared_ptr<CommandList>& commandList, const RenderT
 void GUI::Destroy()
 {
     ImGui::EndFrame();
-    ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext( m_pImGuiCtx );
     m_pImGuiCtx = nullptr;
 }

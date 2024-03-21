@@ -12,7 +12,7 @@ SWindow::SWindow()
 
 
 
-void SWindow::SetPlatformWindow(std::shared_ptr<GenericWindow> window)
+void SWindow::SetPlatformWindow(std::shared_ptr<FGenericWindow> window)
 {
 	NativeWindow = window;
 }
@@ -80,5 +80,10 @@ void SWindow::OnMaximized(ResizeEventArgs& e)
 void SWindow::OnRestored(ResizeEventArgs& e)
 {
 	Restored(e);
+}
+
+void SWindow::OnUpdate(UpdateEventArgs& e)
+{
+	Update(e);
 }
 

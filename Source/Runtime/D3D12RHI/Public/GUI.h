@@ -35,7 +35,7 @@ public:
     /**
      * Begin a new ImGui frame. Do this before calling any ImGui functions that modifies ImGui's render context.
      */
-    void NewFrame();
+    void NewFrame(double delta);
 
     /**
      * Render ImgGui to the given render target.
@@ -57,9 +57,11 @@ protected:
     virtual ~GUI();
 
 private:
+
     Device&                              m_Device;
     HWND                                 m_hWnd;
     ImGuiContext*                        m_pImGuiCtx;
+
     std::shared_ptr<Texture>             m_FontTexture;
     std::shared_ptr<ShaderResourceView>  m_FontSRV;
     std::shared_ptr<RootSignature>       m_RootSignature;

@@ -20,8 +20,8 @@ public:
 * @param clientHeight The height (in pixels) of the window's client area.
 * @returns The created window instance.
 */
-	virtual std::shared_ptr< GenericWindow > MakeWindow() override;
-	virtual void InitializeWindow(const std::shared_ptr< GenericWindow >& InWindow, const std::shared_ptr< GenericWindowDefinition >& InDefinition, const std::shared_ptr< GenericWindow >& InParent, const bool bShowImmediately) override;
+	virtual std::shared_ptr< FGenericWindow > MakeWindow() override;
+	virtual void InitializeWindow(const std::shared_ptr< FGenericWindow >& InWindow, const std::shared_ptr< GenericWindowDefinition >& InDefinition, const std::shared_ptr< FGenericWindow >& InParent, const bool bShowImmediately) override;
 	// Handle to application instance.
 	HINSTANCE GetWindowsHandle() {
 		return m_hInstance;
@@ -45,10 +45,10 @@ public:
 
 	int32_t ProcessMessage(HWND hwnd, uint32_t msg, WPARAM wParam, LPARAM lParam);
 
-	std::weak_ptr<GenericWindow> GetWindowByName(const std::string& windowName) const;
-	std::weak_ptr<GenericWindow> GetWindowByHandle(HWND handle) const;
+	std::weak_ptr<FGenericWindow> GetWindowByName(const std::string& windowName) const;
+	std::weak_ptr<FGenericWindow> GetWindowByHandle(HWND handle) const;
 	virtual void SetMessageHandler(const std::shared_ptr<GenericApplicationMessageHandler >& InMessageHandler) override;
-	virtual DeviceInputManager* GetDeviceInputManager() override { return  m_WindowsDeviceInputManager.get(); }
+	virtual FDeviceInputManager* GetDeviceInputManager() override { return  m_WindowsDeviceInputManager.get(); }
 private:
 
 

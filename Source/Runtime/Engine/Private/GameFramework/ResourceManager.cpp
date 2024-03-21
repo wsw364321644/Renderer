@@ -6,11 +6,11 @@
 #include <assimp/anim.h>
 #include <assimp/mesh.h>
 #include <assimp/postprocess.h>
+#include "PlatformHelper.h"
 
 #include <DirectXTex.h>
 using namespace DirectX;
-//todo remove platformspecific
-#include <Windows/PlatformHelper.h>
+
 #include <filesystem>
 #include<assert.h>
 

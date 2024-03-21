@@ -12,7 +12,7 @@ bool FEngineLoop::Init()
 
 void FEngineLoop::Tick()
 {
-
+    GameFramework::Get().Tick();
     FPlatformApplicationMisc::PumpMessages(true);
 }
 

@@ -1,24 +1,27 @@
-#include <Editor.h>
+#include "Editor.h"
 #include "World.h"
 
-#include <Light.h>
-#include <SceneVisitor.h>
+#include "Light.h"
+#include "SWindow.h"
+#include "SceneVisitor.h"
+#include "SlateManager.h"
 
-#include <CommandList.h>
-#include <CommandQueue.h>
-#include <Device.h>
-#include <GUI.h>
+#include "CommandList.h"
+#include "CommandQueue.h"
+#include "Device.h"
+#include "GUI.h"
+#include "Material.h"
+#include "Mesh.h"
+#include "PipelineStateObject.h"
+#include "RootSignature.h"
+#include "Scene.h"
+#include "SwapChain.h"
+#include "Texture.h"
 
-#include <Material.h>
-#include <Mesh.h>
-#include <PipelineStateObject.h>
-#include <RootSignature.h>
-#include <Scene.h>
-#include <SwapChain.h>
-#include <Texture.h>
-
-#include <GenericPlatform/GenericWindow.h>
-#include <imgui.h>
+#include "GenericPlatform/GenericWindow.h"
+#include "imgui.h"
+#include "PlatformHelper.h"
+#include <LoggerHelper.h>
 #include <wrl/client.h>
 using namespace Microsoft::WRL;
 
@@ -28,8 +31,7 @@ using namespace Microsoft::WRL;
 using namespace dx12lib;
 using namespace DirectX;
 
-#include <Windows/PlatformHelper.h>
-//todo remove platformspecific
+const char* EDITOR_LOG_NAME = "Editor";
 
 
 #include <algorithm>  // For std::min, std::max, and std::clamp.
@@ -152,10 +154,11 @@ Editor::Editor( const std::string& name, int width, int height, bool vSync )
 , m_Fullscreen( false )
 , m_RenderScale( 1.0f )
 {
-    m_Logger = GameFramework::Get().CreateLogger( "Editor" );
+    auto pGameInstance=GameFramework::Get().CreateGameInstance("Editor");
     m_Window =std::make_shared<SWindow>();
     m_Window->ClientSize = { width ,height };
     m_Window->WindowTitle = name;
+    m_Window->GameInstance = pGameInstance;
 
     GameFramework::Get().GetSlateManager()->AddToView(m_Window);
 
@@ -190,8 +193,6 @@ Editor::~Editor()
 bool Editor::Init()
 {
     LoadContent();
-
-    
     m_Window->ShowWindow();
 
     return true;
@@ -553,7 +554,7 @@ void Editor::OnUpdate( UpdateEventArgs& e )
     {
         g_FPS = frameCount / totalTime;
 
-        m_Logger->info( "FPS: {:.7}", g_FPS );
+        //GetLogger(EDITOR_LOG_NAME)->trace("FPS: {:.7}", g_FPS);
 
         char buffer[512];
         std::sprintf(buffer, "HDR [FPS: %f]", g_FPS);
@@ -643,6 +644,7 @@ void Editor::OnUpdate( UpdateEventArgs& e )
         l.Attenuation = 0.0f;
     }
 
+    m_GUI->NewFrame(e.DeltaTime);
     OnRender();
 }
 
@@ -715,12 +717,10 @@ float ACESFilmicTonemappingPlot( void*, int index )
 }
 
 void Editor::OnGUI( const std::shared_ptr<dx12lib::CommandList>& commandList,
-                       const dx12lib::RenderTarget&                 renderTarget, std::shared_ptr<dx12lib::Texture> tex)
+                       const dx12lib::RenderTarget&  renderTarget, std::shared_ptr<dx12lib::Texture> tex)
 {
     static bool showDemoWindow = false;
     static bool showOptions    = true;
-
-    m_GUI->NewFrame();
 
     if ( ImGui::BeginMainMenuBar() )
     {
@@ -1317,6 +1317,6 @@ void Editor::OnMouseWheel( MouseWheelEventArgs& e )
 
         m_Camera.set_FoV( fov );
 
-        m_Logger->info( "FoV: {:.7}", fov );
+        GetLogger(EDITOR_LOG_NAME)->trace("FoV: {:.7}", fov);
     }
 }

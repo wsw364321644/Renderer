@@ -1,19 +1,21 @@
 #pragma once
 #include <glm/glm.hpp>
 #include <string>
-#include "SWidget.h"
+#include "SCompoundWidget.h"
 #include "GenericPlatform/GenericWindow.h"
 #include "GenericPlatform/Events.h"
-class SWindow :public SWidget{
+
+class FGameInstance;
+class SWindow :public SCompoundWidget {
 
     
 public:
 	SWindow();
     virtual ~SWindow();
 
-	void SetPlatformWindow(std::shared_ptr<GenericWindow> window);
-    std::shared_ptr<GenericWindow> GetNativeWindow() { return NativeWindow; };
-    std::shared_ptr<const GenericWindow> GetNativeWindow() const { return NativeWindow; };
+	void SetPlatformWindow(std::shared_ptr<FGenericWindow> window);
+    std::shared_ptr<FGenericWindow> GetNativeWindow() { return NativeWindow; };
+    std::shared_ptr<const FGenericWindow> GetNativeWindow() const { return NativeWindow; };
 
     void ShowWindow();
     std::string GetTitle() const;
@@ -46,6 +48,7 @@ public:
     // Window was restored.
     virtual void OnRestored(ResizeEventArgs& e) ;
 
+    virtual void OnUpdate(UpdateEventArgs& e);
 
     /**
   * The DPI scaling of the window has changed.
@@ -81,16 +84,11 @@ public:
     std::string WindowTitle;
     glm::vec2 ScreenPosition;
     glm::vec2 ClientSize;
+    std::weak_ptr<FGameInstance> GameInstance;
 protected:
     
 
 private:
 
-	std::shared_ptr<GenericWindow> NativeWindow;
-
-
-
-    
-
-
+	std::shared_ptr<FGenericWindow> NativeWindow;
 };

@@ -1,12 +1,14 @@
 #include "Windows/WindowsApplication.h"
 #include "Windows/WindowsWindow.h"
+#include "Windows/WindowsDeviceInputManager.h"
 
 #include "GenericPlatform/GameFrameworkPCH.h"
 #include "GenericPlatform/GameFramework.h"
 #include "GenericPlatform/GenericWindow.h"
-
-#include "Windows\WindowsDeviceInputManager.h"
-
+#include "imgui.h"
+#include "SlateManager.h"
+#include <XInput.h>
+#include <LoggerHelper.h>
 #include <memory>
 #include <map>
 #include <iostream>
@@ -25,9 +27,111 @@
 #include <SetupAPI.h>
 #include <cfgmgr32.h>
 #include "resource.h"
+bool g_WantUpdateHasGamepad{ false };
+bool g_HasGamepad{ false };
+bool ImGui_ImplWin32_UpdateMouseCursor() {
+    static int LastMouseCursor{ 0 };
+    // Update OS mouse cursor with the cursor requested by imgui
+    ImGuiIO& io = ImGui::GetIO();
+    ImGuiMouseCursor mouse_cursor = io.MouseDrawCursor ? ImGuiMouseCursor_None : ImGui::GetMouseCursor();
+    if (LastMouseCursor != mouse_cursor)
+    {
+        LastMouseCursor = mouse_cursor;
+        if (io.ConfigFlags & ImGuiConfigFlags_NoMouseCursorChange)
+            return false;
 
+        ImGuiMouseCursor imgui_cursor = ImGui::GetMouseCursor();
+        if (imgui_cursor == ImGuiMouseCursor_None || io.MouseDrawCursor)
+        {
+            // Hide OS mouse cursor if imgui is drawing it or if it wants no cursor
+            ::SetCursor(NULL);
+        }
+        else
+        {
+            // Show OS mouse cursor
+            LPTSTR win32_cursor = IDC_ARROW;
+            switch (imgui_cursor)
+            {
+            case ImGuiMouseCursor_Arrow:        win32_cursor = IDC_ARROW; break;
+            case ImGuiMouseCursor_TextInput:    win32_cursor = IDC_IBEAM; break;
+            case ImGuiMouseCursor_ResizeAll:    win32_cursor = IDC_SIZEALL; break;
+            case ImGuiMouseCursor_ResizeEW:     win32_cursor = IDC_SIZEWE; break;
+            case ImGuiMouseCursor_ResizeNS:     win32_cursor = IDC_SIZENS; break;
+            case ImGuiMouseCursor_ResizeNESW:   win32_cursor = IDC_SIZENESW; break;
+            case ImGuiMouseCursor_ResizeNWSE:   win32_cursor = IDC_SIZENWSE; break;
+            case ImGuiMouseCursor_Hand:         win32_cursor = IDC_HAND; break;
+            case ImGuiMouseCursor_NotAllowed:   win32_cursor = IDC_NO; break;
+            }
+            ::SetCursor(::LoadCursor(NULL, win32_cursor));
+        }
+    }
+    return true;
+}
+void ImGui_ImplWin32_UpdateMousePos(HWND hWnd){
+    ImGuiIO& io = ImGui::GetIO();
 
+    // Set OS mouse position if requested (rarely used, only when ImGuiConfigFlags_NavEnableSetMousePos is enabled by user)
+    if (io.WantSetMousePos)
+    {
+        POINT pos = { (int)io.MousePos.x, (int)io.MousePos.y };
+        if (::ClientToScreen(hWnd, &pos))
+            ::SetCursorPos(pos.x, pos.y);
+    }
 
+    // Set mouse position
+    io.MousePos = ImVec2(-FLT_MAX, -FLT_MAX);
+    POINT pos;
+    if (HWND active_window = ::GetForegroundWindow())
+        if (active_window == hWnd || ::IsChild(active_window, hWnd))
+            if (::GetCursorPos(&pos) && ::ScreenToClient(hWnd, &pos))
+                io.MousePos = ImVec2((float)pos.x, (float)pos.y);
+}
+void ImGui_ImplWin32_UpdateGamepads() {
+#ifndef IMGUI_IMPL_WIN32_DISABLE_GAMEPAD
+    ImGuiIO& io = ImGui::GetIO();
+    memset(io.NavInputs, 0, sizeof(io.NavInputs));
+    if ((io.ConfigFlags & ImGuiConfigFlags_NavEnableGamepad) == 0)
+        return;
+
+    // Calling XInputGetState() every frame on disconnected gamepads is unfortunately too slow.
+    // Instead we refresh gamepad availability by calling XInputGetCapabilities() _only_ after receiving WM_DEVICECHANGE.
+    if (g_WantUpdateHasGamepad)
+    {
+        XINPUT_CAPABILITIES caps;
+        g_HasGamepad = (XInputGetCapabilities(0, XINPUT_FLAG_GAMEPAD, &caps) == ERROR_SUCCESS);
+        g_WantUpdateHasGamepad = false;
+    }
+
+    XINPUT_STATE xinput_state;
+    io.BackendFlags &= ~ImGuiBackendFlags_HasGamepad;
+    if (g_HasGamepad && XInputGetState(0, &xinput_state) == ERROR_SUCCESS)
+    {
+        const XINPUT_GAMEPAD& gamepad = xinput_state.Gamepad;
+        io.BackendFlags |= ImGuiBackendFlags_HasGamepad;
+
+#define MAP_BUTTON(NAV_NO, BUTTON_ENUM)     { io.NavInputs[NAV_NO] = (gamepad.wButtons & BUTTON_ENUM) ? 1.0f : 0.0f; }
+#define MAP_ANALOG(NAV_NO, VALUE, V0, V1)   { float vn = (float)(VALUE - V0) / (float)(V1 - V0); if (vn > 1.0f) vn = 1.0f; if (vn > 0.0f && io.NavInputs[NAV_NO] < vn) io.NavInputs[NAV_NO] = vn; }
+        MAP_BUTTON(ImGuiNavInput_Activate, XINPUT_GAMEPAD_A);              // Cross / A
+        MAP_BUTTON(ImGuiNavInput_Cancel, XINPUT_GAMEPAD_B);              // Circle / B
+        MAP_BUTTON(ImGuiNavInput_Menu, XINPUT_GAMEPAD_X);              // Square / X
+        MAP_BUTTON(ImGuiNavInput_Input, XINPUT_GAMEPAD_Y);              // Triangle / Y
+        MAP_BUTTON(ImGuiNavInput_DpadLeft, XINPUT_GAMEPAD_DPAD_LEFT);      // D-Pad Left
+        MAP_BUTTON(ImGuiNavInput_DpadRight, XINPUT_GAMEPAD_DPAD_RIGHT);     // D-Pad Right
+        MAP_BUTTON(ImGuiNavInput_DpadUp, XINPUT_GAMEPAD_DPAD_UP);        // D-Pad Up
+        MAP_BUTTON(ImGuiNavInput_DpadDown, XINPUT_GAMEPAD_DPAD_DOWN);      // D-Pad Down
+        MAP_BUTTON(ImGuiNavInput_FocusPrev, XINPUT_GAMEPAD_LEFT_SHOULDER);  // L1 / LB
+        MAP_BUTTON(ImGuiNavInput_FocusNext, XINPUT_GAMEPAD_RIGHT_SHOULDER); // R1 / RB
+        MAP_BUTTON(ImGuiNavInput_TweakSlow, XINPUT_GAMEPAD_LEFT_SHOULDER);  // L1 / LB
+        MAP_BUTTON(ImGuiNavInput_TweakFast, XINPUT_GAMEPAD_RIGHT_SHOULDER); // R1 / RB
+        MAP_ANALOG(ImGuiNavInput_LStickLeft, gamepad.sThumbLX, -XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE, -32768);
+        MAP_ANALOG(ImGuiNavInput_LStickRight, gamepad.sThumbLX, +XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE, +32767);
+        MAP_ANALOG(ImGuiNavInput_LStickUp, gamepad.sThumbLY, +XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE, +32767);
+        MAP_ANALOG(ImGuiNavInput_LStickDown, gamepad.sThumbLY, -XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE, -32767);
+#undef MAP_BUTTON
+#undef MAP_ANALOG
+    }
+#endif // #ifndef IMGUI_IMPL_WIN32_DISABLE_GAMEPAD
+}
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 // Convert the message ID into a ButtonState.
@@ -113,8 +217,8 @@ inline void SetThreadName(std::thread& thread, const char* threadName)
 
 constexpr int MAX_CONSOLE_LINES = 500;
 
-using WindowMap = std::map<HWND, std::shared_ptr<GenericWindow>>;
-using WindowMapByName = std::map<std::string, std::shared_ptr<GenericWindow>>;
+using WindowMap = std::map<HWND, std::shared_ptr<FGenericWindow>>;
+using WindowMapByName = std::map<std::string, std::shared_ptr<FGenericWindow>>;
 static WindowMap       gs_WindowMap;
 static WindowMapByName gs_WindowMapByName;
 
@@ -198,7 +302,7 @@ WindowsApplication::WindowsApplication(const HINSTANCE inInstance, const HICON I
     if (FAILED(hr))
     {
         _com_error err(hr);  // I hope this never happens.
-        spdlog::critical("CoInitialize failed: {}", err.ErrorMessage());
+        GetLogger(ENGINE_LOG_NAME)->critical("CoInitialize failed: {}", err.ErrorMessage());
         throw new std::exception(err.ErrorMessage());
     }
 
@@ -238,14 +342,14 @@ WindowsApplication::~WindowsApplication()
     gs_WindowMapByName.clear();
 }
 
-std::shared_ptr<GenericWindow> WindowsApplication::MakeWindow()
+std::shared_ptr<FGenericWindow> WindowsApplication::MakeWindow()
 {
-    std::shared_ptr<GenericWindow> pWindow(new WindowsWindow());
+    std::shared_ptr<FGenericWindow> pWindow(new WindowsWindow());
 
     return pWindow;
 }
 
-void WindowsApplication::InitializeWindow(const std::shared_ptr<GenericWindow>& InWindow, const std::shared_ptr<GenericWindowDefinition>& InDefinition, const std::shared_ptr<GenericWindow>& InParent, const bool bShowImmediately)
+void WindowsApplication::InitializeWindow(const std::shared_ptr<FGenericWindow>& InWindow, const std::shared_ptr<GenericWindowDefinition>& InDefinition, const std::shared_ptr<FGenericWindow>& InParent, const bool bShowImmediately)
 {
     auto Window = std::dynamic_pointer_cast<WindowsWindow>(InWindow);
     auto Parent = std::dynamic_pointer_cast<WindowsWindow>(InParent);
@@ -257,7 +361,7 @@ void WindowsApplication::InitializeWindow(const std::shared_ptr<GenericWindow>& 
 
 void WindowsApplication::RegisterDirectoryChangeListener(const std::wstring& dir, bool recursive)
 {
-    scoped_lock lock(m_DirectoryChangeMutex);
+    std::scoped_lock lock(m_DirectoryChangeMutex);
     m_DirectoryChanges.AddDirectory(dir, recursive, FILE_NOTIFY_CHANGE_LAST_WRITE);
 }
 
@@ -286,8 +390,10 @@ int32_t WindowsApplication::ProcessMessage(HWND hwnd, uint32_t msg, WPARAM wPara
         case WM_PAINT:
         {
             m_Timer.Tick();
+            ImGui_ImplWin32_UpdateMousePos(hwnd);
+            ImGui_ImplWin32_UpdateMouseCursor();
+            ImGui_ImplWin32_UpdateGamepads();
             MessageHandler->OnOSPaint(pWindow);
-
         }
         break;
         case WM_SYSKEYDOWN:
@@ -391,6 +497,17 @@ int32_t WindowsApplication::ProcessMessage(HWND hwnd, uint32_t msg, WPARAM wPara
             }
         }
         break;
+        case WM_DEVICECHANGE:
+        {
+            g_WantUpdateHasGamepad = true;
+        }
+        break;
+        case WM_SETCURSOR: {
+            if (LOWORD(lParam) == HTCLIENT && ImGui_ImplWin32_UpdateMouseCursor())
+                return 1;
+            return 0;
+        }
+        break;
         default:
             return ::DefWindowProcW(hwnd, msg, wParam, lParam);
         }
@@ -409,7 +526,7 @@ int32_t WindowsApplication::ProcessMessage(HWND hwnd, uint32_t msg, WPARAM wPara
     return 0;
 }
 
-std::weak_ptr<GenericWindow> WindowsApplication::GetWindowByName(const std::string& windowName) const
+std::weak_ptr<FGenericWindow> WindowsApplication::GetWindowByName(const std::string& windowName) const
 {
 
     auto iter = gs_WindowMapByName.find(windowName);
@@ -418,17 +535,17 @@ std::weak_ptr<GenericWindow> WindowsApplication::GetWindowByName(const std::stri
         return iter->second;
     }
   
-    return std::weak_ptr<GenericWindow>();
+    return std::weak_ptr<FGenericWindow>();
 }
 
-std::weak_ptr<GenericWindow> WindowsApplication::GetWindowByHandle(HWND handle) const
+std::weak_ptr<FGenericWindow> WindowsApplication::GetWindowByHandle(HWND handle) const
 {
     auto iter = gs_WindowMap.find(handle);
     if (iter != gs_WindowMap.end())
     {
         return iter->second;
     }
-    return std::weak_ptr<GenericWindow>();
+    return std::weak_ptr<FGenericWindow>();
 }
 
 void WindowsApplication::SetMessageHandler(const std::shared_ptr<GenericApplicationMessageHandler>& InMessageHandler)
@@ -442,7 +559,7 @@ void WindowsApplication::CheckFileChanges()
 {
     while (!m_bTerminateDirectoryChangeThread)
     {
-        scoped_lock lock(m_DirectoryChangeMutex);
+        std::scoped_lock lock(m_DirectoryChangeMutex);
 
         DWORD waitSignal = ::WaitForSingleObject(m_DirectoryChanges.GetWaitHandle(), 0);
         switch (waitSignal)

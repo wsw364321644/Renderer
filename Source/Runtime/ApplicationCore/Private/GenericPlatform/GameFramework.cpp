@@ -1,28 +1,31 @@
 #include "GenericPlatform/GameFrameworkPCH.h"
-
 #include "GenericPlatform/GameFramework.h"
+#include "SlateManager.h"
+#include "GameInstance.h"
+#include "LocalPlayer.h"
 #include "Misc/App.h"
 #include <chrono>
+#include <LoggerHelper.h>
 static GameFramework* gs_pSingelton = nullptr;
-
+const char* ENGINE_LOG_NAME = "Engine";
 
 GameFramework::GameFramework()
 : m_RequestQuit( false )
 {
 
     // Init spdlog.
-    spdlog::init_thread_pool( 8192, 1 );
-    auto stdout_sink   = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-    auto rotating_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
-        "logs/log.txt", 1024 * 1024 * 5, 3,
-        true );  // Max size: 5MB, Max files: 3, Rotate on open: true
-    auto msvc_sink = std::make_shared<spdlog::sinks::msvc_sink_mt>();
+    //spdlog::init_thread_pool( 8192, 1 );
+    //auto stdout_sink   = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+    //auto rotating_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
+    //    "logs/log.txt", 1024 * 1024 * 5, 3,
+    //    true );  // Max size: 5MB, Max files: 3, Rotate on open: true
+    //auto msvc_sink = std::make_shared<spdlog::sinks::msvc_sink_mt>();
 
-    std::vector<spdlog::sink_ptr> sinks { stdout_sink, rotating_sink, msvc_sink };
-    m_Logger = std::make_shared<spdlog::async_logger>( "GameFramework", sinks.begin(), sinks.end(),
-                                                       spdlog::thread_pool(), spdlog::async_overflow_policy::block );
-    spdlog::register_logger( m_Logger );
-    spdlog::set_default_logger( m_Logger );
+    //std::vector<spdlog::sink_ptr> sinks { stdout_sink, rotating_sink, msvc_sink };
+    //m_Logger = std::make_shared<spdlog::async_logger>( "GameFramework", sinks.begin(), sinks.end(),
+    //                                                   spdlog::thread_pool(), spdlog::async_overflow_policy::block );
+    //spdlog::register_logger( m_Logger );
+    //spdlog::set_default_logger( m_Logger );
     
     m_SlateManager = SlateManager::Create();
     
@@ -38,8 +41,7 @@ GameFramework& GameFramework::Create()
     if ( !gs_pSingelton )
     {
         gs_pSingelton = new GameFramework();
-
-        spdlog::info( "GameFramework class created." );
+        SIMPLELOG_LOGGER_TRACE(ENGINE_LOG_NAME, "GameFramework class created.");
     }
 
     return *gs_pSingelton;
@@ -51,7 +53,7 @@ void GameFramework::Destroy()
     {
         delete gs_pSingelton;
         gs_pSingelton = nullptr;
-        spdlog::info( "GameFramework class destroyed." );
+        SIMPLELOG_LOGGER_TRACE(ENGINE_LOG_NAME,"GameFramework class created.");
     }
 }
 
@@ -61,21 +63,26 @@ GameFramework& GameFramework::Get()
     return *gs_pSingelton;
 }
 
-// Create loggers
-// @see https://github.com/gabime/spdlog#asynchronous-logger-with-multi-sinks
-Logger GameFramework::CreateLogger( const std::string& name )
+void GameFramework::Tick()
 {
-    Logger logger = spdlog::get( name );
-    if ( !logger )
-    {
-        logger = m_Logger->clone( name );
-        spdlog::register_logger( logger );
-    }
-
-    return logger;
+    UpdateTime();
 }
 
-
+std::weak_ptr<FGameInstance> GameFramework::CreateGameInstance(std::string name)
+{
+    auto itr=GameInstances.find(name);
+    if (itr != GameInstances.end()) {
+        return itr->second;
+    }
+    auto res = GameInstances.emplace(name, std::make_shared< FGameInstance>());
+    if (!res.second) {
+        return std::weak_ptr<FGameInstance>();
+    }
+    auto pGameInstance=res.first->second;
+    
+    pGameInstance->AddLocalPlayer(std::make_shared<FLocalPlayer>());
+    return pGameInstance;
+}
 
 void GameFramework::UpdateTime()
 {

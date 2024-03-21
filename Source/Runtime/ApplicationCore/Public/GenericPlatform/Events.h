@@ -421,7 +421,7 @@ public:
 
 using MouseMotionEvent = CommonDelegate<void(MouseMotionEventArgs&)>;
 
-enum class EMouseButton
+enum class EMouseButton:uint8_t
 {
     Left = 0,
     Middle,

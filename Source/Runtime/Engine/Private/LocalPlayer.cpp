@@ -1,9 +1,9 @@
 #include<LocalPlayer.h>
 
-LocalPlayer::LocalPlayer()
+FLocalPlayer::FLocalPlayer()
 {
 }
 
-LocalPlayer::~LocalPlayer()
+FLocalPlayer::~FLocalPlayer()
 {
 }

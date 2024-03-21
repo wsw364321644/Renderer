@@ -6,6 +6,7 @@
 #include "DeviceInputManager.h"
 #include "GenericPlatform/GenericWindowDefinition.h"
 #include "GenericPlatform/GenericWindow.h"
+#include "PlayerID.h"
 #include "Misc/HighResolutionTimer.h"
 #include "Misc/CoreMiscDefines.h"
 class FSlateApplication;
@@ -35,10 +36,10 @@ namespace EPopUpOrientation
 
 struct FPlatformRect
 {
-	int32_t Left;
-	int32_t Top;
-	int32_t Right;
-	int32_t Bottom;
+	int32_t Left{ 0 };
+	int32_t Top{ 0 };
+	int32_t Right{ 0 };
+	int32_t Bottom{ 0 };
 
 	FPlatformRect() {}
 	FPlatformRect(int32_t InLeft, int32_t InTop, int32_t InRight, int32_t InBottom) : Left(InLeft), Top(InTop), Right(InRight), Bottom(InBottom) {}
@@ -163,11 +164,11 @@ public:
 
 	virtual void Tick ( const float TimeDelta ) { }
 
-	virtual std::shared_ptr< GenericWindow > MakeWindow() { return std::shared_ptr< GenericWindow >(new GenericWindow()) ; }
+	virtual std::shared_ptr< FGenericWindow > MakeWindow() { return std::shared_ptr< FGenericWindow >(new FGenericWindow()) ; }
 
-	virtual void InitializeWindow(const std::shared_ptr< GenericWindow >& Window, const std::shared_ptr< GenericWindowDefinition >& InDefinition, const std::shared_ptr< GenericWindow >& InParent, const bool bShowImmediately ) { }
+	virtual void InitializeWindow(const std::shared_ptr< FGenericWindow >& Window, const std::shared_ptr< GenericWindowDefinition >& InDefinition, const std::shared_ptr< FGenericWindow >& InParent, const bool bShowImmediately ) { }
 
-	virtual void SetCapture( const std::shared_ptr< GenericWindow >& InWindow ) { }
+	virtual void SetCapture( const std::shared_ptr< FGenericWindow >& InWindow ) { }
 
 	virtual void* GetCapture( void ) const { return NULL; }
 
@@ -177,9 +178,9 @@ public:
 	virtual bool IsCursorDirectlyOverSlateWindow() const { return true; }
 
 	/** @return Native window under the mouse cursor. */
-	virtual std::shared_ptr< GenericWindow > GetWindowUnderCursor() { return std::shared_ptr< GenericWindow >( nullptr ); }
+	virtual std::shared_ptr< FGenericWindow > GetWindowUnderCursor() { return std::shared_ptr< FGenericWindow >( nullptr ); }
 
-	virtual void SetHighPrecisionMouseMode( const bool Enable, const std::shared_ptr< GenericWindow >& InWindow ) { };
+	virtual void SetHighPrecisionMouseMode( const bool Enable, const std::shared_ptr< FGenericWindow >& InWindow ) { };
 
 	virtual bool IsUsingHighPrecisionMouseMode() const { return false; }
 	
@@ -254,7 +255,7 @@ public:
 public:
 
 	HighResolutionTimer& GetTimer() { return m_Timer; }
-	virtual DeviceInputManager* GetDeviceInputManager() = 0;
+	virtual FDeviceInputManager* GetDeviceInputManager() = 0;
 protected:
 
 	std::shared_ptr< GenericApplicationMessageHandler > MessageHandler;

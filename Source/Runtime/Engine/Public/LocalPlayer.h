@@ -1,10 +1,11 @@
 #pragma once
+#include "PlayerID.h"
 
-class LocalPlayer
+class FLocalPlayer
 {
 public:
 
-    LocalPlayer();
-    virtual ~LocalPlayer();
-
+    FLocalPlayer();
+    virtual ~FLocalPlayer();
+	struct FPlatformUserId PlatformUserId;
 };
