@@ -6,7 +6,7 @@
 #include <vector>
 #include <optional>
 class FGenericWindow;
-
+class SWindows;
 
 
 struct  FGamepadKeyNames

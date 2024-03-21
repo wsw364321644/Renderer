@@ -41,14 +41,14 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
 
 
 
-    GameFramework::Create();
+    FGameFramework::Create();
     {
         std::unique_ptr<Editor> demo = std::make_unique<Editor>("Editor", 1920, 1080, true);
         retCode = demo->Init();
         GEngineLoop.Run();
         demo->UnloadContent();
     }
-    GameFramework::Destroy();
+    FGameFramework::Destroy();
 
     atexit(&Device::ReportLiveObjects);
 

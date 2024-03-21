@@ -12,13 +12,13 @@ bool FEngineLoop::Init()
 
 void FEngineLoop::Tick()
 {
-    GameFramework::Get().Tick();
+    FGameFramework::Get().Tick();
     FPlatformApplicationMisc::PumpMessages(true);
 }
 
 void FEngineLoop::Run()
 {
-    while (!GameFramework::Get().GetRequestStop()) {
+    while (!FGameFramework::Get().GetRequestStop()) {
         Tick();
     }
     FPlatformApplicationMisc::RequestExitWithStatus(false, 0);

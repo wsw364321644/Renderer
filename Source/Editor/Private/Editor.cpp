@@ -154,13 +154,13 @@ Editor::Editor( const std::string& name, int width, int height, bool vSync )
 , m_Fullscreen( false )
 , m_RenderScale( 1.0f )
 {
-    auto pGameInstance=GameFramework::Get().CreateGameInstance("Editor");
+    auto pGameInstance=FGameFramework::Get().CreateGameInstance("Editor");
     m_Window =std::make_shared<SWindow>();
     m_Window->ClientSize = { width ,height };
     m_Window->WindowTitle = name;
     m_Window->GameInstance = pGameInstance;
 
-    GameFramework::Get().GetSlateManager()->AddToView(m_Window);
+    FGameFramework::Get().GetSlateManager()->AddToView(m_Window);
 
 
     m_Window->Update.Bind(&Editor::OnUpdate, this);
@@ -728,7 +728,7 @@ void Editor::OnGUI( const std::shared_ptr<dx12lib::CommandList>& commandList,
         {
             if ( ImGui::MenuItem( "Exit", "Esc" ) )
             {
-                GameFramework::Get().Stop();
+                FGameFramework::Get().Stop();
             }
             ImGui::EndMenu();
         }
@@ -1190,7 +1190,7 @@ void Editor::OnKeyPressed( KeyEventArgs& e )
         switch ( e.Key )
         {
         case KeyCode::Escape:
-            GameFramework::Get().Stop();
+            FGameFramework::Get().Stop();
             break;
         case KeyCode::Enter:
             if ( e.ModifierKeysState.IsAltDown() )

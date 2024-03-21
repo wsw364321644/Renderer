@@ -7,11 +7,12 @@
 
 
 
-class SlateManager:public GenericApplicationMessageHandler {
+class FSlateManager:public GenericApplicationMessageHandler {
 public:
-	SlateManager();
-	virtual ~SlateManager();
-	static std::shared_ptr< SlateManager> Create();
+	FSlateManager();
+	virtual ~FSlateManager();
+
+	static std::shared_ptr< FSlateManager> Create();
 
 	void AddToView(std::shared_ptr<SWindow> window);
 
@@ -35,10 +36,10 @@ public:
 	/// Polls game devices for input 
 	void PollGameDeviceState();
 	const std::shared_ptr<SWindow> FindWindowByNative(const std::shared_ptr< FGenericWindow >& Window);
-	static GenericApplication* GetGenericApplication(){
+	GenericApplication* GetGenericApplication(){
 		return m_GenericApplication.get();
 	}
 protected:
 	std::vector<std::shared_ptr<SWindow>> Windows;
-	static std::shared_ptr<GenericApplication> m_GenericApplication;
+	std::shared_ptr<GenericApplication> m_GenericApplication;
 };

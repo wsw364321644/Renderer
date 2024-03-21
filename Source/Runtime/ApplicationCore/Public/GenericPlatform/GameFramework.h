@@ -22,11 +22,11 @@
 extern const char* ENGINE_LOG_NAME;
 
 
-class SlateManager;
+class FSlateManager;
 class FGameInstance;
 
 
-class GameFramework
+class FGameFramework
 {
 public:
     /**
@@ -35,7 +35,7 @@ public:
      * @parm hInst The application instance.
      * @returns A reference to the created instance.
      */
-    static GameFramework& Create();
+    static FGameFramework& Create();
 
     /**
      * Destroy the Application instance.
@@ -46,9 +46,9 @@ public:
      * Get a reference to the application instance.
      * @returns A reference to the Application instance.
      */
-    static GameFramework& Get();
+    static FGameFramework& Get();
 
-    SlateManager* GetSlateManager() {
+    FSlateManager* GetSlateManager() {
         return m_SlateManager.get();
     }
 
@@ -85,8 +85,8 @@ public:
 
 protected:
 
-    GameFramework();
-    virtual ~GameFramework();
+    FGameFramework();
+    virtual ~FGameFramework();
 
     // Application is going to close
     virtual void OnExit( EventArgs& e );
@@ -94,10 +94,10 @@ protected:
 private:
     // Private and deleted. Please don't try to create copies
     // of this singleton!
-    GameFramework( const GameFramework& ) = delete;
-    GameFramework( GameFramework&& )      = delete;
-    GameFramework& operator=( GameFramework& ) = delete;
-    GameFramework& operator=( GameFramework&& ) = delete;
+    FGameFramework( const FGameFramework& ) = delete;
+    FGameFramework( FGameFramework&& )      = delete;
+    FGameFramework& operator=( FGameFramework& ) = delete;
+    FGameFramework& operator=( FGameFramework&& ) = delete;
 
 
 
@@ -107,6 +107,6 @@ private:
 
 
     
-    std::shared_ptr < SlateManager> m_SlateManager;
+    std::shared_ptr < FSlateManager> m_SlateManager;
     std::unordered_map <std::string, std::shared_ptr<FGameInstance>> GameInstances;
 };

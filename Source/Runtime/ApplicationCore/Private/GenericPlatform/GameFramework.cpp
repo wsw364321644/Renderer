@@ -6,10 +6,10 @@
 #include "Misc/App.h"
 #include <chrono>
 #include <LoggerHelper.h>
-static GameFramework* gs_pSingelton = nullptr;
+static FGameFramework* gs_pSingelton = nullptr;
 const char* ENGINE_LOG_NAME = "Engine";
 
-GameFramework::GameFramework()
+FGameFramework::FGameFramework()
 : m_RequestQuit( false )
 {
 
@@ -26,28 +26,27 @@ GameFramework::GameFramework()
     //                                                   spdlog::thread_pool(), spdlog::async_overflow_policy::block );
     //spdlog::register_logger( m_Logger );
     //spdlog::set_default_logger( m_Logger );
-    
-    m_SlateManager = SlateManager::Create();
+    m_SlateManager = FSlateManager::Create();
     
 }
 
-GameFramework::~GameFramework()
+FGameFramework::~FGameFramework()
 {
 
 }
 
-GameFramework& GameFramework::Create()
+FGameFramework& FGameFramework::Create()
 {
     if ( !gs_pSingelton )
     {
-        gs_pSingelton = new GameFramework();
+        gs_pSingelton = new FGameFramework();
         SIMPLELOG_LOGGER_TRACE(ENGINE_LOG_NAME, "GameFramework class created.");
     }
 
     return *gs_pSingelton;
 }
 
-void GameFramework::Destroy()
+void FGameFramework::Destroy()
 {
     if ( gs_pSingelton )
     {
@@ -57,18 +56,18 @@ void GameFramework::Destroy()
     }
 }
 
-GameFramework& GameFramework::Get()
+FGameFramework& FGameFramework::Get()
 {
     assert( gs_pSingelton != nullptr );
     return *gs_pSingelton;
 }
 
-void GameFramework::Tick()
+void FGameFramework::Tick()
 {
     UpdateTime();
 }
 
-std::weak_ptr<FGameInstance> GameFramework::CreateGameInstance(std::string name)
+std::weak_ptr<FGameInstance> FGameFramework::CreateGameInstance(std::string name)
 {
     auto itr=GameInstances.find(name);
     if (itr != GameInstances.end()) {
@@ -84,7 +83,7 @@ std::weak_ptr<FGameInstance> GameFramework::CreateGameInstance(std::string name)
     return pGameInstance;
 }
 
-void GameFramework::UpdateTime()
+void FGameFramework::UpdateTime()
 {
     FApp::UpdateLastTime();
     auto now = std::chrono::steady_clock::now();
@@ -94,7 +93,7 @@ void GameFramework::UpdateTime()
 }
 
 
-void GameFramework::Stop()
+void FGameFramework::Stop()
 {
     // When called from another thread other than the main thread,
     // the WM_QUIT message goes to that thread and will not be handled
@@ -104,7 +103,7 @@ void GameFramework::Stop()
 }
 
 
-void GameFramework::OnExit( EventArgs& e )
+void FGameFramework::OnExit( EventArgs& e )
 {
     // Invoke the Exit event.
     Exit( e );

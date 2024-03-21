@@ -6,25 +6,24 @@
 #include "imgui.h"
 #include <std_ext.h>
 #include <memory>
-std::shared_ptr<GenericApplication> SlateManager::m_GenericApplication;
-SlateManager::~SlateManager()
+
+FSlateManager::~FSlateManager()
+{
+}
+std::shared_ptr< FSlateManager> FSlateManager::Create()
+{
+	auto pSlateManager = std::make_shared<FSlateManager>();
+	pSlateManager->m_GenericApplication.reset(FPlatformApplicationMisc::CreateApplication());
+	pSlateManager->m_GenericApplication->SetMessageHandler(pSlateManager);
+	return pSlateManager;
+}
+
+
+FSlateManager::FSlateManager()
 {
 }
 
-std::shared_ptr<SlateManager> SlateManager::Create()
-{
-	auto sm=std::make_shared<SlateManager>();
-	m_GenericApplication.reset(FPlatformApplicationMisc::CreateApplication());
-	m_GenericApplication->SetMessageHandler(sm);
-	
-	return sm;
-}
-
-SlateManager::SlateManager()
-{
-}
-
-void SlateManager::AddToView(std::shared_ptr<SWindow> window)
+void FSlateManager::AddToView(std::shared_ptr<SWindow> window)
 {
 
 	std::shared_ptr <FGenericWindow> platformWindow= m_GenericApplication->MakeWindow();
@@ -73,27 +72,26 @@ void SlateManager::AddToView(std::shared_ptr<SWindow> window)
 	Windows.push_back(window);
 }
 
-bool SlateManager::OnKeyChar(const char Character, const bool IsRepeat)
+bool FSlateManager::OnKeyChar(const char Character, const bool IsRepeat)
 {
 	if (ImGui::GetCurrentContext() != NULL) {
 		ImGuiIO& io = ImGui::GetIO();
 		io.AddInputCharacterUTF16((unsigned short)Character);
 	}
+
 	return false;
 }
 
-bool SlateManager::OnKeyDown(const int32_t KeyCode, const uint32_t CharacterCode, const bool IsRepeat)
+bool FSlateManager::OnKeyDown(const int32_t KeyCode, const uint32_t CharacterCode, const bool IsRepeat)
 {
 	if (ImGui::GetCurrentContext() != NULL) {
 		ImGuiIO& io = ImGui::GetIO();
 		io.KeysDown[KeyCode] = true;
 	}
-
-	
 	return false;
 }
 
-bool SlateManager::OnKeyUp(const int32_t KeyCode, const uint32_t CharacterCode, const bool IsRepeat)
+bool FSlateManager::OnKeyUp(const int32_t KeyCode, const uint32_t CharacterCode, const bool IsRepeat)
 {
 	if (ImGui::GetCurrentContext() != NULL) {
 		ImGuiIO& io = ImGui::GetIO();
@@ -103,12 +101,12 @@ bool SlateManager::OnKeyUp(const int32_t KeyCode, const uint32_t CharacterCode, 
 	return false;
 }
 
-bool SlateManager::OnMouseDown(const std::shared_ptr<FGenericWindow>& Window, const EMouseButton Button)
+bool FSlateManager::OnMouseDown(const std::shared_ptr<FGenericWindow>& Window, const EMouseButton Button)
 {
 	return OnMouseDown(Window, Button, GetGenericApplication()->GetDeviceInputManager()->GetCursorPosition());
 }
 
-bool SlateManager::OnMouseDown(const std::shared_ptr<FGenericWindow>& Window, const EMouseButton Button, const glm::vec2 CursorPos)
+bool FSlateManager::OnMouseDown(const std::shared_ptr<FGenericWindow>& Window, const EMouseButton Button, const glm::vec2 CursorPos)
 {
 	if (ImGui::GetCurrentContext() != NULL) {
 		ImGuiIO& io = ImGui::GetIO();
@@ -119,12 +117,12 @@ bool SlateManager::OnMouseDown(const std::shared_ptr<FGenericWindow>& Window, co
 	return false;
 }
 
-bool SlateManager::OnMouseUp(const EMouseButton Button)
+bool FSlateManager::OnMouseUp(const EMouseButton Button)
 {
 	return OnMouseUp(Button, GetGenericApplication()->GetDeviceInputManager()->GetCursorPosition());
 }
 
-bool SlateManager::OnMouseUp(const EMouseButton Button, const glm::vec2 CursorPos)
+bool FSlateManager::OnMouseUp(const EMouseButton Button, const glm::vec2 CursorPos)
 {
 	if (ImGui::GetCurrentContext() != NULL) {
 		ImGuiIO& io = ImGui::GetIO();
@@ -133,12 +131,12 @@ bool SlateManager::OnMouseUp(const EMouseButton Button, const glm::vec2 CursorPo
 	return false;
 }
 
-bool SlateManager::OnMouseDoubleClick(const std::shared_ptr<FGenericWindow>& Window, const EMouseButton Button)
+bool FSlateManager::OnMouseDoubleClick(const std::shared_ptr<FGenericWindow>& Window, const EMouseButton Button)
 {
 	return OnMouseDoubleClick(Window, Button, GetGenericApplication()->GetDeviceInputManager()->GetCursorPosition());
 }
 
-bool SlateManager::OnMouseDoubleClick(const std::shared_ptr<FGenericWindow>& Window, const EMouseButton Button, const glm::vec2 CursorPos)
+bool FSlateManager::OnMouseDoubleClick(const std::shared_ptr<FGenericWindow>& Window, const EMouseButton Button, const glm::vec2 CursorPos)
 {
 	if (ImGui::GetCurrentContext() != NULL) {
 		ImGuiIO& io = ImGui::GetIO();
@@ -147,12 +145,12 @@ bool SlateManager::OnMouseDoubleClick(const std::shared_ptr<FGenericWindow>& Win
 	return false;
 }
 
-bool SlateManager::OnMouseWheel(const float Delta)
+bool FSlateManager::OnMouseWheel(const float Delta)
 {
 	return OnMouseWheel(Delta, GetGenericApplication()->GetDeviceInputManager()->GetCursorPosition());
 }
 
-bool SlateManager::OnMouseWheel(const float Delta, const glm::vec2 CursorPos)
+bool FSlateManager::OnMouseWheel(const float Delta, const glm::vec2 CursorPos)
 {
 	if (ImGui::GetCurrentContext() != NULL) {
 		ImGuiIO& io = ImGui::GetIO();
@@ -161,23 +159,23 @@ bool SlateManager::OnMouseWheel(const float Delta, const glm::vec2 CursorPos)
 	return false;
 }
 
-bool SlateManager::OnMouseMove()
+bool FSlateManager::OnMouseMove()
 {
 	auto pos = GetGenericApplication()->GetDeviceInputManager()->GetCursorPosition();
 	return OnRawMouseMove(pos.x, pos.y);
 }
 
-bool SlateManager::OnRawMouseMove(const int32_t X, const int32_t Y)
+bool FSlateManager::OnRawMouseMove(const int32_t X, const int32_t Y)
 {
 	return false;
 }
 
-bool SlateManager::OnCursorSet()
+bool FSlateManager::OnCursorSet()
 {
 	return false;
 }
 
-void SlateManager::OnOSPaint(const std::shared_ptr<FGenericWindow>& Window)
+void FSlateManager::OnOSPaint(const std::shared_ptr<FGenericWindow>& Window)
 {
 	const std::shared_ptr < SWindow > window= FindWindowByNative(Window);
 
@@ -189,18 +187,18 @@ void SlateManager::OnOSPaint(const std::shared_ptr<FGenericWindow>& Window)
 	window->OnUpdate(updateEventArgs);
 }
 
-void SlateManager::HandleDPIScaleChanged(const std::shared_ptr<FGenericWindow>& Window)
+void FSlateManager::HandleDPIScaleChanged(const std::shared_ptr<FGenericWindow>& Window)
 {
 	ImGuiIO& io = ImGui::GetIO();
 	io.FontGlobalScale = Window->GetDPIScaling();
 }
 
-void SlateManager::PollGameDeviceState()
+void FSlateManager::PollGameDeviceState()
 {
 	m_GenericApplication->PollGameDeviceState(FApp::GetDeltaTime());
 }
 
-const std::shared_ptr<SWindow> SlateManager::FindWindowByNative(const std::shared_ptr<FGenericWindow>& Window)
+const std::shared_ptr<SWindow> FSlateManager::FindWindowByNative(const std::shared_ptr<FGenericWindow>& Window)
 {
 	for (auto window : Windows) {
 		std::shared_ptr<const FGenericWindow> nativewindow = window->GetNativeWindow();
