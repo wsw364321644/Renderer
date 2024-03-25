@@ -100,13 +100,13 @@ private:
     std::shared_ptr<World>       m_World;
     // Some geometry to render.
     std::shared_ptr<dx12lib::Scene> m_Cube;
-    std::shared_ptr<dx12lib::Scene> m_Sphere;
+    FActor* Sphere;
     std::shared_ptr<dx12lib::Scene> m_Cone;
     std::shared_ptr<dx12lib::Scene> m_Cylinder;
     std::shared_ptr<dx12lib::Scene> m_Torus;
     std::shared_ptr<dx12lib::Scene> m_Plane;
 
-    std::shared_ptr<dx12lib::Scene> m_Skybox;
+    FActor* Skybox;
 
     std::shared_ptr<dx12lib::Texture> m_DefaultTexture;
     std::shared_ptr<dx12lib::Texture> m_DirectXTexture;
@@ -173,6 +173,7 @@ private:
     float m_RenderScale;
 
     bool m_SceneSelected;
+    bool m_SceneFoused;
     // Define some lights.
     std::vector<PointLight> m_PointLights;
     std::vector<SpotLight>  m_SpotLights;
