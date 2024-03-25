@@ -22,7 +22,7 @@ GenericApplication* FPlatformApplicationMisc::CreateApplication()
 		AppIconHandle = LoadIcon( (HINSTANCE)NULL, IDI_APPLICATION ); 
 	}
 
-	return new WindowsApplication( hInstance, AppIconHandle );
+	return new FWindowsApplication( hInstance, AppIconHandle );
 }
 
 void FPlatformApplicationMisc::RequestMinimize()

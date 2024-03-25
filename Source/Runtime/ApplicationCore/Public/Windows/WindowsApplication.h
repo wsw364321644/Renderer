@@ -5,11 +5,13 @@
 #include "Windows/ReadDirectoryChanges.h"
 #include "GenericPlatform/GenericApplication.h"
 #include "Windows/WindowsDeviceInputManager.h"
-class WindowsApplication: public GenericApplication
+
+class FWindowsWindow;
+class FWindowsApplication: public GenericApplication
 {
 public:
-	WindowsApplication(const HINSTANCE inInstance, const HICON IconHandle);
-	virtual ~WindowsApplication();
+	FWindowsApplication(const HINSTANCE inInstance, const HICON IconHandle);
+	virtual ~FWindowsApplication();
 
 	/**
 * Create a render window.
@@ -49,6 +51,8 @@ public:
 	std::weak_ptr<FGenericWindow> GetWindowByHandle(HWND handle) const;
 	virtual void SetMessageHandler(const std::shared_ptr<GenericApplicationMessageHandler >& InMessageHandler) override;
 	virtual FDeviceInputManager* GetDeviceInputManager() override { return  m_WindowsDeviceInputManager.get(); }
+
+	void UpdateWindowTitle(FWindowsWindow* Window,const char* const Text);
 private:
 
 

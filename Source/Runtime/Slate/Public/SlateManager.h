@@ -30,9 +30,10 @@ public:
 	virtual bool OnMouseMove();
 	virtual bool OnRawMouseMove(const int32_t X, const int32_t Y);
 	virtual bool OnCursorSet();
-
+	
 	virtual void OnOSPaint(const std::shared_ptr<FGenericWindow>& Window) override;
 	virtual void HandleDPIScaleChanged(const std::shared_ptr< FGenericWindow >& Window) override;
+	virtual void OnWindowClose(const std::shared_ptr< FGenericWindow >& Window) override;
 	/// Polls game devices for input 
 	void PollGameDeviceState();
 	const std::shared_ptr<SWindow> FindWindowByNative(const std::shared_ptr< FGenericWindow >& Window);

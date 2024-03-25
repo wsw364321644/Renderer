@@ -120,9 +120,9 @@ bool WindowsDeviceInputManager::ProcessMessage(HWND hwnd, uint32_t msg, WPARAM w
 	auto bRAlt = (::GetAsyncKeyState(VK_RMENU) & 0x8000) != 0;
 	auto bCapital = (::GetKeyState(VK_CAPITAL) & 0x0001) != 0;
 
-	auto app = dynamic_cast<WindowsApplication*>(FGameFramework::Get().GetSlateManager()->GetGenericApplication());
+	auto app = dynamic_cast<FWindowsApplication*>(FGameFramework::Get().GetSlateManager()->GetGenericApplication());
 	auto MessageHandler= app->GetMessageHandler();
-	std::shared_ptr<WindowsWindow> pWindow = std::dynamic_pointer_cast<WindowsWindow>(app->GetWindowByHandle(hwnd).lock());
+	std::shared_ptr<FWindowsWindow> pWindow = std::dynamic_pointer_cast<FWindowsWindow>(app->GetWindowByHandle(hwnd).lock());
 
 
 	switch (msg) {
@@ -347,6 +347,8 @@ bool WindowsDeviceInputManager::ProcessMessage(HWND hwnd, uint32_t msg, WPARAM w
 		delete[] lpb;
 		break;
 	}
+	default:
+		return false;
 	}
 	return true;
 }

@@ -186,6 +186,16 @@ void FSlateManager::HandleDPIScaleChanged(const std::shared_ptr<FGenericWindow>&
 	io.FontGlobalScale = Window->GetDPIScaling();
 }
 
+void FSlateManager::OnWindowClose(const std::shared_ptr<FGenericWindow>& Window)
+{
+	for (auto itr = Windows.begin(); itr != Windows.end(); itr++) {
+		if ((*itr)->GetNativeWindow() == Window) {
+			Windows.erase(itr);
+			break;
+		}
+	}
+}
+
 void FSlateManager::PollGameDeviceState()
 {
 	m_GenericApplication->PollGameDeviceState(FApp::GetDeltaTime());

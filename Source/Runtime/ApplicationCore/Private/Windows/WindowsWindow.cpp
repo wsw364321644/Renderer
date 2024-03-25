@@ -1,9 +1,10 @@
 #include "Windows/WindowsWindow.h"
 #include "GenericPlatform/GameFramework.h"
+#include "Windows/WindowsApplication.h"
 #include <LoggerHelper.h>
 #include <string_convert.h>
 
-WindowsWindow::WindowsWindow()
+FWindowsWindow::FWindowsWindow()
     : m_hWnd(NULL)
     , m_PreviousMouseX(0)
     , m_PreviousMouseY(0)
@@ -13,14 +14,14 @@ WindowsWindow::WindowsWindow()
 }
 
 
-void WindowsWindow::Initialize(WindowsApplication* const Application, const std::shared_ptr<GenericWindowDefinition>& InDefinition, HINSTANCE InHInstance, const std::shared_ptr<WindowsWindow>& InParent, const bool bShowImmediately)
+void FWindowsWindow::Initialize(FWindowsApplication* const Application, const std::shared_ptr<GenericWindowDefinition>& InDefinition, HINSTANCE InHInstance, const std::shared_ptr<FWindowsWindow>& InParent, const bool bShowImmediately)
 {
     Definition = InDefinition;
-
+    WindowsApplication = Application;
     int screenWidth = ::GetSystemMetrics(SM_CXSCREEN);
     int screenHeight = ::GetSystemMetrics(SM_CYSCREEN);
 
-    RECT windowRect = { 0, 0, static_cast<LONG>(InDefinition->WidthDesiredOnScreen), static_cast<LONG>(InDefinition->HeightDesiredOnScreen) };
+    RECT windowRect = { 0, 0, static_cast<LONG>(Definition->WidthDesiredOnScreen), static_cast<LONG>(Definition->HeightDesiredOnScreen) };
 
     ::AdjustWindowRect(&windowRect, WS_OVERLAPPEDWINDOW, FALSE);
 
@@ -43,7 +44,7 @@ void WindowsWindow::Initialize(WindowsApplication* const Application, const std:
 
 }
 
-void WindowsWindow::OnMouseEnter(MouseMotionEventArgs& e)
+void FWindowsWindow::OnMouseEnter(MouseMotionEventArgs& e)
 {
     // Track mouse leave events.
     TRACKMOUSEEVENT trackMouseEvent = {};
@@ -55,12 +56,12 @@ void WindowsWindow::OnMouseEnter(MouseMotionEventArgs& e)
     m_bInClientRect = true;
 }
 
-void WindowsWindow::OnMouseLeave(EventArgs& e)
+void FWindowsWindow::OnMouseLeave(EventArgs& e)
 {
     m_bInClientRect = false;
 }
 
-void WindowsWindow::OnMouseMoved(MouseMotionEventArgs& e)
+void FWindowsWindow::OnMouseMoved(MouseMotionEventArgs& e)
 {
     if (!m_bInClientRect)
     {
@@ -78,13 +79,13 @@ void WindowsWindow::OnMouseMoved(MouseMotionEventArgs& e)
     m_PreviousMouseY = e.Y;
 }
 
-void WindowsWindow::OnMouseButtonPressed(MouseButtonEventArgs& e)
+void FWindowsWindow::OnMouseButtonPressed(MouseButtonEventArgs& e)
 {
     // Capture mouse movement until the button is released.
     ::SetCapture(m_hWnd);
 }
 
-void WindowsWindow::OnMouseButtonReleased(MouseButtonEventArgs& e)
+void FWindowsWindow::OnMouseButtonReleased(MouseButtonEventArgs& e)
 {
     // Stop capturing the mouse.
     ::ReleaseCapture();
@@ -92,40 +93,38 @@ void WindowsWindow::OnMouseButtonReleased(MouseButtonEventArgs& e)
 
 
 
-WindowsWindow::~WindowsWindow()
+FWindowsWindow::~FWindowsWindow()
 {
     ::DestroyWindow( m_hWnd );
 }
 
-HWND WindowsWindow::GetWindowHandle() const
+HWND FWindowsWindow::GetWindowHandle() const
 {
     return m_hWnd;
 }
 
-void* WindowsWindow::GetOSWindowHandle() const
+void* FWindowsWindow::GetOSWindowHandle() const
 {
     return GetWindowHandle();
 }
 
 
-void WindowsWindow::Show()
+void FWindowsWindow::Show()
 {
     ::ShowWindow( m_hWnd, SW_SHOW );
 }
 
-void WindowsWindow::Hide()
+void FWindowsWindow::Hide()
 {
     ::ShowWindow( m_hWnd, SW_HIDE );
 }
 
-void WindowsWindow::SetText(const char* const Text)
+void FWindowsWindow::SetText(const char* const Text)
 {
-    Definition->Title = Text;
-    auto titleu16=U8ToU16(Text);
-    ::SetWindowTextW(m_hWnd, (LPCWSTR)titleu16.c_str());
+    WindowsApplication->UpdateWindowTitle(this, Text);
 }
 
-void WindowsWindow::SetWindowMode(EWindowMode InNewWindowMode)
+void FWindowsWindow::SetWindowMode(EWindowMode InNewWindowMode)
 {
     if (WindowMode == InNewWindowMode) { return; }
     ::GetWindowRect(m_hWnd, &m_WindowRect);
@@ -172,7 +171,7 @@ void WindowsWindow::SetWindowMode(EWindowMode InNewWindowMode)
     WindowMode = InNewWindowMode;
 }
 
-EWindowMode WindowsWindow::GetWindowMode() const
+EWindowMode FWindowsWindow::GetWindowMode() const
 {
     return WindowMode;
 }

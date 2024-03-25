@@ -12,7 +12,7 @@
 #include <memory>
 #include <map>
 #include <iostream>
-
+#include <string_convert.h>
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -280,7 +280,7 @@ static void CreateConsole()
 
 
 
-WindowsApplication::WindowsApplication(const HINSTANCE inInstance, const HICON IconHandle) : GenericApplication(), m_hInstance(inInstance), m_bTerminateDirectoryChangeThread(false)
+FWindowsApplication::FWindowsApplication(const HINSTANCE inInstance, const HICON IconHandle) : GenericApplication(), m_hInstance(inInstance), m_bTerminateDirectoryChangeThread(false)
 {
     // Windows 10 Creators update adds Per Monitor V2 DPI awareness context.
 // Using this awareness context allows the client area of the window
@@ -316,7 +316,7 @@ WindowsApplication::WindowsApplication(const HINSTANCE inInstance, const HICON I
     wndClass.hIcon = LoadIcon(wndClass.hInstance, MAKEINTRESOURCE(APP_ICON));
     wndClass.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     wndClass.lpszMenuName = nullptr;
-    wndClass.lpszClassName = WindowsWindow::WINDOW_CLASS_NAME;
+    wndClass.lpszClassName = FWindowsWindow::WINDOW_CLASS_NAME;
     wndClass.hIconSm = LoadIcon(wndClass.hInstance, MAKEINTRESOURCE(APP_ICON));
 
     if (!RegisterClassExW(&wndClass))
@@ -324,13 +324,13 @@ WindowsApplication::WindowsApplication(const HINSTANCE inInstance, const HICON I
         MessageBoxA(NULL, "Unable to register the window class.", "Error", MB_OK | MB_ICONERROR);
     }
 
-    m_DirectoryChangeListenerThread = std::thread(&WindowsApplication::CheckFileChanges, this);
+    m_DirectoryChangeListenerThread = std::thread(&FWindowsApplication::CheckFileChanges, this);
     SetThreadName(m_DirectoryChangeListenerThread, "Check File Changes");
 
     m_WindowsDeviceInputManager = std::make_shared<WindowsDeviceInputManager>();
 }
 
-WindowsApplication::~WindowsApplication()
+FWindowsApplication::~FWindowsApplication()
 {
     m_bTerminateDirectoryChangeThread = true;
     if (m_DirectoryChangeListenerThread.joinable())
@@ -342,32 +342,32 @@ WindowsApplication::~WindowsApplication()
     gs_WindowMapByName.clear();
 }
 
-std::shared_ptr<FGenericWindow> WindowsApplication::MakeWindow()
+std::shared_ptr<FGenericWindow> FWindowsApplication::MakeWindow()
 {
-    std::shared_ptr<FGenericWindow> pWindow(new WindowsWindow());
+    std::shared_ptr<FGenericWindow> pWindow(new FWindowsWindow());
 
     return pWindow;
 }
 
-void WindowsApplication::InitializeWindow(const std::shared_ptr<FGenericWindow>& InWindow, const std::shared_ptr<GenericWindowDefinition>& InDefinition, const std::shared_ptr<FGenericWindow>& InParent, const bool bShowImmediately)
+void FWindowsApplication::InitializeWindow(const std::shared_ptr<FGenericWindow>& InWindow, const std::shared_ptr<GenericWindowDefinition>& InDefinition, const std::shared_ptr<FGenericWindow>& InParent, const bool bShowImmediately)
 {
-    auto Window = std::dynamic_pointer_cast<WindowsWindow>(InWindow);
-    auto Parent = std::dynamic_pointer_cast<WindowsWindow>(InParent);
+    auto Window = std::dynamic_pointer_cast<FWindowsWindow>(InWindow);
+    auto Parent = std::dynamic_pointer_cast<FWindowsWindow>(InParent);
     Window->Initialize(this, InDefinition, m_hInstance, Parent, bShowImmediately);
     gs_WindowMap.insert(WindowMap::value_type(Window->GetWindowHandle(), Window));
     gs_WindowMapByName.insert(WindowMapByName::value_type(Window->GetDefinition().Title, Window));
 }
 
 
-void WindowsApplication::RegisterDirectoryChangeListener(const std::wstring& dir, bool recursive)
+void FWindowsApplication::RegisterDirectoryChangeListener(const std::wstring& dir, bool recursive)
 {
     std::scoped_lock lock(m_DirectoryChangeMutex);
     m_DirectoryChanges.AddDirectory(dir, recursive, FILE_NOTIFY_CHANGE_LAST_WRITE);
 }
 
-int32_t WindowsApplication::ProcessMessage(HWND hwnd, uint32_t msg, WPARAM wParam, LPARAM lParam)
+int32_t FWindowsApplication::ProcessMessage(HWND hwnd, uint32_t msg, WPARAM wParam, LPARAM lParam)
 { 
-    std::shared_ptr<WindowsWindow> pWindow=std::dynamic_pointer_cast<WindowsWindow>( GetWindowByHandle(hwnd).lock());
+    std::shared_ptr<FWindowsWindow> pWindow=std::dynamic_pointer_cast<FWindowsWindow>( GetWindowByHandle(hwnd).lock());
     if (pWindow)
     {
 
@@ -486,7 +486,10 @@ int32_t WindowsApplication::ProcessMessage(HWND hwnd, uint32_t msg, WPARAM wPara
             {
                 gs_WindowMapByName.erase(gs_WindowMapByName.find(iter->second->GetDefinition().Title));
                 gs_WindowMap.erase(iter);
-
+               
+            }
+            if (gs_WindowMap.size()==0) {
+                FGameFramework::Get().Stop();
             }
         }
         break;
@@ -519,7 +522,7 @@ int32_t WindowsApplication::ProcessMessage(HWND hwnd, uint32_t msg, WPARAM wPara
     return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
-void WindowsApplication::ProcessDeferredEvents(const float TimeDelta)
+void FWindowsApplication::ProcessDeferredEvents(const float TimeDelta)
 {
     m_Timer.Tick();
     ImGui_ImplWin32_UpdateMouseCursor();
@@ -534,7 +537,7 @@ void WindowsApplication::ProcessDeferredEvents(const float TimeDelta)
     }
 }
 
-std::weak_ptr<FGenericWindow> WindowsApplication::GetWindowByName(const std::string& windowName) const
+std::weak_ptr<FGenericWindow> FWindowsApplication::GetWindowByName(const std::string& windowName) const
 {
 
     auto iter = gs_WindowMapByName.find(windowName);
@@ -546,7 +549,7 @@ std::weak_ptr<FGenericWindow> WindowsApplication::GetWindowByName(const std::str
     return std::weak_ptr<FGenericWindow>();
 }
 
-std::weak_ptr<FGenericWindow> WindowsApplication::GetWindowByHandle(HWND handle) const
+std::weak_ptr<FGenericWindow> FWindowsApplication::GetWindowByHandle(HWND handle) const
 {
     auto iter = gs_WindowMap.find(handle);
     if (iter != gs_WindowMap.end())
@@ -556,14 +559,26 @@ std::weak_ptr<FGenericWindow> WindowsApplication::GetWindowByHandle(HWND handle)
     return std::weak_ptr<FGenericWindow>();
 }
 
-void WindowsApplication::SetMessageHandler(const std::shared_ptr<GenericApplicationMessageHandler>& InMessageHandler)
+void FWindowsApplication::SetMessageHandler(const std::shared_ptr<GenericApplicationMessageHandler>& InMessageHandler)
 {
     GenericApplication::SetMessageHandler(InMessageHandler);
 
 }
 
+void FWindowsApplication::UpdateWindowTitle(FWindowsWindow* Window, const char* const Text)
+{
+    auto itr = gs_WindowMapByName.find(Window->GetDefinition().Title);
+    assert(itr != gs_WindowMapByName.end());
+    auto pWindow=itr->second;
+    gs_WindowMapByName.erase(itr);
+    gs_WindowMapByName.emplace(Text, pWindow);
+    Window->Definition->Title = Text;
+    auto titleu16 = U8ToU16(Text);
+    ::SetWindowTextW(Window->m_hWnd, (LPCWSTR)titleu16.c_str());
+}
+
 // This is the directory change listener thread entry point.
-void WindowsApplication::CheckFileChanges()
+void FWindowsApplication::CheckFileChanges()
 {
     while (!m_bTerminateDirectoryChangeThread)
     {
@@ -621,7 +636,7 @@ void WindowsApplication::CheckFileChanges()
     }
 }
 
-void WindowsApplication::OnFileChange(FileChangedEventArgs& e)
+void FWindowsApplication::OnFileChange(FileChangedEventArgs& e)
 {
     FileChanged(e);
 }
@@ -635,7 +650,7 @@ void WindowsApplication::OnFileChange(FileChangedEventArgs& e)
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 
-    WindowsApplication* app = dynamic_cast<WindowsApplication*>(FGameFramework::Get().GetSlateManager()->GetGenericApplication());
+    FWindowsApplication* app = dynamic_cast<FWindowsApplication*>(FGameFramework::Get().GetSlateManager()->GetGenericApplication());
     return app->ProcessMessage(hwnd, message, wParam, lParam);
 }
 

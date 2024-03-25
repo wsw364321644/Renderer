@@ -556,8 +556,7 @@ void Editor::OnUpdate(UpdateEventArgs& e)
     {
         g_FPS = frameCount / totalTime;
 
-        //GetLogger(EDITOR_LOG_NAME)->trace("FPS: {:.7}", g_FPS);
-
+        SIMPLELOG_LOGGER_TRACE("Editor", "FPS: {:.7}", g_FPS);
         char buffer[512];
         std::sprintf(buffer, "HDR [FPS: %f]", g_FPS);
         m_Window->SetTitle(buffer);
