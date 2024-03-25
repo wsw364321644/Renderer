@@ -3,7 +3,7 @@
 #include <vector>
 #include <memory>
 
-class Actor;
+class FActor;
 class ActorComponent
 {
 public:
@@ -11,7 +11,7 @@ public:
     ActorComponent();
     virtual ~ActorComponent();
 
-    virtual void OnRegister(Actor* owner) {
+    virtual void OnRegister(FActor* owner) {
         Owner = owner;
     }
 
@@ -19,6 +19,6 @@ public:
         Owner=nullptr;
     }
 private:
-    Actor* Owner;
+    FActor* Owner;
     std::vector<std::shared_ptr< ActorComponent>> ChildComponents;
 };

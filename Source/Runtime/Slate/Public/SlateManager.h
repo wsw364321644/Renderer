@@ -36,6 +36,9 @@ public:
 	/// Polls game devices for input 
 	void PollGameDeviceState();
 	const std::shared_ptr<SWindow> FindWindowByNative(const std::shared_ptr< FGenericWindow >& Window);
+	std::vector<std::shared_ptr<SWindow>>& GetWindows() {
+		return Windows;
+	};
 	GenericApplication* GetGenericApplication(){
 		return m_GenericApplication.get();
 	}

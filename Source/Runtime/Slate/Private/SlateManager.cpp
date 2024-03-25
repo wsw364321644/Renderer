@@ -177,14 +177,7 @@ bool FSlateManager::OnCursorSet()
 
 void FSlateManager::OnOSPaint(const std::shared_ptr<FGenericWindow>& Window)
 {
-	const std::shared_ptr < SWindow > window= FindWindowByNative(Window);
-
-	// Delta and total time will be filled in by the Window.
-	UpdateEventArgs updateEventArgs(0.0, 0.0);
-	auto& Timer= m_GenericApplication->GetTimer();
-	updateEventArgs.DeltaTime = Timer.ElapsedSeconds();
-	updateEventArgs.TotalTime = Timer.TotalSeconds();
-	window->OnUpdate(updateEventArgs);
+	const std::shared_ptr < SWindow > window= FindWindowByNative(Window);;
 }
 
 void FSlateManager::HandleDPIScaleChanged(const std::shared_ptr<FGenericWindow>& Window)

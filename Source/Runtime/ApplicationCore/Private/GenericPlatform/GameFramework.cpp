@@ -65,6 +65,8 @@ FGameFramework& FGameFramework::Get()
 void FGameFramework::Tick()
 {
     UpdateTime();
+
+    GetSlateManager()->GetGenericApplication()->ProcessDeferredEvents(FApp::GetDeltaTime());
 }
 
 std::weak_ptr<FGameInstance> FGameFramework::CreateGameInstance(std::string name)
@@ -87,7 +89,7 @@ void FGameFramework::UpdateTime()
 {
     FApp::UpdateLastTime();
     auto now = std::chrono::steady_clock::now();
-    FApp::SetCurrentTime(std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch()).count()/ std::micro::den);
+    FApp::SetCurrentTime(std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch()).count()/ (double)std::micro::den);
     auto lasttime=FApp::GetLastTime();
     FApp::SetDeltaTime(FApp::GetCurrentTime()- FApp::GetLastTime());
 }

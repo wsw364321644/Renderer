@@ -143,12 +143,12 @@ bool WindowsDeviceInputManager::ProcessMessage(HWND hwnd, uint32_t msg, WPARAM w
 			// GetMessage( &charMsg, hwnd, 0, 0 );
 			c = static_cast<unsigned int>(charMsg.wParam);
 		}
+		MessageHandler->OnKeyDown(wParam, c, bIsRepeat);
 
 
 		KeyCode      key = (KeyCode)wParam;
 		KeyEventArgs keyEventArgs(key, c, KeyState::Pressed, bLShift, bRShift, bLControl, bRControl, bLAlt, bRAlt, bCapital);
 		FGameFramework::Get().GetSlateManager()->FindWindowByNative(pWindow)->OnKeyPressed(keyEventArgs);
-		MessageHandler->OnKeyDown(wParam, c, bIsRepeat);
 	}
 	break;
 	case WM_SYSKEYUP:
@@ -158,7 +158,6 @@ bool WindowsDeviceInputManager::ProcessMessage(HWND hwnd, uint32_t msg, WPARAM w
 		bool control = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
 		bool alt = (GetAsyncKeyState(VK_MENU) & 0x8000) != 0;
 
-		KeyCode      key = (KeyCode)wParam;
 		unsigned int c = 0;
 		unsigned int scanCode = (lParam & 0x00FF0000) >> 16;
 
@@ -173,9 +172,11 @@ bool WindowsDeviceInputManager::ProcessMessage(HWND hwnd, uint32_t msg, WPARAM w
 		{
 			c = translatedCharacters[0];
 		}
+		MessageHandler->OnKeyUp(wParam, c, false);
+
+		KeyCode      key = (KeyCode)wParam;
 		KeyEventArgs keyEventArgs(key, c, KeyState::Released, bLShift, bRShift, bLControl, bRControl, bLAlt, bRAlt, bCapital);
 		FGameFramework::Get().GetSlateManager()->FindWindowByNative(pWindow)->OnKeyReleased(keyEventArgs);
-		MessageHandler->OnKeyUp(wParam, c, false);
 	}
 	break;
 
@@ -192,8 +193,9 @@ bool WindowsDeviceInputManager::ProcessMessage(HWND hwnd, uint32_t msg, WPARAM w
 
 		MouseMotionEventArgs mouseMotionEventArgs(lButton, mButton, rButton, control, shift, x, y);
 		pWindow->OnMouseMoved(mouseMotionEventArgs);
-		FGameFramework::Get().GetSlateManager()->FindWindowByNative(pWindow)->OnMouseMoved(mouseMotionEventArgs);
 		MessageHandler->OnMouseMove();
+
+		FGameFramework::Get().GetSlateManager()->FindWindowByNative(pWindow)->OnMouseMoved(mouseMotionEventArgs);
 	}
 	break;
 	case WM_LBUTTONDOWN:
@@ -213,8 +215,9 @@ bool WindowsDeviceInputManager::ProcessMessage(HWND hwnd, uint32_t msg, WPARAM w
 		MouseButtonEventArgs mouseButtonEventArgs(DecodeMouseButton(msg, wParam, lParam), ButtonState::Pressed, lButton,
 			mButton, rButton, control, shift, x, y);
 		pWindow->OnMouseButtonPressed(mouseButtonEventArgs);
-		FGameFramework::Get().GetSlateManager()->FindWindowByNative(pWindow)->OnMouseButtonPressed(mouseButtonEventArgs);
 		MessageHandler->OnMouseDown(pWindow, DecodeMouseButton(msg, wParam, lParam));
+
+		FGameFramework::Get().GetSlateManager()->FindWindowByNative(pWindow)->OnMouseButtonPressed(mouseButtonEventArgs);
 	}
 	break;
 	case WM_LBUTTONUP:
@@ -236,8 +239,9 @@ bool WindowsDeviceInputManager::ProcessMessage(HWND hwnd, uint32_t msg, WPARAM w
 		MouseButtonEventArgs mouseButtonEventArgs(DecodeMouseButton(msg, wParam, lParam), ButtonState::Released, lButton,
 			mButton, rButton, control, shift, x, y);
 		pWindow->OnMouseButtonReleased(mouseButtonEventArgs);
-		FGameFramework::Get().GetSlateManager()->FindWindowByNative(pWindow)->OnMouseButtonReleased(mouseButtonEventArgs);
 		MessageHandler->OnMouseUp( DecodeMouseButton(msg, wParam, lParam));
+
+		FGameFramework::Get().GetSlateManager()->FindWindowByNative(pWindow)->OnMouseButtonReleased(mouseButtonEventArgs);
 	}
 	break;
 	case WM_LBUTTONDBLCLK:
@@ -256,8 +260,9 @@ bool WindowsDeviceInputManager::ProcessMessage(HWND hwnd, uint32_t msg, WPARAM w
 
 		MouseButtonEventArgs mouseButtonEventArgs(DecodeMouseButton(msg, wParam, lParam), ButtonState::Pressed, lButton,
 			mButton, rButton, control, shift, x, y);
-		FGameFramework::Get().GetSlateManager()->FindWindowByNative(pWindow)->OnMouseButtonPressed(mouseButtonEventArgs);
 		MessageHandler->OnMouseDoubleClick(pWindow, DecodeMouseButton(msg, wParam, lParam));
+
+		FGameFramework::Get().GetSlateManager()->FindWindowByNative(pWindow)->OnMouseButtonPressed(mouseButtonEventArgs);
 	}
 	break;
 	case WM_MOUSEHWHEEL:
@@ -288,8 +293,9 @@ bool WindowsDeviceInputManager::ProcessMessage(HWND hwnd, uint32_t msg, WPARAM w
 		MouseWheelEventArgs mouseWheelEventArgs(zDelta, lButton, mButton, rButton, control, shift,
 			(int)screenToClientPoint.x, (int)screenToClientPoint.y);
 		glm::vec2 pos(screenToClientPoint.x, screenToClientPoint.y);
-		FGameFramework::Get().GetSlateManager()->FindWindowByNative(pWindow)->OnMouseWheel(mouseWheelEventArgs);
 		MessageHandler->OnMouseWheel(zDelta, pos);
+
+		FGameFramework::Get().GetSlateManager()->FindWindowByNative(pWindow)->OnMouseWheel(mouseWheelEventArgs);
 	}
 	break;
 	case WM_MOUSELEAVE:

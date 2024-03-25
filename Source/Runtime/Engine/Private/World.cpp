@@ -10,32 +10,32 @@ World::~World()
 {
 }
 
-Actor* World::CreateActor()
+FActor* World::CreateActor()
 {
-	auto actor = new Actor();
+	auto actor = new FActor();
 	Actors.emplace(actor->GetID(), actor);
 	actor->OnAddComponent.Bind(&World::OnAddComponent, this);
 	actor->OnRemoveComponent.Bind(&World::OnRemoveComponent, this);
 	return Actors[actor->GetID()].get();
 }
 
-std::vector<Actor*> World::GetActors()
+std::vector<FActor*> World::GetActors()
 {
-	std::vector<Actor*> outvector;
+	std::vector<FActor*> outvector;
 	for (auto& [key, value] : Actors) {
 		outvector.push_back(value.get());
 	}
 	return outvector;
 }
 
-void World::ItrActors(std::function<void(Actor*)> f)
+void World::ItrActors(std::function<void(FActor*)> f)
 {
 	for (auto& [key, value] : Actors) {
 		f(value.get());
 	}
 }
 
-void World::OnAddComponent(Actor* InActor, ActorComponent* Component)
+void World::OnAddComponent(FActor* InActor, ActorComponent* Component)
 {
 	auto PC = dynamic_cast<PrimitiveComponent*>(Component);
 	if (PC) {
@@ -43,7 +43,7 @@ void World::OnAddComponent(Actor* InActor, ActorComponent* Component)
 	}
 }
 
-void World::OnRemoveComponent(Actor* InActor, ActorComponent* Component)
+void World::OnRemoveComponent(FActor* InActor, ActorComponent* Component)
 {
 	auto PC = dynamic_cast<PrimitiveComponent*>(Component);
 	if (PC) {

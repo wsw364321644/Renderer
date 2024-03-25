@@ -30,7 +30,7 @@
 bool g_WantUpdateHasGamepad{ false };
 bool g_HasGamepad{ false };
 bool ImGui_ImplWin32_UpdateMouseCursor() {
-    static int LastMouseCursor{ 0 };
+    static int LastMouseCursor{ ImGuiMouseCursor_::ImGuiMouseCursor_COUNT };
     // Update OS mouse cursor with the cursor requested by imgui
     ImGuiIO& io = ImGui::GetIO();
     ImGuiMouseCursor mouse_cursor = io.MouseDrawCursor ? ImGuiMouseCursor_None : ImGui::GetMouseCursor();
@@ -366,11 +366,8 @@ void WindowsApplication::RegisterDirectoryChangeListener(const std::wstring& dir
 }
 
 int32_t WindowsApplication::ProcessMessage(HWND hwnd, uint32_t msg, WPARAM wParam, LPARAM lParam)
-{
-    
+{ 
     std::shared_ptr<WindowsWindow> pWindow=std::dynamic_pointer_cast<WindowsWindow>( GetWindowByHandle(hwnd).lock());
-
-
     if (pWindow)
     {
 
@@ -389,10 +386,6 @@ int32_t WindowsApplication::ProcessMessage(HWND hwnd, uint32_t msg, WPARAM wPara
         break;
         case WM_PAINT:
         {
-            m_Timer.Tick();
-            ImGui_ImplWin32_UpdateMousePos(hwnd);
-            ImGui_ImplWin32_UpdateMouseCursor();
-            ImGui_ImplWin32_UpdateGamepads();
             MessageHandler->OnOSPaint(pWindow);
         }
         break;
@@ -523,7 +516,22 @@ int32_t WindowsApplication::ProcessMessage(HWND hwnd, uint32_t msg, WPARAM wPara
         }
     }
 
-    return 0;
+    return DefWindowProc(hwnd, msg, wParam, lParam);
+}
+
+void WindowsApplication::ProcessDeferredEvents(const float TimeDelta)
+{
+    m_Timer.Tick();
+    ImGui_ImplWin32_UpdateMouseCursor();
+    ImGui_ImplWin32_UpdateGamepads();
+    // Delta and total time will be filled in by the Window.
+    UpdateEventArgs updateEventArgs(0.0, 0.0);
+    updateEventArgs.DeltaTime = m_Timer.ElapsedSeconds();
+    updateEventArgs.TotalTime = m_Timer.TotalSeconds();
+    for (auto& win : FGameFramework::Get().GetSlateManager()->GetWindows()) {
+        ImGui_ImplWin32_UpdateMousePos((HWND)win->GetNativeWindow()->GetOSWindowHandle());
+        win->OnUpdate(updateEventArgs);
+    }
 }
 
 std::weak_ptr<FGenericWindow> WindowsApplication::GetWindowByName(const std::string& windowName) const

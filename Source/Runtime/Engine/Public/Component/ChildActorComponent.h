@@ -11,5 +11,5 @@ public:
     virtual ~ChildActorComponent();
 
 private:
-    std::vector<std::shared_ptr<Actor>> ChildActors;
+    std::vector<std::shared_ptr<FActor>> ChildActors;
 };

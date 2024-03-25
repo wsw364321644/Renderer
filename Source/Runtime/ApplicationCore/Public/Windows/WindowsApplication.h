@@ -44,7 +44,7 @@ public:
 		bool recursive = true);
 
 	int32_t ProcessMessage(HWND hwnd, uint32_t msg, WPARAM wParam, LPARAM lParam);
-
+	virtual void ProcessDeferredEvents(const float TimeDelta)override;
 	std::weak_ptr<FGenericWindow> GetWindowByName(const std::string& windowName) const;
 	std::weak_ptr<FGenericWindow> GetWindowByHandle(HWND handle) const;
 	virtual void SetMessageHandler(const std::shared_ptr<GenericApplicationMessageHandler >& InMessageHandler) override;

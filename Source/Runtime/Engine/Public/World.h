@@ -13,18 +13,18 @@ public:
 
     void Render();
 
-    Actor* CreateActor();
+    FActor* CreateActor();
 
-    std::vector<Actor*> GetActors();
-    void ItrActors(std::function<void(Actor*)>);
+    std::vector<FActor*> GetActors();
+    void ItrActors(std::function<void(FActor*)>);
 
     template<typename inclass>
     std::vector<inclass*> GetComponent();
 private:
-    void OnAddComponent(Actor* InActor, ActorComponent* Component);
-    void OnRemoveComponent(Actor* InActor, ActorComponent* Component);
+    void OnAddComponent(FActor* InActor, ActorComponent* Component);
+    void OnRemoveComponent(FActor* InActor, ActorComponent* Component);
     static int64_t ID_Counter;
-    std::map<uuids::uuid, std::shared_ptr<Actor>> Actors;
+    std::map<uuids::uuid, std::shared_ptr<FActor>> Actors;
 
     std::list<PrimitiveComponent*> CachedPrimitiveComponents;
 };

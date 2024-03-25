@@ -8,14 +8,14 @@
 #include "Component/StaticMeshComponent.h"
 
 
-using ComponentChangeEvent = CommonDelegate<void(Actor*, ActorComponent*)>;
+using ComponentChangeEvent = CommonDelegate<void(FActor*, ActorComponent*)>;
 
-class Actor
+class FActor
 {
 public:
 
-    Actor();
-    virtual ~Actor();
+    FActor();
+    virtual ~FActor();
 
     template<typename inclass, typename... ArgsType>
     std::shared_ptr<inclass> AddComponent(ArgsType ...args) {
@@ -63,6 +63,23 @@ public:
         ),
             ChildComponents.end());
     }
+
+    template<typename inclass>
+    inline std::vector<inclass*> GetComponentByClass()
+    {
+        std::vector<inclass*> result;
+        for (auto& ChildComponent : ChildComponents) {
+            auto inptr = dynamic_cast<inclass*>(ChildComponent.get());
+            if (inptr) {
+                result.push_back(inptr);
+            }
+        }
+        return result;
+    }
+
+
+
+
     uuids::uuid GetID() {
         return ID;
     }

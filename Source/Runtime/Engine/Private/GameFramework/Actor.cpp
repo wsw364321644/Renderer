@@ -1,12 +1,12 @@
 #include <GameFramework/Actor.h>
 #include<assert.h>
 #include "GenericPlatform/IDGenerator.h"
-Actor::Actor()  
+FActor::FActor()  
 {
 	ID=IDGenerator::NewID();
 	assert(!ID.is_nil());
 }
 
-Actor::~Actor()
+FActor::~FActor()
 {
 }

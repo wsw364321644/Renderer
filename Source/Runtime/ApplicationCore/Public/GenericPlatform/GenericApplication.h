@@ -9,7 +9,7 @@
 #include "PlayerID.h"
 #include "Misc/HighResolutionTimer.h"
 #include "Misc/CoreMiscDefines.h"
-class FSlateApplication;
+
 class IAnalyticsProvider;
 
 class IInputInterface;
@@ -216,11 +216,9 @@ public:
 
 	
 	/** Delegate for virtual keyboard being shown/hidden in case UI wants to slide out of the way */
-	//DECLARE_EVENT_OneParam(FSlateApplication, FVirtualKeyboardShownEvent, FPlatformRect);
 	typedef CommonDelegate<void(FPlatformRect)> OnVirtualKeyboardShownEvent;
 	OnVirtualKeyboardShownEvent& OnVirtualKeyboardShown()  { return VirtualKeyboardShownEvent; }
 	
-	//DECLARE_EVENT(FSlateApplication, FVirtualKeyboardHiddenEvent);
 	typedef CommonDelegate<void()> OnVirtualKeyboardHiddenEvent;
 	OnVirtualKeyboardHiddenEvent& OnVirtualKeyboardHidden()  { return VirtualKeyboardHiddenEvent; }
 
