@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.16)
-include(ExternalProject)
-include(FetchContent)
-set(UTILPP_TAG 883ac8b2c8dc4e8e3bdb1da8b995d60473e1231c)
-set(OCmakeUtil_TAG da88ebcc080f0374b0fb6e9e05abdc26541d4fdb)
 
+include(FetchContent)
+
+set(UTILPP_TAG 2e9b0b99b94cc1fc32427b4ab2c3a1fe58d59df3)
+set(OCmakeUtil_TAG 6df33d075d033b9ce341e54176154f250290ceff)
 project(Renderer LANGUAGES C CXX)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -26,6 +26,8 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(OCmakeUtil)
 
 ImportProject(LIBUV STATIC_CRT SSH TAG be6b81a352d17513c95be153afcb3148f1a451cd) # 1.47.0
+ImportProject(SDL2 STATIC_CRT SSH TAG f461d91cd265d7b9a44b4d472b1df0c0ad2855a0) # 2.30.2
+ImportTarget(imgui SSH TAG 6ccc561a2ab497ad4ae6ee1dbd3b992ffada35cb) # v1.90.6
 
 set(UTILPP_WITH_STATIC_LIBUV OFF CACHE BOOL "" FORCE)
 set(UTILPP_STATIC_CRT OFF CACHE BOOL "" FORCE)
@@ -35,14 +37,6 @@ FetchContent_Declare(
     GIT_TAG ${UTILPP_TAG}
 )
 FetchContent_MakeAvailable(utilpp)
-
-set(SDL_TEST OFF CACHE BOOL "" FORCE)
-FetchContent_Declare(
-    sdl
-    GIT_REPOSITORY git@ssh.github.com:libsdl-org/SDL.git
-    GIT_TAG 859844eae358447be8d66e6da59b6fb3df0ed778
-)
-FetchContent_MakeAvailable(sdl)
 
 FetchContent_Declare(
   sigslot
@@ -77,5 +71,4 @@ add_subdirectory(ThirdParty/DirectXTex)
 add_subdirectory(ThirdParty/DirectXTK)
 add_subdirectory(ThirdParty/gainput)
 add_subdirectory(ThirdParty/glm)
-add_subdirectory(Source/imgui)
 add_subdirectory(Source)

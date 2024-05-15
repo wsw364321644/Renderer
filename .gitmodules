@@ -4,9 +4,6 @@
 [submodule "DirectXTK"]
 	path = ThirdParty/DirectXTK
 	url = https://github.com/microsoft/DirectXTK.git
-[submodule "imgui"]
-	path = ThirdParty/imgui
-	url = https://github.com/ocornut/imgui.git
 [submodule "assimp"]
 	path = ThirdParty/assimp
 	url = https://github.com/assimp/assimp.git

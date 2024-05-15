@@ -81,7 +81,7 @@ target_compile_definitions(${TARGET_NAME} PUBLIC NOMINMAX)
 
 AddTargetInclude(${TARGET_NAME})
 
-target_link_libraries(${TARGET_NAME} PRIVATE sutils)
+target_link_libraries(${TARGET_NAME} PRIVATE simple_utilpp)
 target_link_libraries(${TARGET_NAME} PRIVATE simple_logger)
 target_link_libraries(${TARGET_NAME} PRIVATE Pal::Sigslot)
 target_link_libraries(${TARGET_NAME} PRIVATE DirectXTex)
@@ -91,13 +91,13 @@ target_link_libraries(${TARGET_NAME} PRIVATE assimp)
 target_link_libraries(${TARGET_NAME} PRIVATE gainputstatic)
 target_link_libraries(${TARGET_NAME} PRIVATE glm)
 target_link_libraries(${TARGET_NAME} PRIVATE stduuid)
-target_link_libraries(${TARGET_NAME} PRIVATE SDL2)
 target_link_libraries(${TARGET_NAME} PRIVATE imgui_a)
 target_link_libraries(${TARGET_NAME} PRIVATE d3d12.lib)
 target_link_libraries(${TARGET_NAME} PRIVATE dxgi.lib)
 target_link_libraries(${TARGET_NAME} PRIVATE d3dcompiler.lib)
 target_link_libraries(${TARGET_NAME} PRIVATE dxgi.lib)
 target_link_libraries(${TARGET_NAME} PRIVATE dxguid.lib)
+target_link_libraries(${TARGET_NAME} PRIVATE SDL2::SDL2)
 
 #get_directory_property(ASSIMP_RUNTIME_OUTPUT_DIRECTORY DIRECTORY ${PROJECT_SOURCE_DIR}/ThirdParty/assimp DEFINITION ASSIMP_RUNTIME_OUTPUT_DIRECTORY)
 
@@ -106,3 +106,19 @@ target_link_libraries(${TARGET_NAME} PRIVATE dxguid.lib)
 
 #set( COMMAND_ARGUMENTS "-wd \"${PROJECT_SOURCE_DIR}\"" )
 #configure_file(${TARGET_NAME}.vcxproj.user.in ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.vcxproj.user @ONLY)
+
+
+
+install(TARGETS ${TARGET_NAME}
+    EXPORT ${TARGET_NAME}Targets
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION bin
+    PUBLIC_HEADER DESTINATION include
+)
+
+install(EXPORT ${TARGET_NAME}Targets
+    FILE ${TARGET_NAME}Targets.cmake
+    NAMESPACE UTILPP::
+    DESTINATION lib/cmake/${TARGET_NAME}
+)
