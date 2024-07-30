@@ -211,7 +211,7 @@ void GUI::NewFrame(double delta)
 void GUI::Render( const std::shared_ptr<CommandList>& commandList, const RenderTarget& renderTarget )
 {
     assert( commandList );
-
+    ImGui::EndFrame();
     //ImGui::SetCurrentContext( m_pImGuiCtx );
     ImGui::Render();
 
@@ -291,13 +291,13 @@ void GUI::Render( const std::shared_ptr<CommandList>& commandList, const RenderT
 
                 if ( scissorRect.right - scissorRect.left > 0.0f && scissorRect.bottom - scissorRect.top > 0.0 )
                 {
-                    if (drawCmd.TextureId != nullptr) {
+                    if (drawCmd.TextureId != NULL) {
                         commandList->SetShaderResourceView(RootParameters::FontTexture, 0,* (std::shared_ptr<Texture>*)drawCmd.TextureId,
                             D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
                     }
                     commandList->SetScissorRect( scissorRect );
                     commandList->DrawIndexed( drawCmd.ElemCount, 1, indexOffset );
-                    if (drawCmd.TextureId != nullptr) {
+                    if (drawCmd.TextureId != NULL) {
                         commandList->SetShaderResourceView(RootParameters::FontTexture, 0, m_FontSRV,
                             D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
                     }

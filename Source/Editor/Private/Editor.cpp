@@ -556,7 +556,7 @@ void Editor::OnUpdate(UpdateEventArgs& e)
     {
         g_FPS = frameCount / totalTime;
 
-        SIMPLELOG_LOGGER_TRACE("Editor", "FPS: {:.7}", g_FPS);
+        //SIMPLELOG_LOGGER_TRACE("Editor", "FPS: {:.7}", g_FPS);
         char buffer[512];
         std::sprintf(buffer, "HDR [FPS: %f]", g_FPS);
         m_Window->SetTitle(buffer);
@@ -872,7 +872,7 @@ void Editor::OnGUI(const std::shared_ptr<dx12lib::CommandList>& commandList,
     if (canvas_sz.y < 50.0f) canvas_sz.y = 50.0f;
     ImVec2 canvas_p1 = ImVec2(canvas_p0.x + canvas_sz.x, canvas_p0.y + canvas_sz.y);
 
-    ImGui::GetWindowDrawList()->AddImage(&tex, canvas_p0, canvas_p1);
+    ImGui::GetWindowDrawList()->AddImage((ImU64)& tex, canvas_p0, canvas_p1);
     ImGui::InvisibleButton("canvas", canvas_sz, ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_MouseButtonRight);
     const bool is_hovered = ImGui::IsItemHovered(); // Hovered
     const bool is_active = ImGui::IsItemActive();   // Held
@@ -887,7 +887,7 @@ void Editor::OnGUI(const std::shared_ptr<dx12lib::CommandList>& commandList,
         }
     }
 
-    SIMPLELOG_LOGGER_TRACE("Editor", "is_hovered:{} is_active:{} m_SceneSelected:{} IsMouseClicked:{}", is_hovered, is_active, m_SceneSelected, ImGui::IsMouseClicked(ImGuiMouseButton_Left));
+    //SIMPLELOG_LOGGER_TRACE("Editor", "is_hovered:{} is_active:{} m_SceneSelected:{} IsMouseClicked:{}", is_hovered, is_active, m_SceneSelected, ImGui::IsMouseClicked(ImGuiMouseButton_Left));
 
     if (ImGui::IsWindowFocused()) {
         m_SceneFoused = true;

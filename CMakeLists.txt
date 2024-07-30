@@ -2,8 +2,9 @@ cmake_minimum_required(VERSION 3.16)
 
 include(FetchContent)
 
-set(UTILPP_TAG 2e9b0b99b94cc1fc32427b4ab2c3a1fe58d59df3)
-set(OCmakeUtil_TAG 6df33d075d033b9ce341e54176154f250290ceff)
+set(UTILPP_TAG 8b5f0c80087bb972db4ad617ba66e06d64ccd5b3)
+set(OCmakeUtil_TAG 8f3b415d53ee0cef2d8fe59dfa2eb92d62156c56)
+
 project(Renderer LANGUAGES C CXX)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -25,8 +26,8 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(OCmakeUtil)
 
-ImportProject(LIBUV STATIC_CRT SSH TAG be6b81a352d17513c95be153afcb3148f1a451cd) # 1.47.0
-ImportProject(SDL2 STATIC_CRT SSH TAG f461d91cd265d7b9a44b4d472b1df0c0ad2855a0) # 2.30.2
+ImportProject(LIBUV STATIC_CRT FIND SSH TAG be6b81a352d17513c95be153afcb3148f1a451cd) # 1.47.0
+ImportProject(SDL2 STATIC_CRT FIND SSH TAG f461d91cd265d7b9a44b4d472b1df0c0ad2855a0) # 2.30.2
 ImportTarget(imgui SSH TAG 6ccc561a2ab497ad4ae6ee1dbd3b992ffada35cb) # v1.90.6
 
 set(UTILPP_WITH_STATIC_LIBUV OFF CACHE BOOL "" FORCE)
@@ -39,9 +40,9 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(utilpp)
 
 FetchContent_Declare(
-  sigslot
-  GIT_REPOSITORY https://github.com/palacaze/sigslot
-  GIT_TAG        33802bb3e94c4dfe07bd41b537b36806f94c3e3a # v1.2.2
+    sigslot
+    GIT_REPOSITORY git@ssh.github.com:palacaze/sigslot.git
+    GIT_TAG 33802bb3e94c4dfe07bd41b537b36806f94c3e3a # v1.2.2
 )
 FetchContent_MakeAvailable(sigslot)
 
@@ -64,7 +65,13 @@ set(ASSIMP_WARNINGS_AS_ERRORS OFF)
 add_subdirectory(ThirdParty/assimp)
 
 set(UUID_BUILD_TESTS OFF)
-set(UUID_USING_CXX20_SPAN ON)
+
+if(MSVC_VERSION LESS 1939)
+    set(UUID_USING_CXX20_SPAN OFF)
+else()
+    set(UUID_USING_CXX20_SPAN ON)
+endif()
+
 add_subdirectory(ThirdParty/stduuid)
 
 add_subdirectory(ThirdParty/DirectXTex)
