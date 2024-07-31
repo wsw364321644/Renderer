@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 3.16)
 
 include(FetchContent)
+set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 
-set(UTILPP_TAG 8b5f0c80087bb972db4ad617ba66e06d64ccd5b3)
+set(UTILPP_TAG baaf2d8427d4f1304c7139abf08c4a6465110628)
 set(OCmakeUtil_TAG 8f3b415d53ee0cef2d8fe59dfa2eb92d62156c56)
 
 project(Renderer LANGUAGES C CXX)
@@ -61,17 +62,16 @@ ExternalProject_Add(
 # URL
 # )
 # FetchContent_MakeAvailable(assets)
+get_cmake_property(GENERATOR_IS_MULTI_CONFIG GENERATOR_IS_MULTI_CONFIG)
 set(ASSIMP_WARNINGS_AS_ERRORS OFF)
 add_subdirectory(ThirdParty/assimp)
 
 set(UUID_BUILD_TESTS OFF)
-
-if(MSVC_VERSION LESS 1939)
+if(MSVC_VERSION LESS 1910)
     set(UUID_USING_CXX20_SPAN OFF)
 else()
     set(UUID_USING_CXX20_SPAN ON)
 endif()
-
 add_subdirectory(ThirdParty/stduuid)
 
 add_subdirectory(ThirdParty/DirectXTex)

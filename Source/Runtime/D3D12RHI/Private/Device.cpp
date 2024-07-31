@@ -247,6 +247,14 @@ Device::Device( std::shared_ptr<Adapter> adapter )
 
     auto dxgiAdapter = m_Adapter->GetDXGIAdapter();
 
+#ifndef _NDEBUG
+    ComPtr<ID3D12Debug> debugController;
+    if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController))))
+    {
+        debugController->EnableDebugLayer();
+    }
+#endif // !_NDEBUG
+
     ThrowIfFailed( D3D12CreateDevice( dxgiAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS( &m_d3d12Device ) ) );
 
     // Enable debug messages (only works if the debug layer has already been enabled).
