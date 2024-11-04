@@ -1,0 +1,52 @@
+@startuml
+|main|
+start
+if(IsEditor) then (yes)
+|UEditorEngine|
+:CreateInnerProcessPIEGameInstance;
+|UGameInstance|
+:InitializeForPlayInEditor;
+:Init;
+note right
+create UOnlineSession 
+and register delegetes
+end note
+|UEditorEngine|
+:PostCreatePIEWorld;
+|UWorld|
+:InitWorld;
+|UGameInstance|
+:StartPlayInEditorGameInstance;
+|UWorld|
+:SetGameMode;
+|UGameInstance|
+:CreateGameModeForURL;
+|UWorld|
+:InitializeActorsForPlay;
+|ULocalPlayer|
+:SpawnPlayActor;
+note right
+create playercontroller
+login when local server
+end note
+else(no)
+|UGameInstance|
+:InitializeStandalone;
+|UWorld|
+:CreateWorld;
+:InitializeNewWorld;
+:InitWorld;
+|UGameInstance|
+:Init;
+endif
+|UWorld|
+:BeginPlay;
+|AGameModeBase|
+:StartPlay;
+|AGameStateBase|
+:HandleBeginPlay;
+|AWorldSettings|
+:NotifyBeginPlay;
+
+end
+@enduml

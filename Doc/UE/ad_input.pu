@@ -38,7 +38,8 @@ start
 :InputKey;
 |APlayerController|
 :InputKey;
-
+|UPlayerInput|
+:InputKey;
 
 stop
 @enduml

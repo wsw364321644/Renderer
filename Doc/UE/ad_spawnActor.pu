@@ -1,16 +1,6 @@
 @startuml
-|main|
-start
-|UWorld|
-:CreateWorld;
-:InitializeNewWorld;
-:InitWorld;
-stop
 
-
-
-|UWorld|
-start
+|World|
 :SpawnActor;
 |AActor|
 :PostSpawnInitialize;
@@ -28,7 +18,5 @@ start
 |FScene|
 :Primitive->SceneProxy = PrimitiveSceneProxy;
 end
-
-
 
 @enduml

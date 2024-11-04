@@ -25,11 +25,21 @@ start
 :Execute;
 :ExecuteTask;
 
+
 switch (TTask)
-case ( FTickFunctionTask)
+case (FBaseGraphTask)
+:DoTask;
+case (FTickFunctionTask)
 |FTickFunctionTask|
-|FBaseGraphTask|
+:DoTask;
 endswitch
 
+switch (FTickFunction)
+case (FActorTickFunction)
+|FActorTickFunction|
+:ExecuteTick;
+|AActor|
+:TickActor;
+endswitch
 stop
 @enduml
