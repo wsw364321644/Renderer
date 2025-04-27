@@ -4,14 +4,13 @@
 #include <GenericPlatform/GameFramework.h>
 #include <Device.h>
 
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
+#include <simple_os_defs.h>
 #include <Shlwapi.h>
 #include <shellapi.h>
 
 using namespace dx12lib;
 
-FEngineLoop	GEngineLoop;
+FEngineLoop GEngineLoop;
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nCmdShow)
 {
 

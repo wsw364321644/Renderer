@@ -573,7 +573,7 @@ void FWindowsApplication::UpdateWindowTitle(FWindowsWindow* Window, const char* 
     gs_WindowMapByName.erase(itr);
     gs_WindowMapByName.emplace(Text, pWindow);
     Window->Definition->Title = Text;
-    auto titleu16 = U8ToU16(Text);
+    auto titleu16 = U8ToU16(Text,GetStringLength(Text));
     ::SetWindowTextW(Window->m_hWnd, (LPCWSTR)titleu16.c_str());
 }
 

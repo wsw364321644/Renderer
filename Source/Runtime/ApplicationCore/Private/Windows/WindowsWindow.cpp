@@ -31,7 +31,7 @@ void FWindowsWindow::Initialize(FWindowsApplication* const Application, const st
     int windowX = std::max<int>(0, (screenWidth - (int)width) / 2);
     int windowY = std::max<int>(0, (screenHeight - (int)height) / 2);
 
-    auto titleu16=U8ToU16(Definition->Title.c_str());
+    auto titleu16=U8ToU16(ConvertStringTotU8View(Definition->Title));
     m_hWnd = ::CreateWindowExW(NULL, WINDOW_CLASS_NAME, (LPCWSTR)titleu16.c_str(), WS_OVERLAPPEDWINDOW, windowX,
         windowY, width, height, NULL, NULL, InHInstance, NULL);
 

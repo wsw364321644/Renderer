@@ -295,7 +295,7 @@ void CommandList::SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY primitiveTopology)
 std::shared_ptr<Texture> CommandList::LoadTextureFromFile(const std::wstring& fileName, bool sRGB)
 {
     std::shared_ptr<Texture> texture;
-    fs::path                 filePath(fileName);
+    fs::path filePath(fileName);
     if (!fs::exists(filePath))
     {
         throw std::exception("File not found.");

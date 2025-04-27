@@ -247,16 +247,13 @@ Device::Device( std::shared_ptr<Adapter> adapter )
 
     auto dxgiAdapter = m_Adapter->GetDXGIAdapter();
 
-#ifndef _NDEBUG
-    ComPtr<ID3D12Debug> debugController;
-    if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController))))
-    {
-        debugController->EnableDebugLayer();
-    }
-#endif // !_NDEBUG
+
+
 
     ThrowIfFailed( D3D12CreateDevice( dxgiAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS( &m_d3d12Device ) ) );
 
+#ifndef NDEBUG
+    EnableDebugLayer();
     // Enable debug messages (only works if the debug layer has already been enabled).
     ComPtr<ID3D12InfoQueue> pInfoQueue;
     if ( SUCCEEDED( m_d3d12Device.As( &pInfoQueue ) ) )
@@ -293,7 +290,7 @@ Device::Device( std::shared_ptr<Adapter> adapter )
 
         ThrowIfFailed( pInfoQueue->PushStorageFilter( &NewFilter ) );
     }
-
+#endif // !_NDEBUG
     m_DirectCommandQueue  = std::make_unique<MakeCommandQueue>( *this, D3D12_COMMAND_LIST_TYPE_DIRECT );
     m_ComputeCommandQueue = std::make_unique<MakeCommandQueue>( *this, D3D12_COMMAND_LIST_TYPE_COMPUTE );
     m_CopyCommandQueue    = std::make_unique<MakeCommandQueue>( *this, D3D12_COMMAND_LIST_TYPE_COPY );

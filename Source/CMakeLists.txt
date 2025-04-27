@@ -2,35 +2,35 @@ cmake_minimum_required(VERSION 3.16)
 
 set(TARGET_NAME Editor)
 
-AddSourceFolder(INCLUDE RECURSE PUBLIC "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Public")
+AddSourceFolder(RECURSE PUBLIC "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Public")
 AddSourceFolder(RECURSE "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Private")
 
 if(WIN32)
-    AddSourceFolder(INCLUDE PRIVATE "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Resources/Windows")
+    AddSourceFolder(PRIVATE "${PROJECT_SOURCE_DIR}/Source/Runtime/Launch/Resources/Windows")
 endif()
 
-AddSourceFolder(INCLUDE RECURSE PUBLIC "${PROJECT_SOURCE_DIR}/Source/Runtime/ApplicationCore/Public")
+AddSourceFolder(RECURSE PUBLIC "${PROJECT_SOURCE_DIR}/Source/Runtime/ApplicationCore/Public")
 AddSourceFolder(RECURSE "${PROJECT_SOURCE_DIR}/Source/Runtime/ApplicationCore/Private/")
 
-AddSourceFolder(INCLUDE RECURSE PUBLIC "${PROJECT_SOURCE_DIR}/Source/Runtime/InputCore/Public")
+AddSourceFolder(RECURSE PUBLIC "${PROJECT_SOURCE_DIR}/Source/Runtime/InputCore/Public")
 AddSourceFolder(RECURSE "${PROJECT_SOURCE_DIR}/Source/Runtime/InputCore/Private")
 
-AddSourceFolder(INCLUDE RECURSE PUBLIC "${PROJECT_SOURCE_DIR}/Source/Runtime/Core/Public")
+AddSourceFolder(RECURSE PUBLIC "${PROJECT_SOURCE_DIR}/Source/Runtime/Core/Public")
 AddSourceFolder(RECURSE "${PROJECT_SOURCE_DIR}/Source/Runtime/Core/Private")
 
-AddSourceFolder(INCLUDE RECURSE PUBLIC "${PROJECT_SOURCE_DIR}/Source/Runtime/Engine/Public")
+AddSourceFolder(RECURSE PUBLIC "${PROJECT_SOURCE_DIR}/Source/Runtime/Engine/Public")
 AddSourceFolder(RECURSE "${PROJECT_SOURCE_DIR}/Source/Runtime/Engine/Private")
 
-AddSourceFolder(INCLUDE RECURSE PUBLIC "${PROJECT_SOURCE_DIR}/Source/Runtime/Renderer/Public")
+AddSourceFolder(RECURSE PUBLIC "${PROJECT_SOURCE_DIR}/Source/Runtime/Renderer/Public")
 AddSourceFolder(RECURSE "${PROJECT_SOURCE_DIR}/Source/Runtime/Renderer/Private")
 
-AddSourceFolder(INCLUDE RECURSE PUBLIC "${PROJECT_SOURCE_DIR}/Source/Runtime/Slate/Public")
+AddSourceFolder(RECURSE PUBLIC "${PROJECT_SOURCE_DIR}/Source/Runtime/Slate/Public")
 AddSourceFolder(RECURSE "${PROJECT_SOURCE_DIR}/Source/Runtime/Slate/Private")
 
-AddSourceFolder(INCLUDE RECURSE PUBLIC "${PROJECT_SOURCE_DIR}/Source/Runtime/D3D12RHI/Public")
+AddSourceFolder(RECURSE PUBLIC "${PROJECT_SOURCE_DIR}/Source/Runtime/D3D12RHI/Public")
 AddSourceFolder(RECURSE "${PROJECT_SOURCE_DIR}/Source/Runtime/D3D12RHI/Private")
 
-AddSourceFolder(INCLUDE RECURSE PRIVATE "${PROJECT_SOURCE_DIR}/Source/Editor/Public")
+AddSourceFolder(RECURSE PRIVATE "${PROJECT_SOURCE_DIR}/Source/Editor/Public")
 AddSourceFolder(RECURSE "${PROJECT_SOURCE_DIR}/Source/Editor/Private")
 
 source_group(TREE ${PROJECT_SOURCE_DIR} FILES ${SourceFiles})
@@ -67,10 +67,9 @@ set_source_files_properties(${COMPUTE_SHADER_FILES}
     PROPERTIES
     VS_SHADER_TYPE Compute
 )
-list (APPEND SourceFiles ${SHADER_FILES})
-add_executable(${TARGET_NAME} WIN32
-    ${SourceFiles}
-)
+
+add_executable(${TARGET_NAME} WIN32 ${SHADER_FILES})
+
 set_target_properties(${TARGET_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin)
 
 # Enable C++20 compiler features.
@@ -80,6 +79,7 @@ target_compile_features(${TARGET_NAME} PRIVATE cxx_std_23)
 target_compile_definitions(${TARGET_NAME} PUBLIC NOMINMAX)
 
 AddTargetInclude(${TARGET_NAME})
+AddTargetInstall(${TARGET_NAME} Renderer)
 
 target_link_libraries(${TARGET_NAME} PRIVATE simple_utilpp)
 target_link_libraries(${TARGET_NAME} PRIVATE simple_logger)
@@ -105,19 +105,3 @@ target_link_libraries(${TARGET_NAME} PRIVATE SDL2::SDL2)
 
 #set( COMMAND_ARGUMENTS "-wd \"${PROJECT_SOURCE_DIR}\"" )
 #configure_file(${TARGET_NAME}.vcxproj.user.in ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.vcxproj.user @ONLY)
-
-
-
-install(TARGETS ${TARGET_NAME}
-    EXPORT ${TARGET_NAME}Targets
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
-    RUNTIME DESTINATION bin
-    PUBLIC_HEADER DESTINATION include
-)
-
-install(EXPORT ${TARGET_NAME}Targets
-    FILE ${TARGET_NAME}Targets.cmake
-    NAMESPACE UTILPP::
-    DESTINATION lib/cmake/${TARGET_NAME}
-)
