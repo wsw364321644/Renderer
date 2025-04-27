@@ -26,20 +26,20 @@ start
 :ExecuteTask;
 
 
-switch (TTask)
-case (FBaseGraphTask)
+if(TTask) is (FBaseGraphTask) then
 :DoTask;
-case (FTickFunctionTask)
+else(FTickFunctionTask)
 |FTickFunctionTask|
 :DoTask;
-endswitch
 
-switch (FTickFunction)
-case (FActorTickFunction)
+if(FTickFunction) is(FActorTickFunction) then
 |FActorTickFunction|
 :ExecuteTick;
 |AActor|
 :TickActor;
-endswitch
+endif
+
+endif
+
 stop
 @enduml

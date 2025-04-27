@@ -1,0 +1,100 @@
+@startuml
+|UInputComponent|
+start
+:AddActionBinding;
+note right
+add a FInputActionBinding 
+to ActionBindings
+
+BindAbilityActivationToInputComponent
+in UAbilitySystemComponent 
+is a helper function
+end note
+stop
+
+
+|IEnhancedInputSubsystemInterface|
+start
+:AddMappingContext;
+note right
+add UInputMappingContext 
+to AppliedInputContexts 
+in UEnhancedPlayerInput
+
+bind key to action
+end note
+stop
+
+|UEnhancedInputComponent|
+start
+:BindAction;
+note right
+add EnhancedActionEventBindings
+
+bind action to function
+end note
+stop
+
+|FEnhancedInputModule|
+start
+:Tick;
+|UEnhancedInputLibrary|
+:ForEachSubsystem;
+|IEnhancedInputSubsystemInterface|
+:RebuildControlMappings;
+|UEnhancedPlayerInput|
+:AddMapping;
+note right
+add EnhancedActionMappings
+add EnhancedKeyBinds
+
+player remap key
+end note
+stop
+
+
+|APlayerController|
+start
+:TickActor;
+:PlayerTick;
+:TickPlayerInput;
+:ProcessPlayerInput;
+|UPlayerInput|
+#LightGreen:ProcessInputStack;
+:EvaluateKeyMapState;
+|UEnhancedPlayerInput|
+-[#LightGreen,dashed]->
+#LightSalmon:EvaluateInputDelegates;
+note right
+trigger function
+which bind action
+end note
+:ProcessActionMappingEvent;
+
+|UPlayerInput|
+-[#LightSalmon,dashed]->
+#LightSkyBlue:EvaluateInputDelegates;
+|UInputComponent|
+:ConditionalBuildKeyMap;
+note right
+iter ActionBindings to
+add a FCachedKeyToActionInfo
+which associate with
+ActionKeyMap in UPlayerInput
+to CachedKeyToActionInfo
+end note
+|UPlayerInput|
+:GetKeysForAction;
+:ConditionalBuildKeyMappings;
+:ConditionalBuildKeyMappings_Internal;
+note right
+convert TArray<FInputActionKeyMapping> ActionMappings
+to TMap<FName, FActionKeyDetails> ActionKeyMap
+
+ActionMappings from user setting
+end note
+|UInputComponent|
+-[#LightSkyBlue,dashed]->
+:GetActionsBoundToKey;
+stop
+@enduml

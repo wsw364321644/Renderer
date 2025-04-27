@@ -3,25 +3,30 @@
 start
 if(IsEditor) then (yes)
 |UEditorEngine|
-:CreateInnerProcessPIEGameInstance;
+:Tick;
+:StarQueuedPlaySessionRequest;
+#palegreen:CreateInnerProcessPIEGameInstance;
 |UGameInstance|
-:InitializeForPlayInEditor;
+#AntiqueWhite:InitializeForPlayInEditor;
 :Init;
 note right
 create UOnlineSession 
 and register delegetes
 end note
 |UEditorEngine|
+-[#AntiqueWhite,dashed]-> 
 :PostCreatePIEWorld;
 |UWorld|
 :InitWorld;
 |UGameInstance|
-:StartPlayInEditorGameInstance;
+-[#palegreen,dashed]-> 
+#LightCoral:StartPlayInEditorGameInstance;
 |UWorld|
 :SetGameMode;
 |UGameInstance|
 :CreateGameModeForURL;
 |UWorld|
+-[#LightCoral,dashed]-> 
 :InitializeActorsForPlay;
 |ULocalPlayer|
 :SpawnPlayActor;
@@ -29,17 +34,9 @@ note right
 create playercontroller
 login when local server
 end note
-else(no)
-|UGameInstance|
-:InitializeStandalone;
+
 |UWorld|
-:CreateWorld;
-:InitializeNewWorld;
-:InitWorld;
-|UGameInstance|
-:Init;
-endif
-|UWorld|
+-[#LightCoral,dashed]-> 
 :BeginPlay;
 |AGameModeBase|
 :StartPlay;
@@ -47,6 +44,53 @@ endif
 :HandleBeginPlay;
 |AWorldSettings|
 :NotifyBeginPlay;
-
+|UWorld|
+:SetBegunPlay;
+else(no)
+|FEngineLoop|
+#DeepPink:Init;
+|UGameEngine|
+:Init;
+|UGameInstance|
+#YellowGreen:InitializeStandalone;
+|UWorld|
+:CreateWorld;
+:InitializeNewWorld;
+:InitWorld;
+-[#YellowGreen,dashed]-> 
+:SetGameInstance;
+|UGameInstance|
+-[#YellowGreen,dashed]-> 
+:Init;
+|UGameEngine|
+-[#DeepPink,dashed]-> 
+:Start;
+|UGameInstance|
+:StartGameInstance;
+|UEngine|
+:Browse;
+#SteelBlue:LoadMap;
+note right
+spawn actors
+end note
+|UWorld|
+:SetGameMode;
+-[#SteelBlue,dashed]-> 
+:InitializeActorsForPlay;
+|ULocalPlayer|
+-[#SteelBlue,dashed]-> 
+:SpawnPlayActor;
+|UWorld|
+-[#SteelBlue,dashed]-> 
+:BeginPlay;
+|AGameModeBase|
+:StartPlay;
+|AGameStateBase|
+:HandleBeginPlay;
+|AWorldSettings|
+:NotifyBeginPlay;
+|UWorld|
+:SetBegunPlay;
+endif
 end
 @enduml

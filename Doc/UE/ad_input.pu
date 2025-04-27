@@ -40,6 +40,8 @@ start
 :InputKey;
 |UPlayerInput|
 :InputKey;
-
+note right
+add KeyState to KeyStateMap
+end note
 stop
 @enduml
